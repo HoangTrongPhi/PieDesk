@@ -1,0 +1,63 @@
+//! Pins a surface window to the desktop layer.
+//!
+//! - Owner = Progman: owned windows of the desktop survive Win+D / "Show desktop".
+//! - WS_EX_TOOLWINDOW: no taskbar button, no Alt+Tab entry.
+//! - A subclass forces HWND_BOTTOM on every z-order change, so clicking a box never lifts the
+//!   full-screen surface above other apps.
+
+use tauri::WebviewWindow;
+
+#[cfg(windows)]
+mod imp {
+    use windows::core::w;
+    use windows::Win32::Foundation::{HWND, LPARAM, LRESULT, WPARAM};
+    use windows::Win32::UI::Shell::{DefSubclassProc, SetWindowSubclass};
+    use windows::Win32::UI::WindowsAndMessaging::{
+        FindWindowW, GetWindowLongPtrW, SetWindowLongPtrW, SetWindowPos, GWLP_HWNDPARENT, GWL_EXSTYLE, HWND_BOTTOM,
+        SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, WINDOWPOS, WM_WINDOWPOSCHANGING, WS_EX_APPWINDOW,
+        WS_EX_TOOLWINDOW,
+    };
+
+    const SUBCLASS_ID: usize = 0x5049_4544; // "PIED"
+
+    unsafe extern "system" fn subclass_proc(
+        hwnd: HWND,
+        msg: u32,
+        wparam: WPARAM,
+        lparam: LPARAM,
+        _id: usize,
+        _data: usize,
+    ) -> LRESULT {
+        if msg == WM_WINDOWPOSCHANGING {
+            let pos = lparam.0 as *mut WINDOWPOS;
+            if !pos.is_null() {
+                (*pos).hwndInsertAfter = HWND_BOTTOM;
+                (*pos).flags &= !SWP_NOZORDER;
+            }
+        }
+        DefSubclassProc(hwnd, msg, wparam, lparam)
+    }
+
+    pub fn pin(raw: isize) {
+        let hwnd = HWND(raw as _);
+        unsafe {
+            if let Ok(progman) = FindWindowW(w!("Progman"), None) {
+                SetWindowLongPtrW(hwnd, GWLP_HWNDPARENT, progman.0 as isize);
+            }
+            let ex = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
+            let ex = (ex | WS_EX_TOOLWINDOW.0 as isize) & !(WS_EX_APPWINDOW.0 as isize);
+            SetWindowLongPtrW(hwnd, GWL_EXSTYLE, ex);
+            let _ = SetWindowSubclass(hwnd, Some(subclass_proc), SUBCLASS_ID, 0);
+            let _ = SetWindowPos(hwnd, Some(HWND_BOTTOM), 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+        }
+    }
+}
+
+pub fn pin(window: &WebviewWindow) {
+    #[cfg(windows)]
+    if let Ok(hwnd) = window.hwnd() {
+        imp::pin(hwnd.0 as isize);
+    }
+    #[cfg(not(windows))]
+    let _ = window;
+}

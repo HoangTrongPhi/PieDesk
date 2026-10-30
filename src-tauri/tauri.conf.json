@@ -1,0 +1,55 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "PieDesk",
+  "version": "0.1.0",
+  "identifier": "com.phineas.piedesk",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1470",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "windows": [],
+    "security": {
+      "csp": {
+        "default-src": "'self'",
+        "script-src": "'self'",
+        "style-src": "'self' 'unsafe-inline'",
+        "img-src": "'self' asset: http://asset.localhost icon: http://icon.localhost data: blob:",
+        "frame-src": "asset: http://asset.localhost",
+        "connect-src": "ipc: http://ipc.localhost https://api.open-meteo.com https://geocoding-api.open-meteo.com"
+      },
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["**"]
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "category": "Utility",
+    "shortDescription": "Desktop boxes & widgets",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "webviewInstallMode": { "type": "downloadBootstrapper" },
+      "nsis": {
+        "installMode": "currentUser",
+        "installerIcon": "icons/icon.ico",
+        "startMenuFolder": "PieDesk",
+        "languages": ["English", "Vietnamese"],
+        "displayLanguageSelector": true
+      }
+    },
+    "publisher": "Phineas",
+    "copyright": "© 2026 Hoàng Trọng Phi"
+  }
+}

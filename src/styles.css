@@ -1,0 +1,794 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------- themes
+   Every surface colour comes from these tokens; a theme only swaps them.
+   `neon` follows the HUD look of the HuangFei room portfolio (mono type, cyan edges, glow). */
+
+:root,
+:root[data-theme="neon"] {
+  --pd-panel: 6 18 37; /* rgb triplet, combined with each box's own opacity */
+  --pd-solid: rgb(9 20 40 / 0.97);
+  --pd-border: rgb(120 190 255 / 0.3);
+  --pd-border-strong: rgb(178 231 255 / 0.65);
+  --pd-accent: #66e0ff;
+  --pd-fg: #c9dcf5;
+  --pd-strong: #e8f6ff;
+  --pd-muted: #7d97bd;
+  --pd-head: #9fb6d6;
+  --pd-glow: rgb(102 224 255 / 0.55);
+  --pd-bg: #050b17;
+  --pd-font: ui-monospace, "Cascadia Code", Consolas, "Courier New", monospace;
+  --pd-font-ui: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --pd-radius: 16px;
+  --pd-title-prefix: "// ";
+  --pd-title-size: 11px;
+  --pd-title-spacing: 0.16em;
+  --pd-title-weight: 500;
+  --pd-shadow: 0 10px 30px rgb(0 0 0 / 0.35);
+}
+:root[data-theme="midnight"] {
+  --pd-panel: 14 17 27;
+  --pd-solid: rgb(27 31 43 / 0.98);
+  --pd-border: rgb(255 255 255 / 0.09);
+  --pd-border-strong: rgb(255 255 255 / 0.3);
+  --pd-accent: #6c8cff;
+  --pd-fg: #eef1f8;
+  --pd-strong: #ffffff;
+  --pd-muted: rgb(238 241 248 / 0.5);
+  --pd-head: #eef1f8;
+  --pd-glow: rgb(0 0 0 / 0.5);
+  --pd-bg: #10121a;
+  --pd-font: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --pd-radius: 12px;
+  --pd-title-prefix: "";
+  --pd-title-size: 13.5px;
+  --pd-title-spacing: 0.01em;
+  --pd-title-weight: 600;
+  --pd-shadow: 0 10px 30px -12px rgb(0 0 0 / 0.55);
+}
+:root[data-theme="aurora"] {
+  --pd-panel: 26 14 44;
+  --pd-solid: rgb(32 18 52 / 0.97);
+  --pd-border: rgb(214 120 255 / 0.32);
+  --pd-border-strong: rgb(255 160 230 / 0.7);
+  --pd-accent: #ff6bd6;
+  --pd-fg: #f1e6ff;
+  --pd-strong: #ffffff;
+  --pd-muted: #b49ad6;
+  --pd-head: #f6d9ff;
+  --pd-glow: rgb(255 107 214 / 0.5);
+  --pd-bg: #120a1f;
+  --pd-font: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --pd-radius: 18px;
+  --pd-title-prefix: "✦ ";
+  --pd-title-size: 13px;
+  --pd-title-spacing: 0.04em;
+  --pd-title-weight: 600;
+  --pd-shadow: 0 12px 34px rgb(30 0 50 / 0.45);
+}
+:root[data-theme="ember"] {
+  --pd-panel: 28 15 9;
+  --pd-solid: rgb(36 20 12 / 0.97);
+  --pd-border: rgb(255 160 90 / 0.3);
+  --pd-border-strong: rgb(255 200 140 / 0.7);
+  --pd-accent: #ffb547;
+  --pd-fg: #ffeedd;
+  --pd-strong: #fff8f0;
+  --pd-muted: #c8957a;
+  --pd-head: #ffd7a8;
+  --pd-glow: rgb(255 140 50 / 0.5);
+  --pd-bg: #140b07;
+  --pd-font: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --pd-radius: 10px;
+  --pd-title-prefix: "▸ ";
+  --pd-title-size: 12.5px;
+  --pd-title-spacing: 0.08em;
+  --pd-title-weight: 600;
+  --pd-shadow: 0 10px 30px rgb(20 5 0 / 0.5);
+}
+
+:root {
+  color-scheme: dark;
+  font-family: var(--pd-font-ui, "Segoe UI", system-ui, sans-serif);
+  color: var(--pd-fg);
+  -webkit-font-smoothing: antialiased;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+}
+
+/* Surfaces are transparent: only boxes and widgets are drawn over the wallpaper. */
+html[data-view="surface"],
+html[data-view="surface"] body {
+  background: transparent;
+  overflow: hidden;
+  user-select: none;
+}
+
+html[data-view="manager"] body {
+  background: var(--pd-bg);
+}
+
+button {
+  cursor: default;
+}
+
+.pd-muted {
+  color: var(--pd-muted);
+}
+
+/* ---------------------------------------------------------------- boxes */
+
+.pd-box {
+  --accent: var(--pd-accent);
+  border-radius: var(--pd-radius);
+  background: rgb(var(--pd-panel) / var(--box-alpha, 0.6));
+  border: 1px solid var(--pd-border);
+  box-shadow: var(--pd-shadow);
+  font-family: var(--pd-font);
+  overflow: hidden;
+  transition: box-shadow 0.15s, outline-color 0.15s;
+  outline: 2px solid transparent;
+  outline-offset: -1px;
+  contain: layout paint;
+}
+/* Accent line along the top; neon fades it out at both ends like a HUD scanline. */
+.pd-box::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: var(--accent);
+  opacity: 0.85;
+}
+:root[data-theme="neon"] .pd-box::before {
+  inset: 0 12% auto;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  box-shadow: 0 0 10px var(--accent);
+}
+:root[data-theme="aurora"] .pd-box::before {
+  background: linear-gradient(90deg, var(--accent), #a07bff, #66e0ff);
+}
+.pd-box[data-dragging],
+.pd-widget[data-dragging] {
+  box-shadow: 0 0 0 1px var(--pd-border-strong), 0 22px 50px -12px rgb(0 0 0 / 0.75);
+  will-change: transform;
+  z-index: 50;
+}
+.pd-box-over {
+  outline-color: var(--accent);
+}
+
+.pd-box-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 64px;
+  font-size: var(--pd-title-size);
+  font-weight: var(--pd-title-weight);
+  letter-spacing: var(--pd-title-spacing);
+  color: var(--pd-head);
+  flex-shrink: 0;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.5);
+}
+.pd-box-title::before {
+  content: var(--pd-title-prefix);
+  color: var(--accent);
+  opacity: 0.8;
+}
+:root[data-theme="neon"] .pd-box-header {
+  justify-content: flex-start;
+  padding-left: 14px;
+}
+.pd-box-tools {
+  position: absolute;
+  right: 6px;
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.pd-box:hover .pd-box-tools {
+  opacity: 1;
+}
+.pd-box-tools button,
+.pd-icon-btn {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  color: var(--pd-head);
+  opacity: 0.85;
+}
+.pd-box-tools button:hover,
+.pd-icon-btn:hover {
+  background: rgb(255 255 255 / 0.1);
+  color: var(--pd-strong);
+  opacity: 1;
+}
+.pd-count {
+  position: absolute;
+  right: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--pd-muted);
+}
+.pd-box:hover .pd-count {
+  opacity: 0;
+}
+.pd-filter {
+  width: 100%;
+  background: rgb(255 255 255 / 0.08);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 12.5px;
+  font-weight: 400;
+  letter-spacing: normal;
+  outline: none;
+  text-align: center;
+}
+
+.pd-box-body {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.2) transparent;
+}
+
+.pd-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 4px 6px;
+  border-radius: 8px;
+  min-width: 0;
+  transition: background 0.1s, box-shadow 0.1s;
+}
+.pd-item:hover {
+  background: rgb(255 255 255 / 0.09);
+}
+:root[data-theme="neon"] .pd-item:hover {
+  background: rgb(77 153 255 / 0.14);
+  box-shadow: inset 0 0 0 1px rgb(120 190 255 / 0.25);
+}
+.pd-item:active {
+  background: rgb(255 255 255 / 0.14);
+}
+.pd-item[data-dragged] {
+  opacity: 0.35;
+}
+.pd-item-label {
+  font-family: var(--pd-font-ui, "Segoe UI", sans-serif);
+  font-size: 12px;
+  line-height: 1.25;
+  color: var(--pd-strong);
+  text-align: center;
+  max-width: 100%;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.65);
+}
+.pd-item-list {
+  flex-direction: row;
+  gap: 9px;
+  padding: 5px 8px;
+}
+.pd-item-list .pd-item-label {
+  text-align: left;
+  -webkit-line-clamp: 1;
+}
+
+.pd-resize {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+  opacity: 0;
+  z-index: 3;
+  background: linear-gradient(135deg, transparent 50%, rgb(255 255 255 / 0.35) 50% 58%, transparent 58% 70%, rgb(255 255 255 / 0.35) 70% 78%, transparent 78%);
+}
+.pd-box:hover .pd-resize,
+.pd-widget:hover .pd-resize {
+  opacity: 1;
+}
+
+.pd-ghost img {
+  filter: drop-shadow(0 6px 14px rgb(0 0 0 / 0.6));
+}
+
+/* ---------------------------------------------------------------- widgets */
+
+.pd-widget {
+  border-radius: var(--pd-radius);
+  background: rgb(var(--pd-panel) / var(--box-alpha, 0.6));
+  border: 1px solid var(--pd-border);
+  box-shadow: var(--pd-shadow);
+  font-family: var(--pd-font);
+  color: var(--pd-fg);
+  contain: layout paint;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
+}
+.pd-widget-bare {
+  border-color: transparent;
+  box-shadow: none;
+  text-shadow: 0 1px 6px rgb(0 0 0 / 0.8);
+}
+.pd-widget-bare:hover {
+  border-color: var(--pd-border);
+}
+.pd-widget-bar {
+  position: absolute;
+  top: 3px;
+  left: 50%;
+  translate: -50% 0;
+  z-index: 3;
+  display: flex;
+  gap: 2px;
+  padding: 1px 4px;
+  border-radius: 8px;
+  background: var(--pd-solid);
+  border: 1px solid var(--pd-border);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.pd-widget:hover .pd-widget-bar,
+.pd-widget[data-dragging] .pd-widget-bar {
+  opacity: 1;
+}
+.pd-widget-bar button {
+  display: grid;
+  place-items: center;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 5px;
+  color: var(--pd-head);
+}
+.pd-widget-bar button:hover {
+  background: rgb(255 255 255 / 0.12);
+}
+/* Small HUD caption used by widgets: "// weather · Hà Nội". */
+.pd-caption {
+  font-family: var(--pd-font);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--pd-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pd-caption::before {
+  content: var(--pd-title-prefix);
+}
+.pd-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--pd-font);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #7cf0c5;
+}
+.pd-live i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4be3a4;
+  animation: pd-pulse 2s infinite;
+}
+.pd-live-off {
+  color: var(--pd-muted);
+}
+.pd-live-off i {
+  background: var(--pd-muted);
+  animation: none;
+}
+.pd-glow-text {
+  color: var(--pd-strong);
+  text-shadow: 0 0 14px var(--pd-glow);
+}
+@keyframes pd-pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+.pd-note::placeholder {
+  color: rgb(255 255 255 / 0.35);
+}
+.pd-fade {
+  animation: pd-fade 0.6s ease;
+}
+@keyframes pd-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Agents widget: bell, session rows, state badges. */
+.pd-bell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  border: 1px solid var(--pd-border);
+  color: var(--pd-muted);
+}
+.pd-bell:hover {
+  color: var(--pd-strong);
+  background: rgb(255 255 255 / 0.08);
+}
+.pd-bell-ringing {
+  color: #ffd166;
+  border-color: #ffd166;
+  box-shadow: 0 0 14px rgb(255 209 102 / 0.55);
+}
+.pd-bell-ringing svg {
+  transform-origin: 50% 10%;
+  animation: pd-ring 1.4s ease-in-out infinite;
+}
+.pd-bell-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #ff3d6e;
+  color: white;
+  font: 700 10px/16px var(--pd-font-ui, sans-serif);
+  text-shadow: none;
+}
+@keyframes pd-ring {
+  0%, 50%, 100% { rotate: 0deg; }
+  10%, 30% { rotate: 16deg; }
+  20%, 40% { rotate: -16deg; }
+}
+.pd-agent {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  background: rgb(255 255 255 / 0.04);
+  transition: background 0.15s, border-color 0.15s;
+}
+.pd-agent:hover {
+  background: rgb(255 255 255 / 0.08);
+}
+.pd-agent-done {
+  border-color: rgb(124 240 197 / 0.6);
+  background: rgb(75 227 164 / 0.1);
+  box-shadow: 0 0 12px -2px rgb(75 227 164 / 0.45);
+}
+.pd-agent-src {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 7px;
+  color: white;
+  font: 700 11px/1 var(--pd-font-ui, sans-serif);
+  text-shadow: none;
+}
+.pd-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.pd-state-working {
+  color: #66e0ff;
+}
+.pd-state-waiting {
+  color: #ffd166;
+}
+.pd-state-done {
+  color: #7cf0c5;
+}
+
+/* ---------------------------------------------------------------- party mode
+   An RGB LED strip chases around every box and widget: ::after covers the frame, a rotating
+   conic-gradient paints it and the mask keeps only a 2 px ring. Off by default (it repaints
+   every frame); the fullscreen guard hides the surfaces anyway. */
+
+@property --pd-rgb-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+html.party :is(.pd-box, .pd-widget:not(.pd-widget-bare)) {
+  border-color: transparent;
+  animation: pd-party-glow 1.6s linear infinite;
+}
+html.party :is(.pd-box, .pd-widget:not(.pd-widget-bare))::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  padding: 2px;
+  border-radius: inherit;
+  background: conic-gradient(from var(--pd-rgb-angle), #ff004c, #ff9f1c, #ffe14d, #3dff9a, #00c3ff, #7a5cff, #ff3df2, #ff004c);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  pointer-events: none;
+  animation: pd-rgb-spin 2.2s linear infinite;
+}
+/* Neighbouring frames start at different points of the strip, so the colours chase each other. */
+html.party .pd-box:nth-of-type(2n)::after,
+html.party .pd-widget:nth-of-type(2n)::after {
+  animation-delay: -1.1s;
+}
+html.party .pd-box::before {
+  display: none;
+}
+@keyframes pd-rgb-spin {
+  to {
+    --pd-rgb-angle: 360deg;
+  }
+}
+@keyframes pd-party-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 22px rgb(255 61 242 / 0.45), var(--pd-shadow);
+  }
+  25% {
+    box-shadow: 0 0 22px rgb(0 195 255 / 0.45), var(--pd-shadow);
+  }
+  50% {
+    box-shadow: 0 0 22px rgb(61 255 154 / 0.45), var(--pd-shadow);
+  }
+  75% {
+    box-shadow: 0 0 22px rgb(255 159 28 / 0.45), var(--pd-shadow);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.party :is(.pd-box, .pd-widget),
+  html.party :is(.pd-box, .pd-widget)::after,
+  .pd-live i,
+  .pd-bell-ringing svg {
+    animation: none;
+  }
+}
+
+/* ---------------------------------------------------------------- menus, dialogs, controls */
+
+.pd-menu,
+.pd-panel {
+  background: var(--pd-solid);
+  border: 1px solid var(--pd-border);
+  border-radius: 12px;
+  box-shadow: 0 18px 48px -10px rgb(0 0 0 / 0.7);
+  font-size: 13px;
+  color: var(--pd-fg);
+  user-select: none;
+}
+.pd-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 6px 12px;
+  text-align: left;
+  font-size: 13px;
+}
+.pd-menu-item:hover {
+  background: rgb(255 255 255 / 0.07);
+}
+.pd-chip {
+  padding: 3px 9px;
+  border-radius: 7px;
+  font-size: 12px;
+  background: rgb(255 255 255 / 0.06);
+  color: var(--pd-head);
+  white-space: nowrap;
+}
+.pd-chip:hover {
+  background: rgb(255 255 255 / 0.12);
+}
+.pd-chip-active {
+  background: var(--pd-accent);
+  color: #0b1020;
+  font-weight: 600;
+}
+.pd-chip-active:hover {
+  background: var(--pd-accent);
+}
+.pd-input {
+  background: rgb(255 255 255 / 0.06);
+  border: 1px solid var(--pd-border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: var(--pd-strong);
+  outline: none;
+  user-select: text;
+}
+.pd-input:focus {
+  border-color: var(--pd-accent);
+}
+.pd-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  background: rgb(255 255 255 / 0.07);
+  border: 1px solid var(--pd-border);
+}
+.pd-btn:hover:not(:disabled) {
+  background: rgb(255 255 255 / 0.12);
+}
+.pd-btn:disabled {
+  opacity: 0.4;
+}
+.pd-btn-primary {
+  background: var(--pd-accent);
+  border-color: transparent;
+  color: #0b1020;
+  font-weight: 600;
+}
+.pd-btn-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--pd-accent) 85%, white);
+}
+.pd-switch {
+  position: relative;
+  width: 34px;
+  height: 20px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.15);
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.pd-switch span {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: white;
+  transition: translate 0.15s;
+}
+.pd-switch-on {
+  background: var(--pd-accent);
+}
+:root[data-theme="neon"] .pd-switch-on,
+:root[data-theme="aurora"] .pd-switch-on {
+  background: linear-gradient(90deg, #ff6bd6, #a07bff, #66e0ff);
+}
+.pd-switch-on span {
+  translate: 14px 0;
+}
+
+/* ---------------------------------------------------------------- manager */
+
+.pd-manager {
+  font-size: 14px;
+}
+.pd-sidebar {
+  border-right: 1px solid var(--pd-border);
+  background: rgb(var(--pd-panel) / 0.6);
+}
+.pd-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: var(--pd-head);
+}
+.pd-nav:hover {
+  background: rgb(255 255 255 / 0.05);
+  color: var(--pd-strong);
+}
+.pd-nav-active {
+  background: color-mix(in srgb, var(--pd-accent) 16%, transparent);
+  color: var(--pd-strong);
+  box-shadow: inset 3px 0 0 var(--pd-accent);
+}
+.pd-h2 {
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pd-muted);
+}
+.pd-list {
+  border: 1px solid var(--pd-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.pd-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+}
+.pd-row + .pd-row {
+  border-top: 1px solid var(--pd-border);
+}
+.pd-row:hover {
+  background: rgb(255 255 255 / 0.03);
+}
+.pd-empty {
+  padding: 18px;
+  font-size: 13px;
+  color: var(--pd-muted);
+}
+.pd-card {
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--pd-border);
+  background: rgb(255 255 255 / 0.03);
+  transition: border-color 0.15s, background 0.15s;
+}
+.pd-card:hover {
+  border-color: var(--pd-accent);
+  background: color-mix(in srgb, var(--pd-accent) 7%, transparent);
+}
+.pd-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--pd-border);
+  background: rgb(255 255 255 / 0.02);
+}
+.pd-theme {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--pd-border);
+  background: rgb(255 255 255 / 0.02);
+}
+.pd-theme:hover {
+  border-color: var(--pd-border-strong);
+}
+.pd-theme-active {
+  border-color: var(--pd-accent);
+  box-shadow: 0 0 0 1px var(--pd-accent), 0 0 18px -4px var(--pd-accent);
+}
+.pd-theme-swatch {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 40px;
+  flex-shrink: 0;
+  border: 1px solid;
+  border-radius: 9px;
+  font: 600 14px/1 ui-monospace, Consolas, monospace;
+  overflow: hidden;
+}
+.pd-theme-swatch i {
+  position: absolute;
+  inset: 0 20% auto;
+  height: 2px;
+}

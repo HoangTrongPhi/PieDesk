@@ -1,0 +1,52 @@
+[package]
+name = "piedesk"
+version = "0.1.0"
+description = "PieDesk — Desktop boxes & widgets for Windows"
+authors = ["Phineas"]
+edition = "2021"
+rust-version = "1.82"
+
+[lib]
+name = "piedesk_lib"
+crate-type = ["rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["protocol-asset", "tray-icon", "image-png"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-autostart = "2"
+tauri-plugin-single-instance = "2"
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-notification = "2"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0"
+percent-encoding = "2.3"
+xxhash-rust = { version = "0.8.19", features = ["xxh3"] }
+png = "0.18"
+# Data hub (src/hub.rs).
+sysinfo = { version = "0.40", default-features = false, features = ["system", "network", "disk"] }
+# Folder portal boxes (src/folders.rs).
+notify = "8.2"
+notify-debouncer-full = "0.7"
+# Agents widget: Antigravity keeps its conversation summaries in SQLite (src/agents.rs).
+rusqlite = { version = "0.41", features = ["bundled"] }
+
+[target.'cfg(windows)'.dependencies]
+# Same major as tauri's own `windows`, so the crate is compiled once.
+windows = { version = "0.62", features = [
+  "Win32_Foundation",
+  "Win32_Graphics_Gdi",
+  "Win32_System_Com",
+  "Win32_UI_Shell",
+  "Win32_UI_WindowsAndMessaging",
+] }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true
