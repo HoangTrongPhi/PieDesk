@@ -17,6 +17,7 @@ mod store;
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
+use std::time::Duration;
 
 use serde::Serialize;
 use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem};
@@ -27,6 +28,7 @@ use tauri::{
 };
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 use tauri_plugin_notification::NotificationExt;
+use tauri_plugin_updater::UpdaterExt;
 
 use folders::Watches;
 use hittest::HitTest;
@@ -58,6 +60,8 @@ pub struct AppState {
     pub user_hidden: AtomicBool,
     pub surfaces: Mutex<HashMap<String, SurfaceInfo>>,
     pub hotkey: Mutex<Option<String>>,
+    /// Newer version found by the background check (shown in the tray).
+    pub update: Mutex<Option<String>>,
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -92,6 +96,12 @@ fn store_apply(app: AppHandle, window: WebviewWindow, state: tauri::State<AppSta
         refresh_tray(&app);
     }
     rev
+}
+
+/// Writes pending changes now: the updater quits the app to run the installer.
+#[tauri::command]
+fn store_flush(state: tauri::State<AppState>) {
+    state.store.flush();
 }
 
 #[tauri::command]
@@ -273,7 +283,13 @@ fn tray_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
     let quit = MenuItem::with_id(app, "quit", t("Thoát PieDesk", "Quit PieDesk"), true, None::<&str>)?;
     let sep = PredefinedMenuItem::separator(app)?;
     let sep2 = PredefinedMenuItem::separator(app)?;
-    Menu::with_items(app, &[&add_box, &add_widget, &sep, &toggle, &lock, &party, &sep2, &settings, &quit])
+    let menu = Menu::with_items(app, &[&add_box, &add_widget, &sep, &toggle, &lock, &party, &sep2, &settings, &quit])?;
+    if let Some(version) = app.state::<AppState>().update.lock().unwrap().clone() {
+        let label = if vi { format!("⬆ Cập nhật lên v{version}…") } else { format!("⬆ Update to v{version}…") };
+        menu.insert(&MenuItem::with_id(app, "update", label, true, None::<&str>)?, 0)?;
+        menu.insert(&PredefinedMenuItem::separator(app)?, 1)?;
+    }
+    Ok(menu)
 }
 
 /// Rebuilds the tray menu after the language or a checked setting changed.
@@ -308,6 +324,7 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
             "lock" => toggle_setting(app, "locked"),
             "party" => toggle_setting(app, "party"),
             "settings" => show_manager(app, None),
+            "update" => show_manager(app, Some("settings")),
             "quit" => {
                 app.state::<AppState>().store.flush();
                 app.exit(0);
@@ -337,6 +354,38 @@ pub fn notify_finished(app: &AppHandle, sessions: &[agents::Session], finished: 
     }
 }
 
+/// Release builds look for a new version 30 s after start, then every 12 h (setting `autoUpdate`,
+/// on by default). A find adds a tray item and one toast; installing happens in Settings, so an
+/// update never restarts PieDesk under the user.
+fn start_update_checks(app: AppHandle) {
+    if cfg!(debug_assertions) {
+        return;
+    }
+    let _ = std::thread::Builder::new().name("updates".into()).spawn(move || {
+        std::thread::sleep(Duration::from_secs(30));
+        loop {
+            let state = app.state::<AppState>();
+            if state.store.read(|d| d.setting_bool("autoUpdate", true)) {
+                let found = app.updater().ok().and_then(|u| tauri::async_runtime::block_on(u.check()).ok().flatten());
+                if let Some(update) = found {
+                    let is_new = state.update.lock().unwrap().replace(update.version.clone()).as_deref() != Some(&update.version);
+                    if is_new {
+                        refresh_tray(&app);
+                        let vi = lang(&app) == "vi";
+                        let (title, body) = if vi {
+                            (format!("PieDesk v{} đã có", update.version), "Mở Cài đặt → Cập nhật để cài.".to_owned())
+                        } else {
+                            (format!("PieDesk v{} is available", update.version), "Open Settings → Updates to install it.".to_owned())
+                        };
+                        let _ = app.notification().builder().title(title).body(body).show();
+                    }
+                }
+            }
+            std::thread::sleep(Duration::from_secs(12 * 3600));
+        }
+    });
+}
+
 fn register_hotkey(app: &AppHandle) {
     let state = app.state::<AppState>();
     let wanted = state.store.read(|d| d.setting_str("hotkey")).unwrap_or_else(|| DEFAULT_HOTKEY.into());
@@ -360,6 +409,8 @@ pub fn run() {
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| show_manager(app, None)))
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec!["--autostart"])))
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
@@ -389,6 +440,7 @@ pub fn run() {
                 user_hidden: AtomicBool::new(false),
                 surfaces: Mutex::new(HashMap::new()),
                 hotkey: Mutex::new(None),
+                update: Mutex::new(None),
             };
             app.manage(state);
 
@@ -401,12 +453,14 @@ pub fn run() {
             guard::start(handle.clone());
             build_tray(&handle)?;
             register_hotkey(&handle);
+            start_update_checks(handle.clone());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             surface_info,
             store_get,
             store_apply,
+            store_flush,
             hit_rects,
             hit_capture,
             open_path,

@@ -5,6 +5,7 @@ export const ipc = {
   surfaceInfo: () => invoke<SurfaceInfo | null>("surface_info"),
   storeGet: () => invoke<Doc>("store_get"),
   storeApply: (ops: Op[]) => invoke<number>("store_apply", { ops }),
+  storeFlush: () => invoke("store_flush"),
   hitRects: (rects: [number, number, number, number][]) => invoke("hit_rects", { rects }),
   hitCapture: (capture: boolean) => invoke("hit_capture", { capture }),
   openPath: (path: string, admin = false) => invoke("open_path", { path, admin }),

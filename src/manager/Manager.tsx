@@ -3,10 +3,11 @@ import clsx from "clsx";
 import { listen } from "@tauri-apps/api/event";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { disable as disableAutostart, enable as enableAutostart, isEnabled as autostartEnabled } from "@tauri-apps/plugin-autostart";
-import { Box, Cpu, EyeOff, FolderOpen, LayoutGrid, Plus, Settings, Sparkles, Trash2 } from "lucide-react";
+import { ArrowUpCircle, Box, Cpu, EyeOff, FolderOpen, LayoutGrid, Plus, RefreshCw, Settings, Sparkles, Trash2 } from "lucide-react";
 import { useAppearance } from "../lib/appearance";
 import { tr, tx, useLang, type Text } from "../lib/i18n";
 import { baseName, ipc } from "../lib/ipc";
+import { useUpdate } from "../lib/update";
 import type { ThemeId } from "../lib/types";
 import { settingsWithDefaults, useDoc } from "../stores/doc";
 import { Field, Segmented, Toggle } from "../widgets/fields";
@@ -36,7 +37,7 @@ const PRIMARY = "";
 
 export function Manager() {
   const initial = new URLSearchParams(location.search).get("tab");
-  const [tab, setTab] = useState<Tab>(initial === "widgets" ? "widgets" : "layout");
+  const [tab, setTab] = useState<Tab>(TABS.some((t) => t.id === initial) ? (initial as Tab) : "layout");
   const ready = useDoc((s) => s.ready);
   useLang();
   useAppearance();
@@ -250,6 +251,7 @@ function SettingsTab() {
           <Toggle label={tr("Thông báo Windows khi Claude / Antigravity làm xong", "Windows notification when Claude / Antigravity finishes")}
             checked={settings.agentNotify} onChange={(agentNotify) => set({ agentNotify })} />
         </section>
+        <UpdateSection />
         <section className="pd-section">
           <Field label={tr("Mở item bằng", "Open items with")}>
             <Segmented value={settings.launchMode} onChange={(launchMode) => set({ launchMode })}
@@ -271,6 +273,42 @@ function SettingsTab() {
         </section>
       </div>
     </>
+  );
+}
+
+function UpdateSection() {
+  const { current, phase, available, progress, error, check, installAndRestart } = useUpdate();
+  const auto = settingsWithDefaults(useDoc((s) => s.settings)).autoUpdate;
+  const set = useDoc((s) => s.setSettings);
+  const busy = phase === "checking" || phase === "downloading";
+  const status =
+    phase === "checking" ? tr("Đang kiểm tra…", "Checking…")
+    : phase === "upToDate" ? tr("Bạn đang dùng bản mới nhất.", "You are on the latest version.")
+    : phase === "available" ? tr(`Đã có bản v${available?.version}.`, `Version ${available?.version} is available.`)
+    : phase === "downloading" ? tr("Đang tải bản cập nhật…", "Downloading the update…") + (progress != null ? ` ${Math.round(progress * 100)}%` : "")
+    : phase === "error" ? tr("Không kiểm tra được: ", "Could not check: ") + error
+    : "";
+  return (
+    <section className="pd-section">
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          <div className="text-sm font-medium">{tr("Cập nhật", "Updates")} · PieDesk v{current}</div>
+          {status && <div className={clsx("mt-0.5 text-xs", phase === "error" ? "text-rose-300" : "pd-muted")}>{status}</div>}
+        </div>
+        {phase === "available" ? (
+          <button className="pd-btn pd-btn-primary shrink-0" onClick={installAndRestart}>
+            <ArrowUpCircle size={15} /> {tr("Cài & khởi động lại", "Install & restart")}
+          </button>
+        ) : (
+          <button className="pd-btn shrink-0" disabled={busy} onClick={check}>
+            <RefreshCw size={14} className={clsx(busy && "animate-spin")} /> {tr("Kiểm tra cập nhật", "Check for updates")}
+          </button>
+        )}
+      </div>
+      {available?.notes && phase === "available" && <p className="pd-muted text-xs leading-relaxed whitespace-pre-line">{available.notes}</p>}
+      <Toggle label={tr("Tự kiểm tra bản mới (mỗi 12 giờ)", "Check for new versions automatically (every 12 h)")} checked={auto}
+        onChange={(autoUpdate) => set({ autoUpdate })} />
+    </section>
   );
 }
 

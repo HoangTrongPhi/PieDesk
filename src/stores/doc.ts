@@ -85,6 +85,7 @@ export const settingsWithDefaults = (s: Settings): Required<Settings> => ({
   theme: s.theme ?? "neon",
   party: s.party ?? false,
   agentNotify: s.agentNotify ?? true,
+  autoUpdate: s.autoUpdate ?? true,
 });
 
 export const systemLang = (): "vi" | "en" => (navigator.language.toLowerCase().startsWith("vi") ? "vi" : "en");

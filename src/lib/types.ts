@@ -53,6 +53,8 @@ export type Settings = {
   party?: boolean;
   /** Windows toast when a Claude / Antigravity session finishes. */
   agentNotify?: boolean;
+  /** Look for a new PieDesk version in the background. */
+  autoUpdate?: boolean;
 };
 
 export type ThemeId = "neon" | "midnight" | "aurora" | "ember";

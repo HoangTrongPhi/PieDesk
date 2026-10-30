@@ -1,13 +1,15 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Desktop surfaces and the manager window: core IPC, file pickers, autostart.",
+  "description": "Desktop surfaces and the manager window: core IPC, file pickers, autostart, self-update.",
   "windows": ["surface-*", "manager"],
   "permissions": [
     "core:default",
     "core:window:allow-close",
     "core:window:allow-set-focus",
     "dialog:default",
-    "autostart:default"
+    "autostart:default",
+    "updater:default",
+    "process:allow-restart"
   ]
 }

@@ -38,6 +38,10 @@ export async function installMock() {
           return "C:\\Users\\demo\\Desktop";
         case "plugin:autostart|is_enabled":
           return false;
+        case "plugin:app|version":
+          return "0.1.0";
+        case "plugin:updater|check":
+          return null;
         default:
           return null;
       }
