@@ -42,6 +42,12 @@ export async function installMock() {
           return "0.1.0";
         case "plugin:updater|check":
           return null;
+        case "import_item":
+          return { path: a.path, origin: "moved" };
+        case "claim_item":
+          return "moved";
+        case "is_owned_item":
+          return true;
         default:
           return null;
       }

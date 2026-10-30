@@ -10,8 +10,9 @@
        PieDesk_<version>_x64-setup.exe.sig   minisign signature
        latest.json                           updater manifest read by PieDesk
        SHA256SUMS.txt                        hashes of the files above
-  4. -Publish: creates GitHub release v<version> with those files (needs gh); every installed
-     PieDesk then finds it through plugins.updater.endpoints in tauri.conf.json.
+  4. -Publish: commits everything (git add -A, "Release v<version>"), pushes the current branch,
+     then creates GitHub release v<version> on that commit with those files (needs git + gh).
+     Every installed PieDesk then finds it through plugins.updater.endpoints in tauri.conf.json.
 
   Keep ~/.tauri/piedesk.key safe: losing it means installed copies can no longer be updated.
 
@@ -112,9 +113,29 @@ Get-ChildItem $outDir | ForEach-Object { Write-Host "  $($_.Name)  ($([math]::Ro
 # ---------------------------------------------------------------- publish
 if ($Publish) {
     if (-not (Get-Command gh -ErrorAction SilentlyContinue)) { throw "gh (GitHub CLI) is not installed; upload the files by hand" }
-    $files = Get-ChildItem $outDir | ForEach-Object { $_.FullName }
     $notesArg = if ($Notes) { $Notes } else { "PieDesk v$Version" }
-    gh release create "v$Version" @files --repo $repo --title "PieDesk v$Version" --notes $notesArg --latest
+
+    # Source first, so the release tag points at the code that was built.
+    Push-Location $root
+    $ErrorActionPreference = "Continue"
+    try {
+        git add -A
+        git diff --cached --quiet
+        if ($LASTEXITCODE -ne 0) {
+            git commit -q -m "Release v$Version" -m $notesArg
+            if ($LASTEXITCODE -ne 0) { throw "git commit failed" }
+        }
+        git push -q origin HEAD
+        if ($LASTEXITCODE -ne 0) { throw "git push failed" }
+        $commit = (git rev-parse HEAD).Trim()
+    } finally {
+        Pop-Location
+        $ErrorActionPreference = "Stop"
+    }
+    Write-Host "Pushed $commit"
+
+    $files = Get-ChildItem $outDir | ForEach-Object { $_.FullName }
+    gh release create "v$Version" @files --repo $repo --target $commit --title "PieDesk v$Version" --notes $notesArg --latest
     if ($LASTEXITCODE -ne 0) { throw "gh release create failed" }
     Write-Host "Published https://github.com/$repo/releases/tag/v$Version" -ForegroundColor Green
 } else {

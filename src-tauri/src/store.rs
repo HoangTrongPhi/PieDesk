@@ -2,18 +2,22 @@
 //!
 //! Every surface window (one per monitor) and the manager window send *ops* instead of whole
 //! documents, so two windows never overwrite each other. Rust applies the ops, bumps `rev`,
-//! re-broadcasts them and writes the file after a short quiet period (atomic rename).
+//! re-broadcasts them and writes the file after a short quiet period (atomic rename), or at the
+//! latest `MAX_DELAY` after the first unsaved change, so a steady stream of ops cannot postpone
+//! the save forever. Startup and write failures go to a log file kept outside the data folder.
 
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::PathBuf;
 use std::sync::{Arc, Condvar, Mutex};
-use std::time::Duration;
+use std::io::Write as _;
+use std::time::{Duration, Instant};
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 const SAVE_DELAY: Duration = Duration::from_millis(400);
+const MAX_DELAY: Duration = Duration::from_secs(2);
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
 #[serde(default)]
@@ -86,18 +90,23 @@ struct Inner {
     dirty: Mutex<bool>,
     wake: Condvar,
     path: PathBuf,
+    log: Option<PathBuf>,
 }
 
 #[derive(Clone)]
 pub struct Store(Arc<Inner>);
 
 impl Store {
-    pub fn open(path: PathBuf) -> Self {
-        let doc = fs::read(&path)
-            .ok()
-            .and_then(|bytes| serde_json::from_slice::<Doc>(&bytes).ok())
-            .unwrap_or_default();
-        let store = Store(Arc::new(Inner { doc: Mutex::new(doc), dirty: Mutex::new(false), wake: Condvar::new(), path }));
+    /// `log`: where startup and save failures are appended (`None` in tests).
+    pub fn open(path: PathBuf, log: Option<PathBuf>) -> Self {
+        let read = fs::read(&path);
+        let doc = read.as_ref().ok().and_then(|bytes| serde_json::from_slice::<Doc>(bytes).ok()).unwrap_or_default();
+        let note = match &read {
+            Ok(_) => format!("store {} loaded rev {}", path.display(), doc.rev),
+            Err(e) => format!("store {} not loaded: {e}", path.display()),
+        };
+        let store = Store(Arc::new(Inner { doc: Mutex::new(doc), dirty: Mutex::new(false), wake: Condvar::new(), path, log }));
+        store.log(&note);
         let writer = store.clone();
         std::thread::Builder::new().name("store-writer".into()).spawn(move || writer.writer_loop()).ok();
         store
@@ -122,14 +131,10 @@ impl Store {
         rev
     }
 
-    /// Writes immediately (used on exit).
+    /// Writes immediately and unconditionally (used on exit and before an update installs).
     pub fn flush(&self) {
-        let mut dirty = self.0.dirty.lock().unwrap();
-        if *dirty {
-            *dirty = false;
-            drop(dirty);
-            self.write();
-        }
+        *self.0.dirty.lock().unwrap() = false;
+        self.write();
     }
 
     fn writer_loop(&self) {
@@ -138,12 +143,14 @@ impl Store {
             while !*dirty {
                 dirty = self.0.wake.wait(dirty).unwrap();
             }
-            // Debounce: keep waiting while new ops keep arriving.
+            // Debounce: keep waiting while new ops keep arriving, but never past MAX_DELAY.
+            let first = Instant::now();
             loop {
                 *dirty = false;
                 let (guard, timeout) = self.0.wake.wait_timeout(dirty, SAVE_DELAY).unwrap();
                 dirty = guard;
-                if timeout.timed_out() && !*dirty {
+                if (timeout.timed_out() && !*dirty) || first.elapsed() >= MAX_DELAY {
+                    *dirty = false;
                     break;
                 }
             }
@@ -155,14 +162,27 @@ impl Store {
     fn write(&self) {
         let bytes = match serde_json::to_vec_pretty(&self.snapshot()) {
             Ok(b) => b,
-            Err(_) => return,
+            Err(e) => return self.log(&format!("serialize failed: {e}")),
         };
         if let Some(dir) = self.0.path.parent() {
-            let _ = fs::create_dir_all(dir);
+            if let Err(e) = fs::create_dir_all(dir) {
+                self.log(&format!("create {} failed: {e}", dir.display()));
+            }
         }
         let tmp = self.0.path.with_extension("json.tmp");
-        if fs::write(&tmp, bytes).is_ok() {
-            let _ = fs::rename(&tmp, &self.0.path);
+        if let Err(e) = fs::write(&tmp, bytes).and_then(|_| fs::rename(&tmp, &self.0.path)) {
+            self.log(&format!("save failed: {e}"));
+        }
+    }
+
+    fn log(&self, line: &str) {
+        let Some(path) = &self.0.log else { return };
+        if let Some(dir) = path.parent() {
+            let _ = fs::create_dir_all(dir);
+        }
+        let stamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_secs());
+        if let Ok(mut f) = fs::OpenOptions::new().create(true).append(true).open(path) {
+            let _ = writeln!(f, "{stamp} {line}");
         }
     }
 }
@@ -192,13 +212,28 @@ mod tests {
     }
 
     #[test]
+    fn steady_ops_still_get_saved() {
+        let dir = std::env::temp_dir().join(format!("piedesk-steady-{}", std::process::id()));
+        let path = dir.join("state.json");
+        let store = Store::open(path.clone(), None);
+        // An op every 100 ms never leaves a 400 ms quiet gap; MAX_DELAY must save anyway.
+        for i in 0..35 {
+            store.apply(&[Op::Settings { value: json!({ "n": i }) }]);
+            std::thread::sleep(Duration::from_millis(100));
+        }
+        let saved: Doc = serde_json::from_slice(&fs::read(&path).expect("saved while busy")).unwrap();
+        assert!(saved.settings["n"].as_i64().unwrap() > 0);
+        let _ = fs::remove_dir_all(dir);
+    }
+
+    #[test]
     fn store_persists_atomically() {
         let dir = std::env::temp_dir().join(format!("piedesk-test-{}", std::process::id()));
         let path = dir.join("state.json");
-        let store = Store::open(path.clone());
+        let store = Store::open(path.clone(), None);
         store.apply(&[Op::Settings { value: json!({ "x": 1 }) }]);
         store.flush();
-        let reopened = Store::open(path);
+        let reopened = Store::open(path, None);
         assert_eq!(reopened.snapshot().settings["x"], 1);
         let _ = fs::remove_dir_all(dir);
     }

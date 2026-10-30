@@ -1,5 +1,5 @@
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
-import type { Doc, FolderEntry, Op, SurfaceInfo } from "./types";
+import type { Doc, FolderEntry, Item, ItemOrigin, Op, SurfaceInfo } from "./types";
 
 export const ipc = {
   surfaceInfo: () => invoke<SurfaceInfo | null>("surface_info"),
@@ -10,6 +10,11 @@ export const ipc = {
   hitCapture: (capture: boolean) => invoke("hit_capture", { capture }),
   openPath: (path: string, admin = false) => invoke("open_path", { path, admin }),
   revealPath: (path: string) => invoke("reveal_path", { path }),
+  importItem: (path: string) => invoke<{ path: string; origin: ItemOrigin }>("import_item", { path }),
+  /** Takes an item out of its box; a shortcut that was moved in goes back where it came from. */
+  removeItem: (item: Item) => invoke("remove_item", { path: item.path, source: item.source ?? null, origin: item.origin ?? null }),
+  claimItem: (path: string, source: string) => invoke<ItemOrigin>("claim_item", { path, source }),
+  isOwnedItem: (path: string) => invoke<boolean>("is_owned_item", { path }),
   listFolder: (path: string) => invoke<FolderEntry[]>("list_folder", { path }),
   watchFolder: (path: string) => invoke("watch_folder", { path }),
   unwatchFolder: (path: string) => invoke("unwatch_folder", { path }),

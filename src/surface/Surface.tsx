@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { desktopDir } from "@tauri-apps/api/path";
-import { baseName, iconUrl, ipc, uid } from "../lib/ipc";
+import { iconUrl, ipc, uid } from "../lib/ipc";
 import { useHitReporter } from "../lib/hit";
 import type { BoxModel, SurfaceInfo, WidgetModel } from "../lib/types";
 import { systemLang, useDoc } from "../stores/doc";
@@ -11,7 +11,7 @@ import { tr } from "../lib/i18n";
 import { widgetDef } from "../widgets/registry";
 import { ACCENTS, BoxView } from "./BoxView";
 import { ContextMenuHost } from "./ContextMenu";
-import { addPathsToBox, useItemDrag } from "./itemDrag";
+import { addPathsToBox, adoptLegacyItems, useItemDrag } from "./itemDrag";
 import { PromptHost } from "./Prompt";
 import { WidgetFrame } from "./WidgetFrame";
 
@@ -42,6 +42,12 @@ export function newWidget(type: string, monitor: string, at: { x: number; y: num
 }
 
 let seeded = false;
+let adopted = false;
+const adoptOnce = () => {
+  if (adopted) return;
+  adopted = true;
+  return adoptLegacyItems();
+};
 
 /** First run on the primary monitor: a portal of the real Desktop folder plus a few widgets. */
 async function seed(info: SurfaceInfo) {
@@ -83,9 +89,10 @@ export function Surface() {
 
   useEffect(() => {
     if (!ready || !info?.primary) return;
-    if (!settings.initialized) seed(info);
+    if (!settings.initialized) return void seed(info);
+    void adoptOnce();
     // Layouts from before the language setting: pin the system language so the tray can follow it.
-    else if (!settings.language) useDoc.getState().setSettings({ language: systemLang() });
+    if (!settings.language) useDoc.getState().setSettings({ language: systemLang() });
   }, [ready, info, settings.initialized, settings.language]);
 
   // Tray → "Thêm Box": the primary surface creates it.
@@ -105,7 +112,7 @@ export function Surface() {
         if (payload.type === "over") useItemDrag.setState({ overBox: boxId });
         else {
           useItemDrag.setState({ overBox: null });
-          if (boxId) addPathsToBox(boxId, payload.paths, baseName);
+          if (boxId) void addPathsToBox(boxId, payload.paths);
         }
       } else {
         useItemDrag.setState({ overBox: null });

@@ -2,6 +2,7 @@ import { memo, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import {
+  ArrowUpRight,
   ChevronDown,
   ChevronUp,
   Copy,
@@ -18,13 +19,13 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { baseName, iconUrl, ipc, uid } from "../lib/ipc";
+import { iconUrl, ipc } from "../lib/ipc";
 import { startFrameDrag } from "../lib/drag";
 import { locale, tr } from "../lib/i18n";
 import type { BoxModel, IconSize, Item } from "../lib/types";
 import { settingsWithDefaults, useDoc } from "../stores/doc";
 import { useMenu, type MenuEntry } from "./ContextMenu";
-import { beginItemPointer, useItemDrag } from "./itemDrag";
+import { addPathsToBox, beginItemPointer, useItemDrag } from "./itemDrag";
 import { prompt } from "./Prompt";
 import { useFolder } from "./useFolder";
 
@@ -124,8 +125,7 @@ export const BoxView = memo(function BoxView({ box, bounds, onNewBox }: Props) {
           onClick: async () => {
             const picked = await openDialog({ multiple: true, title: tr("Thêm vào box", "Add to box") });
             const paths = Array.isArray(picked) ? picked : picked ? [picked] : [];
-            if (paths.length)
-              patchBox(box.id, { items: [...box.items, ...paths.map((p) => ({ id: uid(), path: p, name: baseName(p) }))] });
+            if (paths.length) void addPathsToBox(box.id, paths);
           },
         },
         {
@@ -173,7 +173,7 @@ export const BoxView = memo(function BoxView({ box, bounds, onNewBox }: Props) {
     const entries: MenuEntry[] = [
       { label: tr("Mở", "Open"), icon: ExternalLink, onClick: () => launch(item) },
       { label: tr("Chạy với quyền admin", "Run as administrator"), icon: ShieldCheck, onClick: () => launch(item, true) },
-      { label: tr("Mở vị trí file", "Open file location"), icon: FolderOpen, onClick: () => ipc.revealPath(item.path) },
+      { label: tr("Mở vị trí file", "Open file location"), icon: FolderOpen, onClick: () => ipc.revealPath(item.source ?? item.path) },
     ];
     if (box.kind === "shortcuts") {
       const update = (patch: Partial<Item>) =>
@@ -198,10 +198,13 @@ export const BoxView = memo(function BoxView({ box, bounds, onNewBox }: Props) {
         },
         { kind: "sep" },
         {
-          label: tr("Xoá khỏi box", "Remove from box"),
+          label: item.origin === "moved" || item.origin === "hidden" ? tr("Trả về desktop", "Return to desktop") : tr("Xoá khỏi box", "Remove from box"),
           icon: Trash2,
           danger: true,
-          onClick: () => patchBox(box.id, { items: box.items.filter((i) => i.id !== item.id) }),
+          onClick: () => {
+            if (box.kind === "shortcuts") ipc.removeItem(item).catch(() => {});
+            patchBox(box.id, { items: box.items.filter((i) => i.id !== item.id) });
+          },
         },
       );
     }
@@ -278,7 +281,7 @@ export const BoxView = memo(function BoxView({ box, bounds, onNewBox }: Props) {
               onDoubleClick={() => settings.launchMode === "double" && launch(item)}
               onContextMenu={(e) => itemMenu(e, item)}
             >
-              <ItemIcon path={item.path} px={isList ? 20 : iconPx} admin={!!item.admin} />
+              <ItemIcon path={item.path} px={isList ? 20 : iconPx} admin={!!item.admin} link={box.kind === "shortcuts" || LINK_EXT.test(item.path)} />
               {(settings.showLabels || isList) && <span className="pd-item-label">{item.name}</span>}
             </button>
           ))}
@@ -304,7 +307,10 @@ export const BoxView = memo(function BoxView({ box, bounds, onNewBox }: Props) {
   );
 });
 
-function ItemIcon({ path, px, admin }: { path: string; px: number; admin: boolean }) {
+const LINK_EXT = /\.(lnk|url|pif)$/i;
+
+/** Shell icon plus Windows-style badges: shortcut arrow (bottom left), run as admin (bottom right). */
+function ItemIcon({ path, px, admin, link }: { path: string; px: number; admin: boolean; link: boolean }) {
   const [failed, setFailed] = useState(false);
   return (
     <span className="relative grid shrink-0 place-items-center" style={{ width: px, height: px }}>
@@ -321,6 +327,11 @@ function ItemIcon({ path, px, admin }: { path: string; px: number; admin: boolea
           onError={() => setFailed(true)}
           alt=""
         />
+      )}
+      {link && px >= 28 && (
+        <span className="pd-link-badge">
+          <ArrowUpRight size={Math.round(px * 0.22)} strokeWidth={3} />
+        </span>
       )}
       {admin && <ShieldCheck size={12} className="absolute -right-1 -bottom-1 rounded bg-amber-500 p-px text-black" />}
     </span>

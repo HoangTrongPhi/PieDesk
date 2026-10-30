@@ -11,6 +11,7 @@ mod guard;
 mod hittest;
 mod hub;
 mod icons;
+mod items;
 mod shell;
 mod store;
 
@@ -28,6 +29,7 @@ use tauri::{
 };
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 use tauri_plugin_notification::NotificationExt;
+use tauri_plugin_autostart::ManagerExt as _;
 use tauri_plugin_updater::UpdaterExt;
 
 use folders::Watches;
@@ -62,6 +64,8 @@ pub struct AppState {
     pub hotkey: Mutex<Option<String>>,
     /// Newer version found by the background check (shown in the tray).
     pub update: Mutex<Option<String>>,
+    /// Shortcuts owned by box items (`items.rs`).
+    pub items_dir: std::path::PathBuf,
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -123,6 +127,31 @@ fn hit_capture(window: WebviewWindow, state: tauri::State<AppState>, capture: bo
 #[tauri::command]
 fn open_path(path: String, admin: Option<bool>) -> Result<(), String> {
     shell::open(&path, admin.unwrap_or(false))
+}
+
+/// Takes a dropped / picked path into a box (moves shortcuts in, links anything else).
+/// Async: runs off the main thread (COM).
+#[tauri::command]
+async fn import_item(state: tauri::State<'_, AppState>, path: String) -> Result<items::Imported, String> {
+    items::import(&state.items_dir, &path)
+}
+
+/// Takes an item out of a box, putting a moved shortcut back where it came from.
+#[tauri::command]
+fn remove_item(app: AppHandle, state: tauri::State<AppState>, path: String, source: Option<String>, origin: Option<items::Origin>) {
+    let fallback = app.path().desktop_dir().unwrap_or_else(|_| state.items_dir.clone());
+    items::release(&state.items_dir, &path, source.as_deref(), origin, &fallback)
+}
+
+/// Older items still have their original on the desktop: move it into the box now.
+#[tauri::command]
+fn claim_item(state: tauri::State<AppState>, path: String, source: String) -> items::Origin {
+    items::claim(&state.items_dir, &path, &source)
+}
+
+#[tauri::command]
+fn is_owned_item(state: tauri::State<AppState>, path: String) -> bool {
+    items::is_owned(&state.items_dir, &path)
 }
 
 #[tauri::command]
@@ -354,6 +383,18 @@ pub fn notify_finished(app: &AppHandle, sessions: &[agents::Session], finished: 
     }
 }
 
+/// "Start with Windows" is on by default: the first release run turns it on once and remembers
+/// that it did, so switching it off in Settings sticks.
+fn enable_autostart_once(app: &AppHandle) {
+    let state = app.state::<AppState>();
+    if cfg!(debug_assertions) || state.store.read(|d| d.setting_bool("autostartInit", false)) {
+        return;
+    }
+    if app.autolaunch().enable().is_ok() {
+        state.store.apply(&[Op::Settings { value: serde_json::json!({ "autostartInit": true }) }]);
+    }
+}
+
 /// Release builds look for a new version 30 s after start, then every 12 h (setting `autoUpdate`,
 /// on by default). A find adds a tray item and one toast; installing happens in Settings, so an
 /// update never restarts PieDesk under the user.
@@ -431,8 +472,9 @@ pub fn run() {
             let handle = app.handle().clone();
             let config = app.path().app_config_dir()?;
             let cache = app.path().app_cache_dir()?;
+            let log = app.path().app_log_dir().ok().map(|d| d.join("piedesk.log"));
             let state = AppState {
-                store: Store::open(config.join("state.json")),
+                store: Store::open(config.join("state.json"), log),
                 hit: HitTest::default(),
                 hub: Hub::default(),
                 icons: IconService::new(cache.join("icons")),
@@ -441,6 +483,7 @@ pub fn run() {
                 surfaces: Mutex::new(HashMap::new()),
                 hotkey: Mutex::new(None),
                 update: Mutex::new(None),
+                items_dir: app.path().app_data_dir()?.join("shortcuts"),
             };
             app.manage(state);
 
@@ -453,6 +496,7 @@ pub fn run() {
             guard::start(handle.clone());
             build_tray(&handle)?;
             register_hotkey(&handle);
+            enable_autostart_once(&handle);
             start_update_checks(handle.clone());
             Ok(())
         })
@@ -464,6 +508,10 @@ pub fn run() {
             hit_rects,
             hit_capture,
             open_path,
+            import_item,
+            remove_item,
+            claim_item,
+            is_owned_item,
             reveal_path,
             list_folder,
             watch_folder,

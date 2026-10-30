@@ -63,7 +63,12 @@ export const useDoc = create<DocState>((set, get) => ({
     const cur = get().boxes[id];
     if (cur) get().upsertBox({ ...cur, ...patch });
   },
-  deleteBox: (id) => get().commit([{ op: "delete", coll: "boxes", id }]),
+  deleteBox: (id) => {
+    // A shortcut box owns its items' shortcuts (src-tauri/src/items.rs): put moved ones back, drop the rest.
+    const box = get().boxes[id];
+    if (box?.kind === "shortcuts") box.items.forEach((i) => ipc.removeItem(i).catch(() => {}));
+    get().commit([{ op: "delete", coll: "boxes", id }]);
+  },
   upsertWidget: (w) => get().commit([{ op: "upsert", coll: "widgets", id: w.id, value: w }]),
   patchWidget: (id, patch) => {
     const cur = get().widgets[id];

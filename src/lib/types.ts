@@ -6,7 +6,13 @@ export type Item = {
   name: string;
   /** Always run as administrator. */
   admin?: boolean;
+  /** What the item was made from; `path` is the box's own shortcut to it (see src-tauri/src/items.rs). */
+  source?: string;
+  /** What happened to `source`: a shortcut moved into the box, or hidden when it could not be moved. */
+  origin?: ItemOrigin;
 };
+
+export type ItemOrigin = "moved" | "hidden" | "kept";
 
 export type BoxKind = "shortcuts" | "folder";
 export type BoxView = "grid" | "list";

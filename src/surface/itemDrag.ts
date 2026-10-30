@@ -3,7 +3,7 @@
 
 import { create } from "zustand";
 import { popCapture, pushCapture } from "../lib/hit";
-import { uid } from "../lib/ipc";
+import { baseName, ipc, uid } from "../lib/ipc";
 import type { Item } from "../lib/types";
 import { useDoc } from "../stores/doc";
 
@@ -70,25 +70,72 @@ function dropItem(item: Item, fromId: string, toId: string, index: number | null
     commit([{ op: "upsert", coll: "boxes", id: fromId, value: { ...from, items, sortByName: false } }]);
     return;
   }
-  // Folder portals are read-only views: dragging out adds a shortcut, the file stays put.
-  const moved = from.kind === "folder" ? { ...item, id: uid() } : item;
-  if (to.items.some((i) => i.path.toLowerCase() === moved.path.toLowerCase())) return;
-  const toItems = [...to.items];
-  toItems.splice(index === null ? toItems.length : index, 0, moved);
-  const ops: Parameters<typeof commit>[0] = [{ op: "upsert", coll: "boxes", id: toId, value: { ...to, items: toItems } }];
-  if (from.kind === "shortcuts") {
-    ops.push({ op: "upsert", coll: "boxes", id: fromId, value: { ...from, items: from.items.filter((i) => i.id !== item.id) } });
+  // Folder portals are read-only views: dragging out gives the box its own shortcut, the file stays put.
+  if (from.kind === "folder") {
+    void addPathsToBox(toId, [item.path], index);
+    return;
   }
-  commit(ops);
+  const toItems = [...to.items];
+  toItems.splice(index === null ? toItems.length : index, 0, item);
+  commit([
+    { op: "upsert", coll: "boxes", id: toId, value: { ...to, items: toItems } },
+    { op: "upsert", coll: "boxes", id: fromId, value: { ...from, items: from.items.filter((i) => i.id !== item.id) } },
+  ]);
 }
 
-/** Adds dropped file paths to a box (Explorer → box). */
-export function addPathsToBox(boxId: string, paths: string[], name: (p: string) => string) {
-  const { boxes, upsertBox } = useDoc.getState();
-  const box = boxes[boxId];
-  if (!box || box.kind !== "shortcuts") return false;
-  const known = new Set(box.items.map((i) => i.path.toLowerCase()));
-  const fresh = paths.filter((p) => !known.has(p.toLowerCase())).map((p) => ({ id: uid(), path: p, name: name(p) }));
-  if (fresh.length) upsertBox({ ...box, items: [...box.items, ...fresh] });
-  return true;
+const key = (i: Item) => (i.source ?? i.path).toLowerCase();
+
+/**
+ * Adds paths to a shortcut box (Explorer drop, file picker, folder portal). Each one becomes the
+ * box's own shortcut, so the item keeps working when the original is moved or deleted.
+ */
+export async function addPathsToBox(boxId: string, paths: string[], index: number | null = null) {
+  const box = useDoc.getState().boxes[boxId];
+  if (!box || box.kind !== "shortcuts") return;
+  const known = new Set(box.items.map(key));
+  const fresh: Item[] = [];
+  for (const source of paths) {
+    if (known.has(source.toLowerCase())) continue;
+    known.add(source.toLowerCase());
+    try {
+      const { path, origin } = await ipc.importItem(source);
+      fresh.push({ id: uid(), path, name: baseName(source), source, origin });
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  if (!fresh.length) return;
+  // Re-read: the box may have changed while the shortcuts were being written.
+  const cur = useDoc.getState().boxes[boxId];
+  if (!cur) return;
+  const items = [...cur.items];
+  items.splice(index === null ? items.length : Math.min(index, items.length), 0, ...fresh);
+  useDoc.getState().upsertBox({ ...cur, items });
+}
+
+/**
+ * Brings items from older versions in line: ones that point straight at the dropped file get their
+ * own shortcut, and ones that already have it take the original shortcut off the desktop.
+ */
+export async function adoptLegacyItems() {
+  for (const box of Object.values(useDoc.getState().boxes)) {
+    if (box.kind !== "shortcuts") continue;
+    const updates = new Map<string, Item>();
+    for (const item of box.items) {
+      try {
+        if (await ipc.isOwnedItem(item.path)) {
+          if (item.origin || !item.source) continue;
+          updates.set(item.id, { ...item, origin: await ipc.claimItem(item.path, item.source) });
+        } else {
+          const { path, origin } = await ipc.importItem(item.path);
+          updates.set(item.id, { ...item, path, source: item.source ?? item.path, origin });
+        }
+      } catch {
+        // Original already gone: keep the item, it still shows the fallback icon.
+      }
+    }
+    if (!updates.size) continue;
+    const cur = useDoc.getState().boxes[box.id];
+    if (cur) useDoc.getState().upsertBox({ ...cur, items: cur.items.map((i) => updates.get(i.id) ?? i) });
+  }
 }

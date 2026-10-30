@@ -302,6 +302,20 @@ button {
   opacity: 1;
 }
 
+/* Windows-style shortcut arrow in the icon's bottom-left corner. */
+.pd-link-badge {
+  position: absolute;
+  left: -2px;
+  bottom: -2px;
+  display: grid;
+  place-items: center;
+  padding: 1px;
+  border-radius: 3px;
+  background: #ffffff;
+  color: #1f6feb;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.5);
+}
+
 .pd-ghost img {
   filter: drop-shadow(0 6px 14px rgb(0 0 0 / 0.6));
 }

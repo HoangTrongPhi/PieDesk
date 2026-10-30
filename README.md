@@ -21,7 +21,7 @@ Cài đặt → Cập nhật để kiểm tra tay và cài; khay hệ thống hi
 
 ```powershell
 ./scripts/release.ps1 -Version 0.2.0 -Notes "…"            # build + ký → release/0.2.0/
-./scripts/release.ps1 -Version 0.2.0 -Notes "…" -Publish   # + tạo GitHub release (cần gh)
+./scripts/release.ps1 -Version 0.2.0 -Notes "…" -Publish   # + commit, push và tạo GitHub release (cần git + gh)
 ```
 
 Khoá ký: `~/.tauri/piedesk.key` (giữ kỹ — mất khoá thì các bản đã cài không cập nhật được nữa).
