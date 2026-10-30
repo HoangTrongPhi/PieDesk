@@ -125,7 +125,8 @@ if ($Publish) {
             git commit -q -m "Release v$Version" -m $notesArg
             if ($LASTEXITCODE -ne 0) { throw "git commit failed" }
         }
-        git push -q origin HEAD
+        # Borrow gh's login for this push only; the machine's git config is left alone.
+        git -c credential.helper= -c "credential.helper=!gh auth git-credential" push -q origin HEAD
         if ($LASTEXITCODE -ne 0) { throw "git push failed" }
         $commit = (git rev-parse HEAD).Trim()
     } finally {
