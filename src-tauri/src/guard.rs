@@ -17,8 +17,44 @@ fn fullscreen_busy() -> bool {
         SHQueryUserNotificationState, QUNS_BUSY, QUNS_PRESENTATION_MODE, QUNS_RUNNING_D3D_FULL_SCREEN,
     };
     match unsafe { SHQueryUserNotificationState() } {
-        Ok(state) => state == QUNS_BUSY || state == QUNS_RUNNING_D3D_FULL_SCREEN || state == QUNS_PRESENTATION_MODE,
-        Err(_) => false,
+        Ok(state) if state == QUNS_RUNNING_D3D_FULL_SCREEN || state == QUNS_PRESENTATION_MODE => true,
+        // Windows also says "busy" for our own overlay windows (topmost, covering the monitor):
+        // trusting that would hide them, end the "busy", show them again… a blink every poll.
+        Ok(state) if state == QUNS_BUSY => foreground_fullscreen(),
+        _ => false,
+    }
+}
+
+/// The focused window belongs to another app and covers its whole monitor.
+#[cfg(windows)]
+fn foreground_fullscreen() -> bool {
+    use windows::Win32::Foundation::RECT;
+    use windows::Win32::Graphics::Gdi::{GetMonitorInfoW, MonitorFromWindow, MONITORINFO, MONITOR_DEFAULTTONEAREST};
+    use windows::Win32::System::Threading::GetCurrentProcessId;
+    use windows::Win32::UI::WindowsAndMessaging::{GetClassNameW, GetForegroundWindow, GetWindowRect, GetWindowThreadProcessId};
+    unsafe {
+        let h = GetForegroundWindow();
+        if h.is_invalid() {
+            return false;
+        }
+        let mut pid = 0;
+        GetWindowThreadProcessId(h, Some(&mut pid));
+        if pid == GetCurrentProcessId() {
+            return false;
+        }
+        // The desktop and the taskbar are as big as the monitor too.
+        let mut class = [0u16; 64];
+        let n = GetClassNameW(h, &mut class) as usize;
+        if matches!(String::from_utf16_lossy(&class[..n]).as_str(), "Progman" | "WorkerW" | "Shell_TrayWnd" | "Shell_SecondaryTrayWnd") {
+            return false;
+        }
+        let mut r = RECT::default();
+        let mut mi = MONITORINFO { cbSize: size_of::<MONITORINFO>() as u32, ..Default::default() };
+        if GetWindowRect(h, &mut r).is_err() || !GetMonitorInfoW(MonitorFromWindow(h, MONITOR_DEFAULTTONEAREST), &mut mi).as_bool() {
+            return false;
+        }
+        let m = mi.rcMonitor;
+        r.left <= m.left && r.top <= m.top && r.right >= m.right && r.bottom >= m.bottom
     }
 }
 

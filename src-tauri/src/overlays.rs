@@ -56,8 +56,11 @@ pub fn sync(app: &AppHandle) {
             }
             None => {
                 let label = format!("{PREFIX}{}", NEXT.fetch_add(1, Ordering::Relaxed));
-                if create(app, &label, m, hidden).is_ok() {
-                    open.insert(id.clone(), label);
+                match create(app, &label, m, hidden) {
+                    Ok(()) => {
+                        open.insert(id.clone(), label);
+                    }
+                    Err(e) => state.store.log(&format!("overlay {id}: {e}")),
                 }
             }
         }

@@ -20,6 +20,9 @@
   (`src-tauri/wallpapers`, bundle resource) đặt cho mọi màn hình khi theme lễ bật; hết lễ hoặc Thoát PieDesk thì trả lại
   hình nền cũ từng màn hình (lưu ở `<config>/wallpaper.json`). Màn hình nào người dùng tự đổi hình thì giữ nguyên.
   Slideshow của Windows được tạm dừng rồi bật lại đúng như cũ (ảnh / thư mục, chu kỳ, xáo trộn).
+- Sửa lỗi chớp tắt khi có cửa sổ overlay: Windows báo "busy" (QUNS_BUSY) vì chính overlay phủ kín màn hình, fullscreen
+  guard ẩn hết rồi hiện lại mỗi 2 giây. Giờ "busy" chỉ được tin khi cửa sổ đang focus là app khác và phủ kín màn hình.
+- Lỗi tạo overlay được ghi vào log.
 - Runner FX xoá canvas mỗi frame (trừ effect có `trails`), đo lại vị trí box mỗi frame khi đang kéo.
 - Dev: `dev/decor.html?theme=<id>` xem toàn bộ SVG.
 
