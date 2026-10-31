@@ -4,6 +4,7 @@
 
 import type { FxId } from "../fx";
 import type { Text } from "../lib/i18n";
+import { lunarToSolar } from "../lib/lunar";
 
 export type ThemeKind = "basic" | "special" | "seasonal";
 
@@ -53,9 +54,12 @@ export type ThemeId = (typeof THEMES)[number]["id"];
 
 export const themeDef = (id: string): ThemeDef => THEMES.find((t) => t.id === id) ?? THEMES[0];
 
-// Lunar holidays as solar dates (month is 1-based), 2026–2035.
-const TET: Record<number, [number, number]> = { 2026: [2, 17], 2027: [2, 6], 2028: [1, 26], 2029: [2, 13], 2030: [2, 3], 2031: [1, 23], 2032: [2, 11], 2033: [1, 31], 2034: [2, 19], 2035: [2, 8] };
-const MID_AUTUMN: Record<number, [number, number]> = { 2026: [9, 25], 2027: [9, 15], 2028: [10, 3], 2029: [9, 22], 2030: [9, 12], 2031: [10, 1], 2032: [9, 19], 2033: [9, 8], 2034: [9, 27], 2035: [9, 16] };
+// Lunar holidays (Tết, Trung thu) are computed for any year by ../lib/lunar.
+/** [month, day] in solar year `y` of a lunar date of lunar year `y`. */
+const lunar = (y: number, day: number, month: number): [number, number] | undefined => {
+  const d = lunarToSolar(day, month, y);
+  return d ? [d[1], d[0]] : undefined;
+};
 
 const DAY = 86_400_000;
 const near = (now: Date, md: [number, number] | undefined, before: number, after: number) => {
@@ -68,8 +72,8 @@ const near = (now: Date, md: [number, number] | undefined, before: number, after
 /** The holiday theme for `now`, if any. */
 export function seasonalTheme(now = new Date()): ThemeId | null {
   const y = now.getFullYear();
-  if (near(now, TET[y], 7, 7)) return "tet";
-  if (near(now, MID_AUTUMN[y], 5, 2)) return "midautumn";
+  if (near(now, lunar(y, 1, 1), 7, 7)) return "tet";
+  if (near(now, lunar(y, 15, 8), 5, 2)) return "midautumn";
   if (near(now, [10, 31], 7, 1)) return "halloween";
   if (near(now, [12, 20], 5, 6)) return "christmas";
   return null;

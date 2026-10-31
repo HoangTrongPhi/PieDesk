@@ -31,6 +31,9 @@ export const ipc = {
   unwatchFolder: (path: string) => invoke("unwatch_folder", { path }),
   hubSubscribe: (topic: string) => invoke("hub_subscribe", { topic }),
   hubUnsubscribe: (topic: string) => invoke("hub_unsubscribe", { topic }),
+  /** Cover art of what is playing, as raw bytes (empty when there is none). */
+  mediaArt: () => invoke<ArrayBuffer>("media_art"),
+  mediaControl: (action: "toggle" | "next" | "prev") => invoke("media_control", { action }),
   openManager: (tab?: string) => invoke("open_manager", { tab }),
   toggleSurfaces: () => invoke("toggle_surfaces"),
 };

@@ -9,7 +9,7 @@ type Mem = { used: number; total: number };
 type Net = { rx: number; tx: number };
 type Disk = { mount: string; name: string; total: number; free: number };
 
-function Spark({ data, max, color }: { data: number[]; max: number; color: string }) {
+export function Spark({ data, max, color }: { data: number[]; max: number; color: string }) {
   if (data.length < 2) return <div className="h-7" />;
   const pts = data.map((v, i) => `${(i / (data.length - 1)) * 100},${28 - (Math.min(v, max) / max) * 26}`).join(" ");
   return (

@@ -9,11 +9,13 @@ mod apps;
 mod catalog;
 mod desktop;
 mod folders;
+mod gpu;
 mod guard;
 mod hittest;
 mod hub;
 mod icons;
 mod items;
+mod media;
 mod monitors;
 mod overlays;
 mod shell;
@@ -541,6 +543,8 @@ pub fn run() {
             surfaces::drag_end,
             surfaces::list_displays,
             guard::power_on_battery,
+            media::media_art,
+            media::media_control,
         ])
         .build(tauri::generate_context!())
         .expect("error while building PieDesk")

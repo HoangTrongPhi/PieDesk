@@ -45,6 +45,8 @@ Widget có sẵn: Đồng hồ (số/kim, múi giờ), Lịch tháng, System Mon
 │ icons.rs     giao thức icon:// (bất đồng bộ), COM trên luồng worker,   │
 │              cache RAM + đĩa (xxh3 của path+mtime+size)                │
 │ hub.rs       pub/sub số liệu hệ thống, refcount theo topic             │
+│ gpu.rs       DXGI + bộ đếm GPU của Windows (PDH), NVML nếu là NVIDIA   │
+│ media.rs     Now Playing qua GSMTC, ảnh bìa trả bytes qua IPC          │
 │ guard.rs     phát hiện fullscreen (SHQueryUserNotificationState)       │
 │ folders.rs   liệt kê + theo dõi thư mục (notify, debounce)             │
 │ shell.rs     ShellExecuteW (open / runas), mở vị trí file              │
@@ -83,7 +85,7 @@ tăng `rev`, phát event `store://ops` cho các surface khác → nhiều màn h
 2. **Trang (tabs) trong box** và **gộp box** (thả box lên box).
 3. **Ẩn/hiện bằng double-click desktop** (hook chuột cấp thấp) và tự ẩn icon desktop gốc.
 4. **Layout profiles**: lưu/khôi phục bố cục theo cấu hình màn hình, tự đổi khi cắm màn hình ngoài.
-5. **Widget Now Playing** (GlobalSystemMediaTransportControls), GPU (NVML/D3DKMT), lịch Google/Outlook.
+5. ~~Widget Now Playing, GPU~~ (v0.3.0); còn lại: lịch Google/Outlook, Dự án gần đây, theo dõi build/render.
 6. **Widget pack** dạng thư mục (`manifest.json` + `index.html`) với quyền khai báo, chia sẻ/nhập 1 click.
 7. Hybrid mode: box “đặc biệt” dùng cửa sổ riêng có Acrylic thật (đổi RAM lấy hiệu ứng blur hệ thống).
 

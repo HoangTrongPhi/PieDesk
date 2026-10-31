@@ -1,6 +1,6 @@
 [package]
 name = "piedesk"
-version = "0.1.4"
+version = "0.3.0"
 description = "PieDesk — Desktop boxes & widgets for Windows"
 authors = ["Phineas"]
 edition = "2021"
@@ -41,11 +41,19 @@ rusqlite = { version = "0.41", features = ["bundled"] }
 # Same major as tauri's own `windows`, so the crate is compiled once.
 windows = { version = "0.62", features = [
   "Win32_Devices_Display",
+  "Foundation",
+  "Media_Control",
+  "Storage_Streams",
   "Win32_Foundation",
+  "Win32_Graphics_Dxgi",
+  "Win32_Graphics_Dxgi_Common",
   "Win32_Graphics_Gdi",
   "Win32_Storage_FileSystem",
   "Win32_System_Com",
+  "Win32_System_LibraryLoader",
+  "Win32_System_Performance",
   "Win32_System_Power",
+  "Win32_System_Threading",
   "Win32_UI_Shell",
   "Win32_UI_WindowsAndMessaging",
 ] }

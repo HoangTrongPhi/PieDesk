@@ -1,5 +1,16 @@
 # PieDesk — Changelog
 
+## v0.3.0
+- **Widget Đang phát** (Now Playing): bài đang phát trên Spotify, trình duyệt, trình nghe nhạc… (GSMTC của Windows,
+  không cần plugin), ảnh bìa, nền mờ theo ảnh bìa, thanh tiến trình, nút trước / phát / sau.
+- **Widget GPU / VRAM**: tải GPU, VRAM, biểu đồ; NVIDIA thêm nhiệt độ, điện năng / giới hạn, quạt, xung (NVML);
+  danh sách app chiếm VRAM nhiều nhất. GPU hãng khác dùng bộ đếm GPU của Windows (như Task Manager).
+- **Widget Lịch** có âm lịch (thuật toán Hồ Ngọc Đức, UTC+7, chạy offline), can chi ngày / tháng / năm, đánh dấu ngày lễ
+  dương lịch và âm lịch, bấm một ngày để xem chi tiết.
+- Theme Tết / Trung thu tính ngày theo âm lịch cho mọi năm (bỏ bảng 2026–2035; bảng cũ lệch Tết 2030 và Trung thu 2034
+  vì theo giờ UTC+8).
+- Widget mới thêm vào chủ đề `disk` / `media` nhận số liệu ngay ở tick kế tiếp.
+
 ## v0.2.0
 - **Đa màn hình**: monitor id ổn định (device path của `QueryDisplayConfig`); layout cũ theo tên `\\.\DISPLAYn` được
   đổi một lần. Surface tự tạo / đóng / đặt lại khi cắm, rút màn hình hoặc đổi độ phân giải, scale.
@@ -27,6 +38,8 @@
 ## Kế hoạch (chưa làm)
 
 - Quy tắc tự sắp file mới trên desktop vào box; backup/restore bố cục.
+- Widget: Dự án gần đây (Unreal, Unity, Blender, JetBrains, VS Code), theo dõi build / render, clipboard, bảng điều khiển
+  nhanh (âm thanh, độ sáng), nút lệnh kiểu Stream Deck.
 
 ### Đã bỏ qua
 - Xoay màn hình dọc/ngang (bố cục theo hướng) và chế độ sửa kiểu iOS / Smart Stack / nhiều trang desktop.

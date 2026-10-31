@@ -2,8 +2,9 @@
 //!
 //! Nothing is measured unless a widget subscribed to that topic, and nothing at all while the
 //! fullscreen guard has paused the app. Topics emit `hub://<topic>` once per second
-//! (`agents` every 2 s, `disk` every 10 s). `agents` keeps running while paused, so a finished
-//! session still raises its notification during a game.
+//! (`agents` every 2 s, `disk` every 10 s, `media` only when it changed). `agents` keeps running
+//! while paused, so a finished session still raises its notification during a game. A new
+//! subscriber gets `disk` and `media` on the next tick instead of waiting for a change.
 
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -15,14 +16,19 @@ use sysinfo::{Disks, Networks, RefreshKind, System};
 use tauri::{AppHandle, Emitter};
 
 use crate::agents::Agents;
+use crate::gpu::Gpu;
+use crate::media::Media;
 
-pub const TOPICS: [&str; 5] = ["cpu", "mem", "net", "disk", "agents"];
+pub const TOPICS: [&str; 7] = ["cpu", "mem", "net", "disk", "agents", "gpu", "media"];
+/// VRAM users sent with `gpu`; the widget shows as many as fit its setting.
+const TOP_VRAM: usize = 8;
 const TICK: Duration = Duration::from_secs(1);
 
 #[derive(Clone, Default)]
 pub struct Hub {
     subs: Arc<Mutex<HashMap<String, usize>>>,
     pub paused: Arc<AtomicBool>,
+    fresh: Arc<AtomicBool>,
 }
 
 impl Hub {
@@ -31,6 +37,7 @@ impl Hub {
             return Err(format!("unknown topic {topic}"));
         }
         *self.subs.lock().unwrap().entry(topic.to_owned()).or_default() += 1;
+        self.fresh.store(true, Ordering::Relaxed);
         Ok(())
     }
 
@@ -58,9 +65,12 @@ impl Hub {
                 let mut tick: u64 = 0;
                 let mut last_net = Instant::now();
                 let mut agents = Agents::default();
+                let mut gpu: Option<Gpu> = None;
+                let mut media: Option<Media> = None;
                 loop {
                     std::thread::sleep(TICK);
                     tick += 1;
+                    let fresh = hub.fresh.swap(false, Ordering::Relaxed);
                     if hub.active("agents") && tick % 2 == 0 {
                         let (sessions, finished) = agents.scan();
                         crate::notify_finished(&app, &sessions, &finished);
@@ -68,6 +78,20 @@ impl Hub {
                     }
                     if hub.paused.load(Ordering::Relaxed) {
                         continue;
+                    }
+                    if hub.active("gpu") {
+                        let g = gpu.get_or_insert_with(Gpu::new);
+                        let _ = app.emit("hub://gpu", g.sample(TOP_VRAM));
+                    } else {
+                        gpu = None;
+                    }
+                    if hub.active("media") {
+                        let m = media.get_or_insert_with(Media::new);
+                        if let Some(now) = m.poll(fresh) {
+                            let _ = app.emit("hub://media", now);
+                        }
+                    } else {
+                        media = None;
                     }
                     if hub.active("cpu") {
                         sys.refresh_cpu_usage();
@@ -95,7 +119,7 @@ impl Hub {
                     } else {
                         nets = None;
                     }
-                    if hub.active("disk") && tick % 10 == 1 {
+                    if hub.active("disk") && (tick % 10 == 1 || fresh) {
                         let Ok(disks) = Disks::new_with_refreshed_list() else { continue };
                         let list: Vec<_> = disks
                             .iter()
@@ -122,7 +146,7 @@ mod tests {
     #[test]
     fn refcounts_topics() {
         let hub = Hub::default();
-        assert!(hub.subscribe("gpu").is_err());
+        assert!(hub.subscribe("gpus").is_err());
         hub.subscribe("cpu").unwrap();
         hub.subscribe("cpu").unwrap();
         hub.unsubscribe("cpu");

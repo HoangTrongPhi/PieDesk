@@ -17,6 +17,16 @@ export async function installMock() {
     boxes: {},
     widgets: {},
   };
+  // ?widgets=calendar,nowplaying,gpu lays those widgets out in a row.
+  const { widgetDef } = await import("../widgets/registry");
+  let x = 40;
+  for (const type of q.get("widgets")?.split(",") ?? []) {
+    const def = widgetDef(type);
+    if (!def) continue;
+    doc.settings.initialized = true;
+    doc.widgets[type] = { id: type, type, monitor: "display-a", x, y: 60, ...def.defaultSize, config: {}, opacity: 0.6 };
+    x += def.defaultSize.w + 24;
+  }
   const displays = [
     { id: "display-a", name: "DELL U2720Q", index: 0, primary: true, windowsPrimary: true, width: innerWidth, height: innerHeight },
     { id: "display-b", name: "", index: 1, primary: false, windowsPrimary: false, width: 1080, height: 1880 },
@@ -96,6 +106,18 @@ export async function installMock() {
       emit("hub://cpu", { total: cpu, cores: Array.from({ length: 12 }, () => Math.random() * 100) });
       emit("hub://mem", { used: 14.2e9 + Math.random() * 1e9, total: 32e9 });
       emit("hub://net", { rx: Math.random() * 3e6, tx: Math.random() * 4e5 });
+      emit("hub://gpu", {
+        gpus: [{ name: "NVIDIA GeForce RTX 3070", load: 20 + Math.random() * 50, memUsed: 3.9e9 + Math.random() * 2e8, memTotal: 8589934592, temp: 52, power: 96, powerLimit: 240, fan: 38, clock: 1890 }],
+        top: [
+          { pid: 1, name: "UnrealEditor", path: "", mem: 2.2e9 },
+          { pid: 2, name: "blender", path: "", mem: 8.9e8 },
+          { pid: 3, name: "chrome", path: "", mem: 1.6e8 },
+        ],
+      });
+    }, 1000);
+    const t1 = Date.now();
+    setInterval(() => {
+      emit("hub://media", { app: "Spotify", title: "Lofi beats to code to", artist: "Chillhop Music", album: "Chillhop Essentials", playing: true, position: 42_000, duration: 214_000, updated: t1, canPrev: true, canNext: true, art: 0, artType: "" });
     }, 1000);
     // Agents: one Claude session finishes 8 s after load, so the bell can be seen ringing.
     const t0 = Date.now();
