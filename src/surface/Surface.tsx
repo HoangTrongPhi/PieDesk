@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
-import { desktopDir } from "@tauri-apps/api/path";
 import { iconUrl, ipc, uid } from "../lib/ipc";
 import { useHitReporter } from "../lib/hit";
 import type { BoxModel, SurfaceInfo, WidgetModel } from "../lib/types";
@@ -49,17 +48,15 @@ const adoptOnce = () => {
   return adoptLegacyItems();
 };
 
-/** First run on the primary monitor: a portal of the real Desktop folder plus a few widgets. */
+/** First run on the primary monitor: an empty Apps box to drop shortcuts into, plus a few widgets. */
 async function seed(info: SurfaceInfo) {
   if (seeded) return;
   seeded = true;
   const { commit } = useDoc.getState();
-  const desktop = await desktopDir().catch(() => "");
   const right = info.width - 300;
   const ops: Parameters<typeof commit>[0] = [];
   const add = (coll: "boxes" | "widgets", value: BoxModel | WidgetModel) => ops.push({ op: "upsert", coll, id: value.id, value });
-  if (desktop) add("boxes", newBox(info.monitor, { x: 32, y: 32 }, { kind: "folder", title: "Desktop", folder: desktop, w: 520, h: 300 }));
-  add("boxes", newBox(info.monitor, { x: 32, y: 360 }, { title: tr("Ứng dụng", "Apps"), accent: ACCENTS[1] }));
+  add("boxes", newBox(info.monitor, { x: 32, y: 32 }, { title: tr("Ứng dụng", "Apps"), accent: ACCENTS[1], w: 520, h: 300 }));
   const clock = newWidget("clock", info.monitor, { x: right, y: 32 });
   const weather = newWidget("weather", info.monitor, { x: 32, y: info.height - 290 });
   const agents = newWidget("agents", info.monitor, { x: right - 40, y: 176 });

@@ -32,7 +32,11 @@ Khoá ký: `~/.tauri/piedesk.key` (giữ kỹ — mất khoá thì các bản đ
 - **Alt+Shift+D**: ẩn/hiện toàn bộ box + widget (đổi trong Cài đặt).
 - **Box**: kéo thanh tiêu đề để di chuyển, góc dưới phải để đổi cỡ, double-click tiêu đề để thu gọn, chuột phải để tuỳ chỉnh.
   Kéo file từ Explorer vào box để thêm; kéo icon giữa các box để sắp xếp.
-- **Folder Box**: phản chiếu một thư mục thật, tự cập nhật; có thể lọc theo đuôi file. Lần chạy đầu tạo sẵn box “Desktop”.
+- **Folder Box**: phản chiếu một thư mục thật, tự cập nhật; có thể lọc theo đuôi file.
+- **Thu gom ứng dụng** (Bố cục → “Thu gom shortcut ứng dụng ra desktop”): đặt shortcut của mọi chương trình đã cài
+  (lấy từ Start Menu, bỏ uninstaller / tài liệu / công cụ Windows) mà chưa có trong box ra desktop, để kéo vào box.
+- **Khởi động cùng Windows** (mặc định bật): đăng ký task “khi đăng nhập” trong Task Scheduler để PieDesk lên ngay
+  cùng Explorer, thay vì đợi sau các app trong khoá Run.
 - **Widget**: rê chuột lên widget → thanh ⋯ phía trên để kéo, ⚙ để cài đặt; chuột phải để đổi nền / nhân bản / xoá.
 - **Giao diện**: Cài đặt → Ngôn ngữ (Tiếng Việt / English), 4 theme (Neon Room mặc định, Midnight, Aurora, Ember),
   **Party mode** (LED RGB chạy quanh viền mọi box & widget; mặc định tắt, bật nhanh ở khay hệ thống).

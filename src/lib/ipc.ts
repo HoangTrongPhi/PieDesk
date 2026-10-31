@@ -14,6 +14,10 @@ export const ipc = {
   /** Takes an item out of its box; a shortcut that was moved in goes back where it came from. */
   removeItem: (item: Item) => invoke("remove_item", { path: item.path, source: item.source ?? null, origin: item.origin ?? null }),
   claimItem: (path: string, source: string) => invoke<ItemOrigin>("claim_item", { path, source }),
+  /** Shortcuts for installed programs that are in no box yet, put on the desktop. */
+  gatherApps: () => invoke<{ added: string[]; already: number }>("gather_apps"),
+  autostartGet: () => invoke<boolean>("autostart_get"),
+  autostartSet: (on: boolean) => invoke<boolean>("autostart_set", { on }),
   isOwnedItem: (path: string) => invoke<boolean>("is_owned_item", { path }),
   listFolder: (path: string) => invoke<FolderEntry[]>("list_folder", { path }),
   watchFolder: (path: string) => invoke("watch_folder", { path }),

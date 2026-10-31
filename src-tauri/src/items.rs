@@ -114,7 +114,7 @@ fn same_dir(a: &Path, b: &Path) -> bool {
 }
 
 /// `Name.lnk`, or `Name (2).lnk`… when taken. Characters Windows rejects become `_`.
-fn unique(dir: &Path, name: &str, ext: &str) -> PathBuf {
+pub fn unique(dir: &Path, name: &str, ext: &str) -> PathBuf {
     let clean: String = name.chars().map(|c| if r#"<>:"/\|?*"#.contains(c) || c.is_control() { '_' } else { c }).collect();
     let clean = if clean.trim().is_empty() { "item".to_owned() } else { clean };
     let mut path = dir.join(format!("{clean}.{ext}"));
@@ -158,6 +158,42 @@ fn create_link(target: &Path, dest: &Path) -> Result<(), String> {
         let file: IPersistFile = link.cast().map_err(|e| e.to_string())?;
         file.Save(&HSTRING::from(dest.as_os_str()), true).map_err(|e| e.to_string())
     }
+}
+
+/// What a shortcut opens: the target path of a `.lnk`, the URL of a `.url`, else the path itself.
+/// Lowercased, so two shortcuts to the same program compare equal.
+pub fn target_key(path: &Path) -> String {
+    let ext = path.extension().map(|e| e.to_string_lossy().to_lowercase()).unwrap_or_default();
+    let key = match ext.as_str() {
+        "lnk" => link_target(path),
+        "url" => fs::read_to_string(path).ok().and_then(|t| t.lines().find_map(|l| l.strip_prefix("URL=").map(str::to_owned))),
+        _ => None,
+    };
+    key.unwrap_or_else(|| path.to_string_lossy().into_owned()).to_lowercase()
+}
+
+#[cfg(windows)]
+pub fn link_target(path: &Path) -> Option<String> {
+    use windows::core::{Interface, HSTRING};
+    use windows::Win32::Storage::FileSystem::WIN32_FIND_DATAW;
+    use windows::Win32::System::Com::{CoCreateInstance, CoInitializeEx, IPersistFile, CLSCTX_INPROC_SERVER, COINIT_APARTMENTTHREADED, STGM_READ};
+    use windows::Win32::UI::Shell::{IShellLinkW, ShellLink};
+
+    unsafe {
+        let _ = CoInitializeEx(None, COINIT_APARTMENTTHREADED);
+        let link: IShellLinkW = CoCreateInstance(&ShellLink, None, CLSCTX_INPROC_SERVER).ok()?;
+        link.cast::<IPersistFile>().ok()?.Load(&HSTRING::from(path.as_os_str()), STGM_READ).ok()?;
+        let mut buf = [0u16; 1024];
+        let mut data = WIN32_FIND_DATAW::default();
+        link.GetPath(&mut buf, &mut data, 0).ok()?;
+        let len = buf.iter().position(|&c| c == 0).unwrap_or(buf.len());
+        (len > 0).then(|| String::from_utf16_lossy(&buf[..len]))
+    }
+}
+
+#[cfg(not(windows))]
+pub fn link_target(path: &Path) -> Option<String> {
+    fs::read_link(path).ok().map(|p| p.to_string_lossy().into_owned())
 }
 
 #[cfg(not(windows))]

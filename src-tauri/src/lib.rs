@@ -5,6 +5,7 @@
 //! and hosts the widget gallery.
 
 mod agents;
+mod apps;
 mod desktop;
 mod folders;
 mod guard;
@@ -13,6 +14,7 @@ mod hub;
 mod icons;
 mod items;
 mod shell;
+mod startup;
 mod store;
 
 use std::collections::HashMap;
@@ -29,7 +31,6 @@ use tauri::{
 };
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 use tauri_plugin_notification::NotificationExt;
-use tauri_plugin_autostart::ManagerExt as _;
 use tauri_plugin_updater::UpdaterExt;
 
 use folders::Watches;
@@ -134,6 +135,30 @@ fn open_path(path: String, admin: Option<bool>) -> Result<(), String> {
 #[tauri::command]
 async fn import_item(state: tauri::State<'_, AppState>, path: String) -> Result<items::Imported, String> {
     items::import(&state.items_dir, &path)
+}
+
+#[tauri::command]
+fn autostart_get(app: AppHandle) -> bool {
+    startup::is_enabled(&app)
+}
+
+#[tauri::command]
+fn autostart_set(app: AppHandle, on: bool) -> bool {
+    startup::set(&app, on)
+}
+
+/// Puts a shortcut for every installed program that is in no box yet onto the desktop.
+#[tauri::command]
+async fn gather_apps(app: AppHandle, state: tauri::State<'_, AppState>) -> Result<apps::Gathered, String> {
+    let desktop = app.path().desktop_dir().map_err(|e| e.to_string())?;
+    let taken: Vec<String> = state.store.read(|d| {
+        d.boxes
+            .values()
+            .flat_map(|b| b.get("items").and_then(|i| i.as_array()).cloned().unwrap_or_default())
+            .filter_map(|i| i.get("path").and_then(|p| p.as_str()).map(str::to_owned))
+            .collect()
+    });
+    Ok(apps::gather(&apps::start_menu_dirs(), &desktop, &taken))
 }
 
 /// Takes an item out of a box, putting a moved shortcut back where it came from.
@@ -384,15 +409,18 @@ pub fn notify_finished(app: &AppHandle, sessions: &[agents::Session], finished: 
 }
 
 /// "Start with Windows" is on by default: the first release run turns it on once and remembers
-/// that it did, so switching it off in Settings sticks.
+/// that it did, so switching it off in Settings sticks. Installs that already start from the
+/// `Run` key (0.1.3) move to the faster logon task once.
 fn enable_autostart_once(app: &AppHandle) {
     let state = app.state::<AppState>();
-    if cfg!(debug_assertions) || state.store.read(|d| d.setting_bool("autostartInit", false)) {
+    if cfg!(debug_assertions) || state.store.read(|d| d.setting_bool("autostartTask", false)) {
         return;
     }
-    if app.autolaunch().enable().is_ok() {
-        state.store.apply(&[Op::Settings { value: serde_json::json!({ "autostartInit": true }) }]);
+    let first_run = !state.store.read(|d| d.setting_bool("autostartInit", false));
+    if (first_run || startup::is_enabled(app)) && !startup::set(app, true) {
+        return;
     }
+    state.store.apply(&[Op::Settings { value: serde_json::json!({ "autostartInit": true, "autostartTask": true }) }]);
 }
 
 /// Release builds look for a new version 30 s after start, then every 12 h (setting `autoUpdate`,
@@ -511,6 +539,9 @@ pub fn run() {
             import_item,
             remove_item,
             claim_item,
+            gather_apps,
+            autostart_get,
+            autostart_set,
             is_owned_item,
             reveal_path,
             list_folder,

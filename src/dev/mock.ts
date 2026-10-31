@@ -46,6 +46,11 @@ export async function installMock() {
           return { path: a.path, origin: "moved" };
         case "claim_item":
           return "moved";
+        case "gather_apps":
+          return { added: ["Blender", "Unity Hub", "Discord"], already: 2 };
+        case "autostart_get":
+        case "autostart_set":
+          return true;
         case "is_owned_item":
           return true;
         default:

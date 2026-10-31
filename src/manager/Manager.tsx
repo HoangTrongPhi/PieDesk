@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { listen } from "@tauri-apps/api/event";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
-import { disable as disableAutostart, enable as enableAutostart, isEnabled as autostartEnabled } from "@tauri-apps/plugin-autostart";
-import { ArrowUpCircle, Box, Cpu, EyeOff, FolderOpen, LayoutGrid, Plus, RefreshCw, Settings, Sparkles, Trash2 } from "lucide-react";
+import { AppWindow, ArrowUpCircle, Box, Cpu, EyeOff, FolderOpen, LayoutGrid, Plus, RefreshCw, Settings, Sparkles, Trash2 } from "lucide-react";
 import { useAppearance } from "../lib/appearance";
 import { tr, tx, useLang, type Text } from "../lib/i18n";
 import { baseName, ipc } from "../lib/ipc";
@@ -110,6 +109,7 @@ function LayoutTab() {
         <button className="pd-btn" onClick={addFolderBox}>
           <FolderOpen size={15} /> {tr("Folder Box (thư mục live)", "Folder Box (live folder)")}
         </button>
+        <GatherButton />
       </div>
 
       <h2 className="pd-h2">Box ({count})</h2>
@@ -154,6 +154,31 @@ function LayoutTab() {
           <div className="pd-empty">{tr("Chưa có widget nào — thêm ở “Thư viện widget”.", "No widgets yet — add some from the Widget gallery.")}</div>
         )}
       </div>
+    </>
+  );
+}
+
+/** Puts a shortcut for every installed program that is in no box yet on the desktop. */
+function GatherButton() {
+  const [state, setState] = useState<"idle" | "busy" | { added: string[]; already: number } | string>("idle");
+  return (
+    <>
+      <button className="pd-btn" disabled={state === "busy"}
+        onClick={async () => {
+          setState("busy");
+          setState(await ipc.gatherApps().catch((e) => String(e)));
+        }}>
+        <AppWindow size={15} /> {state === "busy" ? tr("Đang thu gom…", "Gathering…") : tr("Thu gom shortcut ứng dụng ra desktop", "Gather app shortcuts onto the desktop")}
+      </button>
+      {typeof state === "object" && (
+        <p className="pd-muted basis-full text-xs leading-relaxed" title={state.added.join(", ")}>
+          {state.added.length
+            ? tr(`Đã đặt ${state.added.length} shortcut ra desktop — kéo chúng vào box.`, `Put ${state.added.length} shortcuts on the desktop — drag them into boxes.`)
+            : tr("Không còn ứng dụng nào ngoài box.", "Every app already has a shortcut.")}
+          {state.already > 0 && tr(` Bỏ qua ${state.already} ứng dụng đã có trong box / trên desktop.`, ` Skipped ${state.already} already in a box / on the desktop.`)}
+        </p>
+      )}
+      {typeof state === "string" && state !== "idle" && state !== "busy" && <p className="basis-full text-xs text-rose-300">{state}</p>}
     </>
   );
 }
@@ -206,7 +231,7 @@ function SettingsTab() {
   const [hotkey, setHotkey] = useState(settings.hotkey);
 
   useEffect(() => {
-    autostartEnabled().then(setAutostart).catch(() => setAutostart(null));
+    ipc.autostartGet().then(setAutostart).catch(() => setAutostart(null));
   }, []);
 
   return (
@@ -240,8 +265,8 @@ function SettingsTab() {
         <section className="pd-section">
           <Toggle label={tr("Khởi động cùng Windows", "Start with Windows")} checked={!!autostart}
             onChange={async (v) => {
-              await (v ? enableAutostart() : disableAutostart()).catch(() => {});
-              setAutostart(await autostartEnabled().catch(() => v));
+              await ipc.autostartSet(v).catch(() => {});
+              setAutostart(await ipc.autostartGet().catch(() => v));
             }} />
           <Toggle label={tr("Khoá bố cục (không kéo / đổi cỡ được)", "Lock layout (no moving / resizing)")} checked={settings.locked}
             onChange={(locked) => set({ locked })} />
