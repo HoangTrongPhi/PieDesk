@@ -82,7 +82,7 @@ pub fn gather(sources: &[PathBuf], desktop: &Path, taken: &[String]) -> Gathered
 }
 
 /// Shortcut files under `dir`, skipping Windows' tool folders.
-fn walk(dir: &Path) -> Vec<PathBuf> {
+pub(crate) fn walk(dir: &Path) -> Vec<PathBuf> {
     let mut out = Vec::new();
     let Ok(entries) = fs::read_dir(dir) else { return out };
     for entry in entries.flatten() {
@@ -100,7 +100,7 @@ fn walk(dir: &Path) -> Vec<PathBuf> {
 }
 
 /// The key of a launchable program, or `None` for uninstallers, docs and web links.
-fn program_key(link: &Path) -> Option<String> {
+pub(crate) fn program_key(link: &Path) -> Option<String> {
     let name = link.file_stem()?.to_string_lossy().to_lowercase();
     if SKIP_NAMES.iter().any(|s| name.contains(s)) {
         return None;

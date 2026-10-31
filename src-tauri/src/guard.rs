@@ -1,7 +1,8 @@
 //! Fullscreen guard: while a game, video or presentation is fullscreen, hide the surfaces and
-//! pause the data hub so PieDesk costs ~0 % CPU.
+//! pause the data hub so PieDesk costs ~0 % CPU. Also reports running on battery, which pauses
+//! effects (setting `fxBattery`).
 
-use std::sync::atomic::Ordering;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 
 use tauri::{AppHandle, Emitter, Manager};
@@ -26,13 +27,38 @@ fn fullscreen_busy() -> bool {
     false
 }
 
+static ON_BATTERY: AtomicBool = AtomicBool::new(false);
+
+#[cfg(windows)]
+fn on_battery() -> bool {
+    use windows::Win32::System::Power::{GetSystemPowerStatus, SYSTEM_POWER_STATUS};
+    let mut s = SYSTEM_POWER_STATUS::default();
+    // ACLineStatus: 0 = on battery, 1 = plugged in, 255 = unknown (desktops).
+    unsafe { GetSystemPowerStatus(&mut s).is_ok() && s.ACLineStatus == 0 }
+}
+
+#[cfg(not(windows))]
+fn on_battery() -> bool {
+    false
+}
+
+#[tauri::command]
+pub fn power_on_battery() -> bool {
+    ON_BATTERY.load(Ordering::Relaxed)
+}
+
 pub fn start(app: AppHandle) {
     std::thread::Builder::new()
         .name("guard".into())
         .spawn(move || {
             let mut paused = false;
+            ON_BATTERY.store(on_battery(), Ordering::Relaxed);
             loop {
                 std::thread::sleep(POLL);
+                let battery = on_battery();
+                if ON_BATTERY.swap(battery, Ordering::Relaxed) != battery {
+                    let _ = app.emit("power://battery", battery);
+                }
                 let state = app.state::<AppState>();
                 let enabled = state.store.read(|d| d.setting_bool("pauseOnFullscreen", true));
                 let busy = enabled && fullscreen_busy();

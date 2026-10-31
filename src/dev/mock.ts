@@ -9,7 +9,14 @@ export async function installMock() {
   mockWindows(view === "surface" ? "surface-0" : "manager");
   mockConvertFileSrc("windows");
 
-  const doc: Doc = { rev: 0, settings: {}, boxes: {}, widgets: {} };
+  const q = new URLSearchParams(location.search);
+  // ?theme=winter&pet=desktop previews a theme and its effects.
+  const doc: Doc = {
+    rev: 0,
+    settings: { ...(q.get("theme") && { theme: q.get("theme") as Doc["settings"]["theme"], seasonal: false }), ...(q.get("pet") && { pet: q.get("pet") as "desktop" }) },
+    boxes: {},
+    widgets: {},
+  };
   const displays = [
     { id: "display-a", name: "DELL U2720Q", index: 0, primary: true, windowsPrimary: true, width: innerWidth, height: innerHeight },
     { id: "display-b", name: "", index: 1, primary: false, windowsPrimary: false, width: 1080, height: 1880 },
@@ -52,6 +59,20 @@ export async function installMock() {
           return { path: a.path, origin: "moved" };
         case "claim_item":
           return "moved";
+        case "app_catalog": {
+          const app = (name: string, group: string) => ({ key: `c:\apps\${name.toLowerCase()}.exe`, name, link: `C:\Start Menu\${name}.lnk`, onDesktop: false, group, guess: group });
+          return {
+            groups: [
+              { id: "code", vi: "Code Editor", en: "Code editors" },
+              { id: "ide", vi: "IDE", en: "IDEs" },
+              { id: "engine", vi: "Game Engine", en: "Game engines" },
+              { id: "dcc", vi: "3D / Modeling", en: "3D / modeling" },
+            ],
+            apps: [app("Cursor", "code"), app("Rider", "ide"), app("Unity Hub", "engine"), app("Unreal Engine 5.6", "engine"), app("Blender 5.2", "dcc"), app("Marmoset Toolbag 5", "dcc"), app("Poseidon", "other")],
+          };
+        }
+        case "take_app":
+          return { path: a.link, origin: "kept" };
         case "gather_apps":
           return { added: ["Blender", "Unity Hub", "Discord"], already: 2 };
         case "autostart_get":

@@ -34,6 +34,9 @@ Widget có sẵn: Đồng hồ (số/kim, múi giờ), Lịch tháng, System Mon
 │ surfaces.rs  1 surface / màn hình, đồng bộ khi cắm-rút; kéo box sang   │
 │              màn khác (drag_over / drag_end)                          │
 │ monitors.rs  monitor id ổn định (device path, QueryDisplayConfig)     │
+│ catalog.rs   nhận diện + gom nhóm app (rules/apps.json), theo dõi     │
+│              Start Menu                                               │
+│ overlays.rs  cửa sổ overlay trên mọi app cho FX / mèo Pie             │
 │ hittest.rs   luồng 60 Hz: GetCursorPos ∩ rect tương tác → bật/tắt      │
 │              click-through (set_ignore_cursor_events) chỉ khi đổi trạng│
 │ store.rs     nguồn sự thật duy nhất: settings + boxes + widgets,       │
@@ -89,9 +92,9 @@ tăng `rev`, phát event `store://ops` cho các surface khác → nhiều màn h
    device path của `QueryDisplayConfig` (ổn định qua reboot); box mới / box mồ côi về màn chính, giữ toạ độ gốc để trả về
    khi cắm lại. Kéo box giữa màn hình bằng chuyển giao giữa các surface (`drag://move` + op `moveBox`), quy đổi DPI,
    snap trọn vào một màn.
-2. **Gom nhóm app tự động**: chấm điểm theo tên exe, version info, đường dẫn cài, thư mục Start Menu; luật trong
+2. ✅ **Gom nhóm app tự động** (đã làm, `catalog.rs`): chấm điểm theo tên exe, version info, đường dẫn cài, thư mục Start Menu; luật trong
    `rules.json`; nhớ lựa chọn sửa tay của người dùng.
-3. **Theme engine**: CSS tokens + effect module nạp lười; theme đặc biệt và theo mùa.
-4. **Overlay FX / desktop pet**: cửa sổ topmost xuyên chuột, dùng lại effect module, biết vị trí box.
+3. ✅ **Theme engine** (đã làm, `src/themes`, `src/fx`): CSS tokens + effect module nạp lười; theme đặc biệt và theo mùa.
+4. ✅ **Overlay FX / desktop pet** (đã làm, `overlays.rs`, `src/fx/pet.ts`): cửa sổ topmost xuyên chuột, dùng lại effect module, biết vị trí box.
 
 Đã bỏ qua: xoay màn hình dọc/ngang và chế độ sửa kiểu iOS.

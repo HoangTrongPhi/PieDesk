@@ -1,0 +1,114 @@
+{
+  "comment": "App groups for 'Group apps into boxes' (src/catalog.rs). exe: file names of the program (* = any text). path: text in the program's install path. company: text in the exe's CompanyName / FileDescription. words: text in the shortcut name or its Start Menu folder. A user override wins over every rule. A copy at <config>/app-rules.json replaces this file.",
+  "groups": [
+    {
+      "id": "code",
+      "vi": "Code Editor",
+      "en": "Code editors",
+      "exe": ["code.exe", "code - insiders.exe", "cursor.exe", "windsurf.exe", "kiro.exe", "trae.exe", "antigravity.exe", "zed.exe", "sublime_text.exe", "notepad++.exe", "fleet.exe", "lapce.exe", "atom.exe", "vscodium.exe", "brackets.exe", "notepad3.exe", "antigravity ide.exe"],
+      "path": ["microsoft vs code"],
+      "company": ["sublime hq"],
+      "words": ["visual studio code", "vs code", "sublime text", "notepad++"]
+    },
+    {
+      "id": "ide",
+      "vi": "IDE",
+      "en": "IDEs",
+      "exe": ["devenv.exe", "idea64.exe", "idea.exe", "rider64.exe", "pycharm64.exe", "webstorm64.exe", "clion64.exe", "goland64.exe", "phpstorm64.exe", "rubymine64.exe", "datagrip64.exe", "rustrover64.exe", "dataspell64.exe", "aqua64.exe", "studio64.exe", "eclipse.exe", "netbeans64.exe", "qtcreator.exe", "codeblocks.exe", "spyder.exe", "jetbrains toolbox.exe", "arduino ide.exe"],
+      "path": ["jetbrains", "android studio"],
+      "company": ["jetbrains"],
+      "words": ["visual studio 20", "intellij", "pycharm", "rider", "android studio", "jetbrains"]
+    },
+    {
+      "id": "engine",
+      "vi": "Game Engine",
+      "en": "Game engines",
+      "exe": ["unrealeditor.exe", "ue4editor.exe", "unity.exe", "unity hub.exe", "godot*.exe", "gamemaker.exe", "gamemakerstudio.exe", "defold.exe", "cocos*.exe", "rpgmaker*.exe", "rpg maker*.exe", "o3de.exe", "flaxeditor.exe", "stride.gameStudio.exe", "construct*.exe", "gdevelop.exe", "unigine*.exe", "cryengine*.exe", "lumberyard*.exe"],
+      "path": ["\\epic games\\ue_", "\\unity\\hub\\editor", "\\godot"],
+      "company": ["unity technologies", "godot engine"],
+      "words": ["unreal engine", "unity", "godot", "game maker", "gamemaker"]
+    },
+    {
+      "id": "dcc",
+      "vi": "3D / Modeling",
+      "en": "3D / modeling",
+      "exe": ["blender.exe", "blender-launcher.exe", "maya.exe", "3dsmax.exe", "houdini*.exe", "zbrush.exe", "cinema 4d.exe", "modo.exe", "mudbox.exe", "3d-coat*.exe", "3dcoat*.exe", "adobe substance 3d *.exe", "substance *.exe", "marvelousdesigner*.exe", "rizomuv*.exe", "toolbag.exe", "marmoset toolbag.exe", "sketchup.exe", "rhino.exe", "fusion360.exe", "freecad.exe", "meshlab.exe", "speedtree*.exe", "gaea.exe", "world machine*.exe", "instant meshes.exe", "plasticity.exe", "nomad*.exe", "daz studio.exe", "cascadeur.exe", "mari*.exe", "nuke*.exe", "katana*.exe", "clarisse*.exe", "unfold3d*.exe", "character creator.exe", "iclone.exe", "embergen.exe", "liquigen.exe", "magicavoxel.exe", "popcornfx*.exe", "topogun*.exe"],
+      "path": ["\\autodesk\\", "\\maxon", "\\side effects software", "\\pixologic", "\\maxon cinema", "\\blender foundation", "\\the foundry", "\\allegorithmic", "\\substance 3d"],
+      "company": ["autodesk", "maxon", "side effects", "pixologic", "blender foundation", "the foundry", "foundry", "allegorithmic", "marmoset", "clo virtual", "chaos software", "reallusion", "jangafx"],
+      "words": ["blender", "maya", "3ds max", "houdini", "zbrush", "substance", "cinema 4d", "autodesk", "marmoset", "popcornfx", "topogun"]
+    },
+    {
+      "id": "design",
+      "vi": "2D / Design",
+      "en": "2D / design",
+      "exe": ["photoshop.exe", "illustrator.exe", "indesign.exe", "lightroom.exe", "adobe xd.exe", "xd.exe", "figma.exe", "krita.exe", "gimp*.exe", "inkscape.exe", "clipstudiopaint.exe", "aseprite.exe", "paintdotnet.exe", "affinity *.exe", "photo.exe", "designer.exe", "publisher.exe", "pureref.exe", "coreldrw.exe", "corelpp.exe", "canva.exe", "sai*.exe", "medibang*.exe", "firealpaca.exe", "penpot.exe", "lunacy.exe", "pixelorama.exe", "spine.exe", "live2d*.exe", "eagle.exe"],
+      "path": ["\\serif\\affinity", "\\celsys"],
+      "company": ["serif", "celsys", "corel", "figma", "kde e.v."],
+      "words": ["photoshop", "illustrator", "figma", "krita", "affinity", "clip studio"]
+    },
+    {
+      "id": "media",
+      "vi": "Âm thanh / Video",
+      "en": "Audio / video",
+      "exe": ["afterfx.exe", "adobe premiere pro.exe", "premiere*.exe", "adobe media encoder.exe", "audition.exe", "resolve.exe", "vlc.exe", "obs64.exe", "obs32.exe", "audacity.exe", "fl64.exe", "fl.exe", "ableton live*.exe", "reaper.exe", "spotify.exe", "capcut.exe", "handbrake.exe", "mpc-hc64.exe", "mpc-be64.exe", "potplayermini64.exe", "potplayermini.exe", "kdenlive.exe", "shotcut.exe", "vegas*.exe", "cubase*.exe", "studio one.exe", "itunes.exe", "foobar2000.exe", "aimp.exe", "musicbee.exe", "mpv.exe", "fmodstudio.exe", "wwise*.exe", "bitwig studio.exe", "lmms.exe", "nvidia broadcast.exe", "streamlabs obs.exe", "camtasia*.exe", "filmora*.exe", "wmplayer.exe"],
+      "path": ["\\blackmagic design", "\\image-line", "\\ableton", "\\obs-studio"],
+      "company": ["blackmagic", "image-line", "ableton", "cockos", "steinberg", "presonus", "videolan", "spotify", "audiokinetic", "firelight"],
+      "words": ["premiere", "after effects", "davinci", "obs studio", "audacity", "fl studio"]
+    },
+    {
+      "id": "devtools",
+      "vi": "Dev Tools",
+      "en": "Dev tools",
+      "exe": ["git-bash.exe", "githubdesktop.exe", "github desktop.exe", "sourcetree.exe", "gitkraken.exe", "fork.exe", "docker desktop.exe", "windowsterminal.exe", "wt.exe", "postman.exe", "insomnia.exe", "bruno.exe", "dbeaver.exe", "heidisql.exe", "ssms.exe", "tableplus.exe", "mongodbcompass.exe", "putty.exe", "winscp.exe", "filezilla.exe", "wireshark.exe", "qrenderdoc.exe", "renderdoc*.exe", "pix.exe", "nsight*.exe", "mobaxterm*.exe", "termius.exe", "tabby.exe", "warp.exe", "claude.exe", "chatgpt.exe", "lm studio.exe", "ollama app.exe", "perforce*.exe", "p4v.exe", "p4admin.exe", "plasticx.exe", "unity version control.exe", "tortoisegitproc.exe", "tortoiseproc.exe", "beyond compare*.exe", "bcompare.exe", "winmergeu.exe", "hxd.exe", "ilspy.exe", "dnspy.exe", "x64dbg.exe", "ghidra*.exe", "procexp64.exe", "processhacker.exe", "diversion*.exe", "node.exe", "adobe uxp developer*.exe", "uxp*.exe"],
+      "path": ["\\docker\\", "\\git\\", "\\perforce\\"],
+      "company": ["github", "atlassian", "docker", "postman", "dbeaver", "perforce", "anthropic", "openai", "scooter software"],
+      "words": ["git ", "docker", "terminal", "postman", "renderdoc", "perforce", "node.js", "uxp developer"]
+    },
+    {
+      "id": "browser",
+      "vi": "Trình duyệt",
+      "en": "Browsers",
+      "exe": ["chrome.exe", "msedge.exe", "firefox.exe", "brave.exe", "opera.exe", "vivaldi.exe", "arc.exe", "zen.exe", "librewolf.exe", "waterfox.exe", "thorium.exe", "floorp.exe", "comet.exe", "chromium.exe", "dia.exe", "coccoc.exe", "browser.exe", "tor.exe"],
+      "path": ["\\opera\\", "\\coccoc\\", "\\tor browser\\"],
+      "company": ["google llc", "mozilla", "brave software", "opera software", "vivaldi", "the browser company"],
+      "words": ["browser", "trình duyệt", "chrome", "firefox", "edge"]
+    },
+    {
+      "id": "game",
+      "vi": "Game",
+      "en": "Games",
+      "exe": ["steam.exe", "epicgameslauncher.exe", "galaxyclient.exe", "battle.net*.exe", "ubisoftconnect.exe", "upc.exe", "eadesktop.exe", "origin.exe", "riotclientservices.exe", "playnite*.exe", "heroic.exe", "minecraft*.exe", "itch.exe", "amazon games*.exe", "rockstar*launcher.exe", "wand.exe", "wemod.exe"],
+      "path": ["steamapps\\common", "\\epic games\\", "\\gog galaxy\\games", "\\gog games\\", "\\riot games\\", "\\xboxgames\\", "\\ubisoft game launcher\\games", "\\ea games\\", "\\battle.net\\", "\\games\\"],
+      "scheme": ["steam://", "com.epicgames.launcher://", "uplay://", "goggalaxy://", "battlenet://", "origin2://", "riotclient://"],
+      "company": ["valve", "epic games", "riot games", "blizzard", "ubisoft", "electronic arts", "cd projekt", "mojang", "hoyoverse", "mihoyo"],
+      "words": ["steam", "epic games", "game", "trò chơi"]
+    },
+    {
+      "id": "chat",
+      "vi": "Chat / Họp",
+      "en": "Chat / meetings",
+      "exe": ["discord.exe", "slack.exe", "teams.exe", "ms-teams.exe", "telegram.exe", "zalo.exe", "whatsapp.exe", "signal.exe", "zoom.exe", "skype.exe", "messenger.exe", "viber.exe", "element.exe", "line.exe", "kakaotalk.exe", "wechat.exe", "weixin.exe", "lark.exe", "feishu.exe", "mattermost.exe", "rocket.chat.exe", "guilded.exe", "beeper.exe"],
+      "path": ["\\discord\\", "\\zalo"],
+      "company": ["discord", "slack", "telegram", "zoom video", "vng"],
+      "words": ["discord", "slack", "teams", "telegram", "zalo", "zoom"]
+    },
+    {
+      "id": "office",
+      "vi": "Văn phòng / Ghi chú",
+      "en": "Office / notes",
+      "exe": ["winword.exe", "excel.exe", "powerpnt.exe", "outlook.exe", "olk.exe", "onenote.exe", "msaccess.exe", "mspub.exe", "visio.exe", "notion.exe", "obsidian.exe", "acrobat.exe", "acrord32.exe", "foxitpdfreader.exe", "foxitpdfeditor.exe", "sumatrapdf.exe", "soffice.exe", "swriter.exe", "scalc.exe", "wps.exe", "et.exe", "wpp.exe", "evernote.exe", "logseq.exe", "anytype.exe", "thunderbird.exe", "joplin.exe", "todoist.exe", "ticktick.exe", "clickup.exe", "linear.exe", "miro.exe", "xmind.exe", "drawio.exe", "draw.io.exe", "typora.exe", "marktext.exe", "calibre.exe", "zotero.exe", "affine.exe", "heptabase.exe", "capacities.exe"],
+      "path": ["\\microsoft office\\", "\\libreoffice", "\\kingsoft\\wps"],
+      "company": ["notion labs", "obsidian", "foxit", "the document foundation", "kingsoft"],
+      "words": ["word", "excel", "powerpoint", "outlook", "onenote", "office", "pdf", "notion", "obsidian"]
+    },
+    {
+      "id": "utility",
+      "vi": "Tiện ích",
+      "en": "Utilities",
+      "exe": ["everything.exe", "7zfm.exe", "winrar.exe", "bandizip.exe", "nanazip*.exe", "powertoys.exe", "sharex.exe", "greenshot.exe", "lightshot.exe", "flameshot.exe", "snipaste.exe", "ccleaner*.exe", "revouninstaller*.exe", "bcuninstaller.exe", "crystaldiskinfo*.exe", "crystaldiskmark*.exe", "diskinfo*.exe", "cpuz*.exe", "gpu-z*.exe", "hwinfo64.exe", "hwmonitor*.exe", "msiafterburner.exe", "rainmeter.exe", "wallpaper64.exe", "wallpaper32.exe", "livelywpf.exe", "lively.exe", "flow.launcher.exe", "ditto.exe", "qbittorrent.exe", "idman.exe", "keepass*.exe", "bitwarden.exe", "1password.exe", "anydesk.exe", "teamviewer.exe", "rustdesk.exe", "parsecd.exe", "rufus*.exe", "ventoy*.exe", "nvidia app.exe", "nvidia geforce experience.exe", "armourycrate*.exe", "logioptionsplus.exe", "lghub.exe", "icue.exe", "synapse*.exe", "signalrgb.exe", "openrgb.exe", "autohotkey*.exe", "voidtools*.exe", "windirstat.exe", "wiztree*.exe", "treesize*.exe", "fancontrol.exe", "twinkle tray.exe", "translucenttb.exe", "explorerpatcher*.exe", "startallback*.exe", "files.exe", "onecommander.exe", "directory opus*.exe", "dopus.exe", "totalcmd*.exe", "unikey*.exe", "evkey*.exe", "openkey*.exe", "google drive.exe", "googledrivefs.exe", "dropbox.exe", "onedrive.exe", "megasync.exe", "syncthing*.exe", "vmware.exe", "virtualbox.exe", "piedesk.exe", "xppen*.exe", "pentablet*.exe", "mixline.exe"],
+      "path": ["\\sysinternals"],
+      "company": ["voidtools", "igor pavlov", "win.rar", "piriform", "cpuid", "realix", "techpowerup", "rainmeter", "anydesk", "teamviewer", "logitech", "corsair", "razer", "asustek", "micro-star"],
+      "words": ["utility", "tool", "tiện ích", "tablet", "mouse"]
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
-import type { Display, Doc, DragFrame, FolderEntry, Item, ItemOrigin, Op, SurfaceInfo } from "./types";
+import type { Catalog, Display, Doc, DragFrame, FolderEntry, Item, ItemOrigin, Op, SurfaceInfo } from "./types";
 
 export const ipc = {
   surfaceInfo: () => invoke<SurfaceInfo | null>("surface_info"),
@@ -20,6 +20,9 @@ export const ipc = {
   claimItem: (path: string, source: string) => invoke<ItemOrigin>("claim_item", { path, source }),
   /** Shortcuts for installed programs that are in no box yet, put on the desktop. */
   gatherApps: () => invoke<{ added: string[]; already: number }>("gather_apps"),
+  /** Installed programs with no shortcut in a box yet, sorted into groups (src-tauri/src/catalog.rs). */
+  appCatalog: (overrides: Record<string, string>) => invoke<Catalog>("app_catalog", { overrides }),
+  takeApp: (link: string, onDesktop: boolean) => invoke<{ path: string; origin: ItemOrigin }>("take_app", { link, onDesktop }),
   autostartGet: () => invoke<boolean>("autostart_get"),
   autostartSet: (on: boolean) => invoke<boolean>("autostart_set", { on }),
   isOwnedItem: (path: string) => invoke<boolean>("is_owned_item", { path }),

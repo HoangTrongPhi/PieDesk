@@ -7,13 +7,16 @@ import { useAppearance } from "../lib/appearance";
 import { tr, tx, useLang, type Text } from "../lib/i18n";
 import { baseName, ipc } from "../lib/ipc";
 import { useUpdate } from "../lib/update";
-import type { Display, ThemeId } from "../lib/types";
+import type { Display } from "../lib/types";
+import { THEMES, seasonalTheme, type ThemeKind } from "../themes";
+import { OVERLAY_FX, type OverlayFx } from "../fx";
 import { settingsWithDefaults, useDoc } from "../stores/doc";
 import { displayName } from "../stores/surface";
 import { Field, Segmented, Toggle } from "../widgets/fields";
 import { WIDGETS, widgetDef } from "../widgets/registry";
 import { ACCENTS } from "../surface/BoxView";
 import { newBox, newWidget } from "../surface/Surface";
+import { AppGroups } from "./AppGroups";
 
 type Tab = "layout" | "widgets" | "settings" | "about";
 
@@ -24,13 +27,6 @@ const TABS: { id: Tab; label: Text; icon: typeof Box }[] = [
   { id: "about", label: ["Kiến trúc", "Architecture"], icon: Cpu },
 ];
 
-/** Theme previews: panel, border and accent colours mirror the CSS tokens in styles.css. */
-export const THEMES: { id: ThemeId; name: string; desc: Text; panel: string; border: string; accent: string }[] = [
-  { id: "neon", name: "Neon Room", desc: ["HUD sci-fi, chữ mono, viền xanh neon", "Sci-fi HUD, mono type, neon cyan edges"], panel: "#061225", border: "#4f8fcf", accent: "#66e0ff" },
-  { id: "midnight", name: "Midnight", desc: ["Kính tối gọn gàng, mặc định cũ", "Clean dark glass, the original look"], panel: "#0e111b", border: "#2a2f3c", accent: "#6c8cff" },
-  { id: "aurora", name: "Aurora", desc: ["Tím hồng ấm, viền gradient", "Warm violet and pink, gradient edges"], panel: "#1a0f2e", border: "#7b4bc4", accent: "#ff6bd6" },
-  { id: "ember", name: "Ember", desc: ["Than hồng cam ấm, hợp hình nền tối", "Warm amber glow for dark wallpapers"], panel: "#1e100a", border: "#a8642f", accent: "#ffb547" },
-];
 
 // Items created here have no monitor yet: surfaces show unknown monitors on the home one.
 const PRIMARY = "";
@@ -131,6 +127,7 @@ function LayoutTab() {
         </button>
         <GatherButton />
       </div>
+      <AppGroups home={home} />
 
       <h2 className="pd-h2">Box ({count})</h2>
       <div className="pd-list">
@@ -243,6 +240,81 @@ function WidgetsTab() {
   );
 }
 
+const KINDS: { kind: ThemeKind; label: [string, string] }[] = [
+  { kind: "basic", label: ["Cơ bản", "Basic"] },
+  { kind: "special", label: ["Đặc biệt — có hiệu ứng riêng", "Special — effects of their own"] },
+  { kind: "seasonal", label: ["Theo mùa — tự bật quanh ngày lễ", "Seasonal — switch on around their holiday"] },
+];
+
+function ThemePicker({ theme, onPick }: { theme: string; onPick: (id: (typeof THEMES)[number]["id"]) => void }) {
+  return (
+    <Field label={tr("Giao diện", "Theme")}>
+      <div className="flex flex-col gap-3">
+        {KINDS.map(({ kind, label }) => (
+          <div key={kind} className="flex flex-col gap-1.5">
+            <span className="pd-muted text-[11px] uppercase tracking-wider">{tr(...label)}</span>
+            <div className="grid grid-cols-2 gap-2">
+              {THEMES.filter((t) => t.kind === kind).map((t) => (
+                <button key={t.id} type="button" className={clsx("pd-theme", theme === t.id && "pd-theme-active")} onClick={() => onPick(t.id)}>
+                  <span className="pd-theme-swatch" style={{ background: t.panel, borderColor: t.border, color: t.accent }}>
+                    <i style={{ background: t.accent }} />
+                    Aa
+                  </span>
+                  <span className="min-w-0 text-left">
+                    <span className="block text-sm font-medium">{t.name}{"fx" in t && " ✦"}</span>
+                    <span className="pd-muted block text-[11.5px] leading-snug">{tx(t.desc)}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </Field>
+  );
+}
+
+const OVERLAY_LABEL: Record<OverlayFx, [string, string]> = {
+  off: ["Tắt", "Off"],
+  snow: ["Tuyết", "Snow"],
+  sakura: ["Hoa anh đào", "Sakura"],
+  leaves: ["Lá thu", "Autumn leaves"],
+  rain: ["Mưa", "Rain"],
+  fireflies: ["Đom đóm", "Fireflies"],
+  lanterns: ["Đèn lồng", "Lanterns"],
+};
+
+function EffectsSection() {
+  const settings = settingsWithDefaults(useDoc((s) => s.settings));
+  const set = useDoc((s) => s.setSettings);
+  const season = seasonalTheme();
+  return (
+    <section className="pd-section">
+      <Toggle label={tr("Hiệu ứng động của theme (tuyết, hoa rơi, mưa…)", "Theme effects (snow, petals, rain…)")} checked={settings.fx}
+        onChange={(fx) => set({ fx })} />
+      <Toggle
+        label={tr("Theme theo mùa tự bật (Tết, Trung thu, Halloween, Giáng sinh)", "Seasonal themes switch on by themselves (Tết, Mid-Autumn, Halloween, Christmas)")
+          + (season ? tr(` — đang là ${THEMES.find((t) => t.id === season)?.name}`, ` — now: ${THEMES.find((t) => t.id === season)?.name}`) : "")}
+        checked={settings.seasonal} onChange={(seasonal) => set({ seasonal })} />
+      <Toggle label={tr("Dừng hiệu ứng khi chạy pin", "Pause effects on battery")} checked={settings.fxBattery} onChange={(fxBattery) => set({ fxBattery })} />
+      <Field label={tr("Hiệu ứng phủ màn hình (trên mọi cửa sổ, chuột xuyên qua)", "Screen overlay (above every window, click-through)")}>
+        <Segmented value={settings.overlayFx} onChange={(overlayFx) => set({ overlayFx })}
+          options={(["off", ...OVERLAY_FX] as OverlayFx[]).map((v) => ({ value: v, label: tr(...OVERLAY_LABEL[v]) }))} />
+      </Field>
+      <Field label={tr("Mèo Pie", "Pie the cat")}
+        hint={tr("Trên desktop: đi trên nóc box, nhảy giữa các box. Trên cùng: đi dọc thanh taskbar, nổi trên mọi app.",
+          "On the desktop: walks on boxes and jumps between them. On top: walks along the taskbar above every app.")}>
+        <Segmented value={settings.pet} onChange={(pet) => set({ pet })}
+          options={[
+            { value: "off", label: tr("Tắt", "Off") },
+            { value: "desktop", label: tr("Trên desktop", "On the desktop") },
+            { value: "top", label: tr("Trên cùng", "On top") },
+          ]} />
+      </Field>
+    </section>
+  );
+}
+
 function SettingsTab() {
   const raw = useDoc((s) => s.settings);
   const settings = settingsWithDefaults(raw);
@@ -264,25 +336,11 @@ function SettingsTab() {
             <Segmented value={settings.language} onChange={(language) => set({ language })}
               options={[{ value: "vi", label: "Tiếng Việt" }, { value: "en", label: "English" }]} />
           </Field>
-          <Field label={tr("Giao diện", "Theme")}>
-            <div className="grid grid-cols-2 gap-2">
-              {THEMES.map((t) => (
-                <button key={t.id} className={clsx("pd-theme", settings.theme === t.id && "pd-theme-active")} onClick={() => set({ theme: t.id })}>
-                  <span className="pd-theme-swatch" style={{ background: t.panel, borderColor: t.border, color: t.accent }}>
-                    <i style={{ background: t.accent }} />
-                    Aa
-                  </span>
-                  <span className="min-w-0 text-left">
-                    <span className="block text-sm font-medium">{t.name}</span>
-                    <span className="pd-muted block text-[11.5px] leading-snug">{tx(t.desc)}</span>
-                  </span>
-                </button>
-              ))}
-            </div>
-          </Field>
+          <ThemePicker theme={settings.theme} onPick={(theme) => set({ theme })} />
           <Toggle label={tr("Party mode — LED RGB chạy quanh viền box & widget", "Party mode — RGB LEDs chasing around boxes & widgets")}
             checked={settings.party} onChange={(party) => set({ party })} />
         </section>
+        <EffectsSection />
         <section className="pd-section">
           <Field label={tr("Màn hình chính của PieDesk", "PieDesk home monitor")}
             hint={tr(

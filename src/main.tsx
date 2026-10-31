@@ -1,8 +1,10 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
+import "./themes/themes.css";
 import { Surface } from "./surface/Surface";
 import { Manager } from "./manager/Manager";
+import { Overlay } from "./surface/Overlay";
 
 async function boot() {
   // Plain browser (vite dev without Tauri): fake backend so the UI can be previewed.
@@ -11,7 +13,7 @@ async function boot() {
   const view = new URLSearchParams(location.search).get("view") ?? "manager";
   document.documentElement.dataset.view = view;
   createRoot(document.getElementById("root")!).render(
-    <StrictMode>{view === "surface" ? <Surface /> : <Manager />}</StrictMode>,
+    <StrictMode>{view === "surface" ? <Surface /> : view === "overlay" ? <Overlay /> : <Manager />}</StrictMode>,
   );
 }
 

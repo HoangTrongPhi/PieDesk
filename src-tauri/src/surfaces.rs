@@ -69,7 +69,7 @@ pub fn sync(app: &AppHandle) -> tauri::Result<()> {
             let ident = gdi.as_ref().and_then(|g| identities.get(g));
             let area = m.work_area();
             Display {
-                id: ident.map(|x| x.id.clone()).or_else(|| gdi.clone()).unwrap_or_else(|| format!("monitor-{i}")),
+                id: monitor_id(m, i, &identities),
                 name: ident.map(|x| x.name.clone()).unwrap_or_default(),
                 index: i,
                 primary: false,
@@ -130,7 +130,18 @@ pub fn sync(app: &AppHandle) -> tauri::Result<()> {
     }
     *state.surfaces.lock().unwrap() = infos;
     let _ = app.emit("surface://info", ());
+    crate::overlays::sync(app);
     Ok(())
+}
+
+/// Stable id of `m` (the `i`-th monitor): its device path, else its GDI name.
+pub fn monitor_id(m: &Monitor, i: usize, identities: &HashMap<String, monitors::Identity>) -> String {
+    let gdi = m.name().cloned();
+    gdi.as_ref()
+        .and_then(|g| identities.get(g))
+        .map(|x| x.id.clone())
+        .or(gdi)
+        .unwrap_or_else(|| format!("monitor-{i}"))
 }
 
 fn create(app: &AppHandle, label: &str, m: &Monitor) -> tauri::Result<()> {

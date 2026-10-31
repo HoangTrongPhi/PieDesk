@@ -75,6 +75,7 @@ export const WidgetFrame = memo(function WidgetFrame({ widget, bounds }: Props) 
       <div
         ref={ref}
         data-hit
+        data-widget-id={widget.id}
         className={clsx("pd-widget group absolute", (widget.opacity ?? 0.6) === 0 && "pd-widget-bare")}
         style={{ left: x, top: y, width: widget.w, height: widget.h, "--box-alpha": widget.opacity ?? 0.6 } as React.CSSProperties}
         onContextMenu={menu}

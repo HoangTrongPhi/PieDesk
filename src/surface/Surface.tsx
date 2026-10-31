@@ -6,7 +6,10 @@ import { useHitReporter } from "../lib/hit";
 import type { BoxModel, SurfaceInfo, WidgetModel } from "../lib/types";
 import { systemLang, useDoc } from "../stores/doc";
 import { initSurfaceInfo, useSurface } from "../stores/surface";
+import { addNewApps } from "../lib/groups";
 import { useAppearance } from "../lib/appearance";
+import { FxLayer } from "../fx/FxLayer";
+import type { FxId } from "../fx";
 import { tr } from "../lib/i18n";
 import { widgetDef } from "../widgets/registry";
 import { ACCENTS, BoxView } from "./BoxView";
@@ -78,7 +81,7 @@ export function Surface() {
   const { ready, boxes, widgets, settings } = useDoc();
   const ghost = useItemDrag((s) => s.ghost);
   useHitReporter(root);
-  useAppearance();
+  const theme = useAppearance();
 
   useEffect(() => {
     initSurfaceInfo();
@@ -100,6 +103,15 @@ export function Surface() {
     // Layouts from before the language setting: pin the system language so the tray can follow it.
     if (!settings.language) useDoc.getState().setSettings({ language: systemLang() });
   }, [ready, info, settings.initialized, settings.language]);
+
+  // Programs installed while PieDesk runs (and since it last ran) drop into their group box.
+  useEffect(() => {
+    if (!ready || !info?.primary || !settings.initialized) return;
+    const run = () => void addNewApps().catch(console.error);
+    run();
+    const un = listen("apps://changed", run);
+    return () => void un.then((f) => f());
+  }, [ready, info?.primary, settings.initialized]);
 
   // Tray → "Thêm Box": the primary surface creates it.
   useEffect(() => {
@@ -132,8 +144,11 @@ export function Surface() {
   const onNewBox = (near: BoxModel) =>
     useDoc.getState().upsertBox(newBox(info.monitor, { x: Math.min(near.x + 40, bounds.w - 420), y: Math.min(near.y + 40, bounds.h - 260) }));
 
+  const fx: FxId[] = [...(settings.fx === false ? [] : (theme.fx ?? [])), ...(settings.pet === "desktop" ? (["pet"] as const) : [])];
+
   return (
     <div ref={setRoot} className="pd-surface fixed inset-0">
+      <FxLayer ids={fx} enabled />
       {Object.values(widgets)
         .filter((w) => mine(w.monitor))
         .map((w) => <WidgetFrame key={w.id} widget={w} bounds={bounds} />)}

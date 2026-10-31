@@ -35,6 +35,8 @@ export type BoxModel = Rect & {
   /** Folder portal: only these extensions (lowercase, no dot). Empty = all. */
   filterExt?: string[];
   sortByName?: boolean;
+  /** App group this box was made for ("Group apps into boxes"); new installs of it land here. */
+  group?: string;
 };
 
 export type WidgetModel = Rect & {
@@ -63,9 +65,27 @@ export type Settings = {
   autoUpdate?: boolean;
   /** Monitor id that seeds the layout, gets new boxes and hosts orphans. Empty = Windows primary. */
   homeMonitor?: string;
+  /** Holiday themes switch on by themselves around Tết, Trung thu, Halloween and Christmas. */
+  seasonal?: boolean;
+  /** Canvas effects of the theme (snow, petals…). */
+  fx?: boolean;
+  /** Stop effects while on battery. */
+  fxBattery?: boolean;
+  /** Effect drawn above every app, in its own click-through window. */
+  overlayFx?: OverlayFx;
+  /** Pie the cat: on the desktop (walks on boxes), on top of every app, or off. */
+  pet?: "off" | "desktop" | "top";
+  /** Newly installed programs drop into the box of their group. */
+  autoGroup?: boolean;
+  /** Program key → group id picked by the user. */
+  appGroupOverrides?: Record<string, string>;
+  /** Program keys already offered to group boxes, so removed ones do not come back. */
+  appsSeen?: string[];
 };
 
-export type ThemeId = "neon" | "midnight" | "aurora" | "ember";
+export type { ThemeId } from "../themes";
+import type { ThemeId } from "../themes";
+import type { OverlayFx } from "../fx";
 
 export type Coll = "boxes" | "widgets";
 
@@ -108,3 +128,7 @@ export type SurfaceInfo = {
 export type DragFrame = { coll: Coll; id: string; title: string; w: number; h: number; grabX: number; grabY: number };
 
 export type FolderEntry = { name: string; path: string; isDir: boolean; ext: string };
+
+export type AppGroup = { id: string; vi: string; en: string };
+export type CatalogApp = { key: string; name: string; link: string; onDesktop: boolean; group: string; guess: string };
+export type Catalog = { groups: AppGroup[]; apps: CatalogApp[] };

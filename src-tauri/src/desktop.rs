@@ -15,7 +15,7 @@ mod imp {
     use windows::Win32::UI::WindowsAndMessaging::{
         FindWindowW, GetWindowLongPtrW, SetWindowLongPtrW, SetWindowPos, GWLP_HWNDPARENT, GWL_EXSTYLE, HWND_BOTTOM,
         SPI_SETWORKAREA, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, WINDOWPOS, WM_DISPLAYCHANGE, WM_SETTINGCHANGE,
-        WM_WINDOWPOSCHANGING, WS_EX_APPWINDOW, WS_EX_TOOLWINDOW,
+        WM_WINDOWPOSCHANGING, WS_EX_APPWINDOW, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_EX_TRANSPARENT,
     };
 
     const SUBCLASS_ID: usize = 0x5049_4544; // "PIED"
@@ -41,6 +41,15 @@ mod imp {
         DefSubclassProc(hwnd, msg, wparam, lparam)
     }
 
+    pub fn float(raw: isize) {
+        let hwnd = HWND(raw as _);
+        unsafe {
+            let ex = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
+            let ex = (ex | (WS_EX_TOOLWINDOW.0 | WS_EX_NOACTIVATE.0 | WS_EX_TRANSPARENT.0) as isize) & !(WS_EX_APPWINDOW.0 as isize);
+            SetWindowLongPtrW(hwnd, GWL_EXSTYLE, ex);
+        }
+    }
+
     pub fn pin(raw: isize) {
         let hwnd = HWND(raw as _);
         unsafe {
@@ -54,6 +63,16 @@ mod imp {
             let _ = SetWindowPos(hwnd, Some(HWND_BOTTOM), 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
         }
     }
+}
+
+/// Overlay windows: no taskbar button or Alt+Tab entry, and clicking through never activates them.
+pub fn float(window: &WebviewWindow) {
+    #[cfg(windows)]
+    if let Ok(hwnd) = window.hwnd() {
+        imp::float(hwnd.0 as isize);
+    }
+    #[cfg(not(windows))]
+    let _ = window;
 }
 
 pub fn pin(window: &WebviewWindow) {

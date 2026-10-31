@@ -6,6 +6,7 @@
 
 mod agents;
 mod apps;
+mod catalog;
 mod desktop;
 mod folders;
 mod guard;
@@ -14,6 +15,7 @@ mod hub;
 mod icons;
 mod items;
 mod monitors;
+mod overlays;
 mod shell;
 mod startup;
 mod store;
@@ -91,6 +93,9 @@ fn store_apply(app: AppHandle, window: WebviewWindow, state: tauri::State<AppSta
     if touched("homeMonitor") {
         surfaces::poke();
     }
+    if touched("overlayFx") || touched("pet") {
+        overlays::sync_later(&app);
+    }
     if ["language", "locked", "party"].iter().any(|k| touched(k)) {
         refresh_tray(&app);
     }
@@ -153,6 +158,37 @@ async fn gather_apps(app: AppHandle, state: tauri::State<'_, AppState>) -> Resul
             .collect()
     });
     Ok(apps::gather(&apps::start_menu_dirs(), &desktop, &taken))
+}
+
+/// Installed programs with no shortcut in a box yet, sorted into groups.
+#[tauri::command]
+async fn app_catalog(
+    app: AppHandle,
+    state: tauri::State<'_, AppState>,
+    overrides: HashMap<String, String>,
+) -> Result<catalog::Catalog, String> {
+    let desktop = app.path().desktop_dir().map_err(|e| e.to_string())?;
+    let config = app.path().app_config_dir().map_err(|e| e.to_string())?;
+    let taken: std::collections::HashSet<String> = state.store.read(|d| {
+        d.boxes
+            .values()
+            .flat_map(|b| b.get("items").and_then(|i| i.as_array()).cloned().unwrap_or_default())
+            .flat_map(|i| ["path", "source"].map(|k| i.get(k).and_then(|p| p.as_str()).map(str::to_owned)))
+            .flatten()
+            .map(|p| items::target_key(std::path::Path::new(&p)))
+            .collect()
+    });
+    Ok(catalog::scan(&catalog::Rules::load(&config), &apps::start_menu_dirs(), &desktop, &taken, &overrides))
+}
+
+/// Puts a program's shortcut into a box: a desktop one moves in, a Start Menu one is copied.
+#[tauri::command]
+async fn take_app(state: tauri::State<'_, AppState>, link: String, on_desktop: bool) -> Result<items::Imported, String> {
+    if on_desktop {
+        items::import(&state.items_dir, &link)
+    } else {
+        items::copy_in(&state.items_dir, &link)
+    }
 }
 
 /// Takes an item out of a box, putting a moved shortcut back where it came from.
@@ -220,8 +256,10 @@ fn surface_windows(app: &AppHandle) -> Vec<WebviewWindow> {
     app.webview_windows().into_iter().filter(|(l, _)| l.starts_with(SURFACE_PREFIX)).map(|(_, w)| w).collect()
 }
 
+/// Shows or hides the surfaces and the overlay windows.
 pub fn set_surfaces_visible(app: &AppHandle, visible: bool) {
-    for w in surface_windows(app) {
+    let all = app.webview_windows();
+    for w in all.into_iter().filter(|(l, _)| l.starts_with(SURFACE_PREFIX) || l.starts_with(overlays::PREFIX)).map(|(_, w)| w) {
         let _ = if visible { w.show() } else { w.hide() };
     }
 }
@@ -461,6 +499,7 @@ pub fn run() {
 
             surfaces::sync(&handle)?;
             surfaces::start_watch(handle.clone());
+            catalog::watch(&handle);
             {
                 let state = handle.state::<AppState>();
                 state.hit.start(handle.clone());
@@ -485,6 +524,8 @@ pub fn run() {
             remove_item,
             claim_item,
             gather_apps,
+            app_catalog,
+            take_app,
             autostart_get,
             autostart_set,
             is_owned_item,
@@ -499,6 +540,7 @@ pub fn run() {
             surfaces::drag_over,
             surfaces::drag_end,
             surfaces::list_displays,
+            guard::power_on_battery,
         ])
         .build(tauri::generate_context!())
         .expect("error while building PieDesk")

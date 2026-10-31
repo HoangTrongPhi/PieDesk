@@ -92,6 +92,14 @@ export const settingsWithDefaults = (s: Settings): Required<Settings> => ({
   agentNotify: s.agentNotify ?? true,
   autoUpdate: s.autoUpdate ?? true,
   homeMonitor: s.homeMonitor ?? "",
+  autoGroup: s.autoGroup ?? true,
+  seasonal: s.seasonal ?? true,
+  fx: s.fx ?? true,
+  fxBattery: s.fxBattery ?? true,
+  overlayFx: s.overlayFx ?? "off",
+  pet: s.pet ?? "off",
+  appGroupOverrides: s.appGroupOverrides ?? {},
+  appsSeen: s.appsSeen ?? [],
 });
 
 export const systemLang = (): "vi" | "en" => (navigator.language.toLowerCase().startsWith("vi") ? "vi" : "en");

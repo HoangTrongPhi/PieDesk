@@ -1,0 +1,565 @@
+/* Themes beyond the four in styles.css: tokens first, then the CSS-only effects that only one
+   theme has. Canvas effects (snow, petals, matrix…) live in src/fx and are picked in
+   src/themes/index.ts. Light themes only restyle the desktop: the manager keeps its dark tokens. */
+
+/* ---------------------------------------------------------------- basic */
+
+:root[data-theme="glass"] {
+  --pd-panel: 32 38 52;
+  --pd-solid: rgb(36 42 56 / 0.97);
+  --pd-border: rgb(255 255 255 / 0.18);
+  --pd-border-strong: rgb(255 255 255 / 0.45);
+  --pd-accent: #60cdff;
+  --pd-fg: #f3f6fb;
+  --pd-strong: #ffffff;
+  --pd-muted: rgb(243 246 251 / 0.55);
+  --pd-head: #f3f6fb;
+  --pd-glow: rgb(96 205 255 / 0.35);
+  --pd-bg: #1c202b;
+  --pd-font: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --pd-radius: 8px;
+  --pd-title-prefix: "";
+  --pd-title-size: 13px;
+  --pd-title-spacing: 0;
+  --pd-title-weight: 600;
+  --pd-shadow: 0 8px 24px rgb(0 0 0 / 0.28);
+}
+:root[data-theme="glass"] .pd-box,
+:root[data-theme="glass"] .pd-widget:not(.pd-widget-bare) {
+  backdrop-filter: blur(18px) saturate(1.4);
+  background-image: linear-gradient(160deg, rgb(255 255 255 / 0.1), transparent 45%);
+}
+
+:root[data-view="surface"][data-theme="light"],
+:root[data-view="overlay"][data-theme="light"] {
+  --pd-panel: 246 247 250;
+  --pd-solid: rgb(250 250 252 / 0.98);
+  --pd-border: rgb(0 0 0 / 0.1);
+  --pd-border-strong: rgb(0 0 0 / 0.3);
+  --pd-accent: #2563eb;
+  --pd-fg: #1f2430;
+  --pd-strong: #11141b;
+  --pd-muted: rgb(31 36 48 / 0.55);
+  --pd-head: #1f2430;
+  --pd-glow: rgb(37 99 235 / 0.3);
+  --pd-font: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --pd-radius: 12px;
+  --pd-title-prefix: "";
+  --pd-title-size: 13px;
+  --pd-title-spacing: 0;
+  --pd-title-weight: 600;
+  --pd-shadow: 0 10px 28px -10px rgb(0 0 0 / 0.35);
+}
+:root[data-view="surface"][data-theme="paper"] {
+  --pd-panel: 250 244 228;
+  --pd-solid: rgb(252 247 234 / 0.98);
+  --pd-border: rgb(92 70 40 / 0.35);
+  --pd-border-strong: rgb(92 70 40 / 0.6);
+  --pd-accent: #c2410c;
+  --pd-fg: #3b2f1e;
+  --pd-strong: #2a2114;
+  --pd-muted: rgb(59 47 30 / 0.6);
+  --pd-head: #3b2f1e;
+  --pd-glow: rgb(194 65 12 / 0.3);
+  --pd-font: "Segoe Print", "Comic Sans MS", "Segoe UI", sans-serif;
+  --pd-radius: 4px;
+  --pd-title-prefix: "✎ ";
+  --pd-title-size: 14px;
+  --pd-title-spacing: 0.02em;
+  --pd-title-weight: 700;
+  --pd-shadow: 2px 3px 0 rgb(92 70 40 / 0.35);
+}
+:root[data-view="surface"][data-theme="paper"] .pd-box {
+  background-image: repeating-linear-gradient(transparent 0 23px, rgb(92 140 200 / 0.18) 23px 24px);
+  border-style: dashed;
+}
+:is(:root[data-theme="light"], :root[data-theme="paper"]) :is(.pd-item-label, .pd-box-header) {
+  text-shadow: none;
+}
+
+:root[data-theme="nord"] {
+  --pd-panel: 46 52 64;
+  --pd-solid: rgb(59 66 82 / 0.98);
+  --pd-border: rgb(136 192 208 / 0.25);
+  --pd-border-strong: rgb(136 192 208 / 0.6);
+  --pd-accent: #88c0d0;
+  --pd-fg: #eceff4;
+  --pd-strong: #ffffff;
+  --pd-muted: #a3adbf;
+  --pd-head: #d8dee9;
+  --pd-glow: rgb(136 192 208 / 0.4);
+  --pd-bg: #2e3440;
+  --pd-font: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --pd-radius: 10px;
+  --pd-title-prefix: "";
+  --pd-title-size: 13px;
+  --pd-title-spacing: 0.02em;
+  --pd-title-weight: 600;
+  --pd-shadow: 0 10px 28px rgb(20 24 32 / 0.45);
+}
+:root[data-theme="dracula"] {
+  --pd-panel: 40 42 54;
+  --pd-solid: rgb(48 50 64 / 0.98);
+  --pd-border: rgb(189 147 249 / 0.3);
+  --pd-border-strong: rgb(255 121 198 / 0.6);
+  --pd-accent: #bd93f9;
+  --pd-fg: #f8f8f2;
+  --pd-strong: #ffffff;
+  --pd-muted: #9aa0c3;
+  --pd-head: #ff79c6;
+  --pd-glow: rgb(189 147 249 / 0.45);
+  --pd-bg: #21222c;
+  --pd-font: ui-monospace, "Cascadia Code", Consolas, monospace;
+  --pd-radius: 12px;
+  --pd-title-prefix: "λ ";
+  --pd-title-size: 12.5px;
+  --pd-title-spacing: 0.04em;
+  --pd-title-weight: 600;
+  --pd-shadow: 0 10px 30px rgb(0 0 0 / 0.45);
+}
+:root[data-theme="catppuccin"] {
+  --pd-panel: 30 30 46;
+  --pd-solid: rgb(49 50 68 / 0.98);
+  --pd-border: rgb(203 166 247 / 0.25);
+  --pd-border-strong: rgb(245 194 231 / 0.6);
+  --pd-accent: #cba6f7;
+  --pd-fg: #cdd6f4;
+  --pd-strong: #ffffff;
+  --pd-muted: #9399b2;
+  --pd-head: #f5c2e7;
+  --pd-glow: rgb(203 166 247 / 0.4);
+  --pd-bg: #1e1e2e;
+  --pd-font: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --pd-radius: 16px;
+  --pd-title-prefix: "◦ ";
+  --pd-title-size: 13px;
+  --pd-title-spacing: 0.02em;
+  --pd-title-weight: 600;
+  --pd-shadow: 0 12px 30px rgb(10 10 20 / 0.45);
+}
+
+/* ---------------------------------------------------------------- special */
+
+/* Cyberpunk: cut corners, yellow / magenta, the title glitches and splits RGB on hover. */
+:root[data-theme="cyberpunk"] {
+  --pd-panel: 14 10 24;
+  --pd-solid: rgb(20 14 32 / 0.98);
+  --pd-border: rgb(252 238 10 / 0.45);
+  --pd-border-strong: rgb(0 240 255 / 0.8);
+  --pd-accent: #fcee0a;
+  --pd-fg: #e8f9ff;
+  --pd-strong: #ffffff;
+  --pd-muted: #8ad8e8;
+  --pd-head: #fcee0a;
+  --pd-glow: rgb(255 0 110 / 0.55);
+  --pd-bg: #0d0716;
+  --pd-font: ui-monospace, "Cascadia Code", Consolas, monospace;
+  --pd-radius: 0px;
+  --pd-title-prefix: "▚ ";
+  --pd-title-size: 12px;
+  --pd-title-spacing: 0.22em;
+  --pd-title-weight: 700;
+  --pd-shadow: 6px 6px 0 rgb(255 0 110 / 0.35);
+}
+:root[data-theme="cyberpunk"] .pd-box {
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+  background-image: repeating-linear-gradient(transparent 0 3px, rgb(0 240 255 / 0.04) 3px 4px);
+}
+:root[data-theme="cyberpunk"] .pd-box-title {
+  text-transform: uppercase;
+}
+:root[data-theme="cyberpunk"] .pd-box:hover .pd-box-title {
+  animation: pd-glitch 0.9s steps(2) infinite;
+}
+@keyframes pd-glitch {
+  0% { text-shadow: 2px 0 #ff006e, -2px 0 #00f0ff; transform: translate(0); }
+  20% { text-shadow: -3px 0 #ff006e, 3px 0 #00f0ff; transform: translate(1px, -1px); clip-path: inset(10% 0 40% 0); }
+  40% { text-shadow: 1px 0 #ff006e, -1px 0 #00f0ff; transform: translate(-1px, 1px); clip-path: inset(0); }
+  60% { text-shadow: -2px 0 #ff006e, 2px 0 #00f0ff; transform: translate(0); clip-path: inset(55% 0 5% 0); }
+  80%, 100% { text-shadow: 0 0 transparent; transform: translate(0); clip-path: inset(0); }
+}
+
+:root[data-theme="matrix"] {
+  --pd-panel: 0 10 2;
+  --pd-solid: rgb(0 14 4 / 0.98);
+  --pd-border: rgb(0 255 102 / 0.3);
+  --pd-border-strong: rgb(0 255 102 / 0.7);
+  --pd-accent: #00ff66;
+  --pd-fg: #b8ffcf;
+  --pd-strong: #e6ffee;
+  --pd-muted: #4fb877;
+  --pd-head: #00ff66;
+  --pd-glow: rgb(0 255 102 / 0.5);
+  --pd-bg: #000a02;
+  --pd-font: ui-monospace, "Cascadia Code", Consolas, monospace;
+  --pd-radius: 6px;
+  --pd-title-prefix: "> ";
+  --pd-title-size: 12px;
+  --pd-title-spacing: 0.12em;
+  --pd-title-weight: 600;
+  --pd-shadow: 0 0 22px rgb(0 255 102 / 0.15);
+}
+
+:root[data-theme="synthwave"] {
+  --pd-panel: 26 6 48;
+  --pd-solid: rgb(34 10 60 / 0.98);
+  --pd-border: rgb(255 56 200 / 0.45);
+  --pd-border-strong: rgb(255 179 71 / 0.8);
+  --pd-accent: #ff38c8;
+  --pd-fg: #ffe9fb;
+  --pd-strong: #ffffff;
+  --pd-muted: #c08bd6;
+  --pd-head: #ffb347;
+  --pd-glow: rgb(255 56 200 / 0.55);
+  --pd-bg: #14031f;
+  --pd-font: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  --pd-radius: 14px;
+  --pd-title-prefix: "◢ ";
+  --pd-title-size: 13px;
+  --pd-title-spacing: 0.18em;
+  --pd-title-weight: 700;
+  --pd-shadow: 0 0 28px rgb(255 56 200 / 0.25);
+}
+:root[data-theme="synthwave"] .pd-box-title {
+  font-style: italic;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px rgb(255 56 200 / 0.8);
+}
+
+:root[data-theme="sakura"] {
+  --pd-panel: 52 26 40;
+  --pd-solid: rgb(60 32 48 / 0.98);
+  --pd-border: rgb(255 183 213 / 0.35);
+  --pd-border-strong: rgb(255 214 232 / 0.7);
+  --pd-accent: #ffb7d5;
+  --pd-fg: #ffeef5;
+  --pd-strong: #ffffff;
+  --pd-muted: #d79bb6;
+  --pd-head: #ffd6e8;
+  --pd-glow: rgb(255 183 213 / 0.45);
+  --pd-bg: #200f19;
+  --pd-font: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --pd-radius: 20px;
+  --pd-title-prefix: "🌸 ";
+  --pd-title-size: 13px;
+  --pd-title-spacing: 0.04em;
+  --pd-title-weight: 600;
+  --pd-shadow: 0 12px 30px rgb(60 10 30 / 0.4);
+}
+
+/* Winter: frosted edges that glitter. */
+:root[data-theme="winter"] {
+  --pd-panel: 18 34 56;
+  --pd-solid: rgb(22 40 64 / 0.98);
+  --pd-border: rgb(200 236 255 / 0.4);
+  --pd-border-strong: rgb(235 249 255 / 0.85);
+  --pd-accent: #bfeaff;
+  --pd-fg: #eef9ff;
+  --pd-strong: #ffffff;
+  --pd-muted: #9cc2db;
+  --pd-head: #e6f6ff;
+  --pd-glow: rgb(191 234 255 / 0.45);
+  --pd-bg: #0c1a2b;
+  --pd-font: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --pd-radius: 14px;
+  --pd-title-prefix: "❄ ";
+  --pd-title-size: 13px;
+  --pd-title-spacing: 0.06em;
+  --pd-title-weight: 600;
+  --pd-shadow: 0 10px 30px rgb(0 10 30 / 0.45);
+}
+:root[data-theme="winter"] .pd-box {
+  box-shadow: var(--pd-shadow), inset 0 0 18px rgb(200 236 255 / 0.18), inset 0 1px 0 rgb(255 255 255 / 0.5);
+  background-image: radial-gradient(circle at 0 0, rgb(220 245 255 / 0.22), transparent 30%),
+    radial-gradient(circle at 100% 100%, rgb(220 245 255 / 0.16), transparent 28%);
+}
+
+:root[data-theme="aquarium"] {
+  --pd-panel: 4 34 54;
+  --pd-solid: rgb(6 40 62 / 0.98);
+  --pd-border: rgb(94 234 212 / 0.35);
+  --pd-border-strong: rgb(153 246 228 / 0.75);
+  --pd-accent: #5eead4;
+  --pd-fg: #e0fbff;
+  --pd-strong: #ffffff;
+  --pd-muted: #7cc4d4;
+  --pd-head: #a5f3fc;
+  --pd-glow: rgb(94 234 212 / 0.45);
+  --pd-bg: #02131f;
+  --pd-font: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --pd-radius: 22px;
+  --pd-title-prefix: "◌ ";
+  --pd-title-size: 13px;
+  --pd-title-spacing: 0.04em;
+  --pd-title-weight: 600;
+  --pd-shadow: 0 12px 34px rgb(0 20 40 / 0.5);
+}
+
+:root[data-theme="galaxy"] {
+  --pd-panel: 8 6 26;
+  --pd-solid: rgb(14 10 36 / 0.98);
+  --pd-border: rgb(167 139 250 / 0.3);
+  --pd-border-strong: rgb(196 181 253 / 0.7);
+  --pd-accent: #a78bfa;
+  --pd-fg: #ece9ff;
+  --pd-strong: #ffffff;
+  --pd-muted: #9b93c9;
+  --pd-head: #ddd6fe;
+  --pd-glow: rgb(167 139 250 / 0.45);
+  --pd-bg: #07051a;
+  --pd-font: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  --pd-radius: 18px;
+  --pd-title-prefix: "✧ ";
+  --pd-title-size: 13px;
+  --pd-title-spacing: 0.1em;
+  --pd-title-weight: 600;
+  --pd-shadow: 0 12px 34px rgb(0 0 10 / 0.55);
+}
+
+/* Retro pixel: square everything, hard pixel shadow, CRT scanlines and a soft flicker. */
+:root[data-theme="retro"] {
+  --pd-panel: 16 16 24;
+  --pd-solid: rgb(20 20 30 / 0.98);
+  --pd-border: rgb(255 214 10 / 0.6);
+  --pd-border-strong: rgb(255 214 10 / 0.95);
+  --pd-accent: #ffd60a;
+  --pd-fg: #e9f5db;
+  --pd-strong: #ffffff;
+  --pd-muted: #8f9b80;
+  --pd-head: #ffd60a;
+  --pd-glow: rgb(255 214 10 / 0.4);
+  --pd-bg: #101018;
+  --pd-font: "Lucida Console", ui-monospace, Consolas, monospace;
+  --pd-radius: 0px;
+  --pd-title-prefix: "► ";
+  --pd-title-size: 12px;
+  --pd-title-spacing: 0.14em;
+  --pd-title-weight: 700;
+  --pd-shadow: 5px 5px 0 rgb(0 0 0 / 0.6);
+}
+:root[data-theme="retro"] :is(.pd-box, .pd-widget:not(.pd-widget-bare)) {
+  border-width: 2px;
+  image-rendering: pixelated;
+  background-image: repeating-linear-gradient(transparent 0 2px, rgb(0 0 0 / 0.22) 2px 3px);
+  animation: pd-crt 6s infinite;
+}
+:root[data-theme="retro"] .pd-box-title {
+  text-transform: uppercase;
+}
+@keyframes pd-crt {
+  0%, 96%, 100% { filter: none; }
+  97% { filter: brightness(1.15) contrast(1.1); }
+  98% { filter: brightness(0.92); }
+}
+
+:root[data-theme="lofi"] {
+  --pd-panel: 30 34 48;
+  --pd-solid: rgb(36 40 56 / 0.98);
+  --pd-border: rgb(148 163 184 / 0.3);
+  --pd-border-strong: rgb(203 213 225 / 0.6);
+  --pd-accent: #f9a8d4;
+  --pd-fg: #e2e8f0;
+  --pd-strong: #ffffff;
+  --pd-muted: #94a3b8;
+  --pd-head: #cbd5e1;
+  --pd-glow: rgb(249 168 212 / 0.35);
+  --pd-bg: #151824;
+  --pd-font: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --pd-radius: 14px;
+  --pd-title-prefix: "☂ ";
+  --pd-title-size: 13px;
+  --pd-title-spacing: 0.06em;
+  --pd-title-weight: 500;
+  --pd-shadow: 0 12px 30px rgb(0 0 0 / 0.4);
+}
+:root[data-theme="lofi"] .pd-box {
+  backdrop-filter: blur(6px);
+}
+
+/* Steampunk: brass, rivets, and a gear on each box that turns while you work in it. */
+:root[data-theme="steampunk"] {
+  --pd-panel: 40 26 14;
+  --pd-solid: rgb(48 32 18 / 0.98);
+  --pd-border: rgb(205 160 90 / 0.55);
+  --pd-border-strong: rgb(233 196 120 / 0.85);
+  --pd-accent: #d4a24c;
+  --pd-fg: #f3e3c3;
+  --pd-strong: #fff6e0;
+  --pd-muted: #b3966a;
+  --pd-head: #e9c478;
+  --pd-glow: rgb(212 162 76 / 0.45);
+  --pd-bg: #1a1009;
+  --pd-font: Georgia, "Palatino Linotype", serif;
+  --pd-radius: 6px;
+  --pd-title-prefix: "⚙ ";
+  --pd-title-size: 13.5px;
+  --pd-title-spacing: 0.06em;
+  --pd-title-weight: 700;
+  --pd-shadow: 0 10px 26px rgb(20 8 0 / 0.55), inset 0 0 0 3px rgb(120 80 30 / 0.35);
+}
+:root[data-theme="steampunk"] .pd-box {
+  border-width: 2px;
+  background-image: radial-gradient(circle at 8px 8px, #c99a4a 2.5px, transparent 3px),
+    radial-gradient(circle at calc(100% - 8px) 8px, #c99a4a 2.5px, transparent 3px),
+    radial-gradient(circle at 8px calc(100% - 8px), #c99a4a 2.5px, transparent 3px),
+    radial-gradient(circle at calc(100% - 8px) calc(100% - 8px), #c99a4a 2.5px, transparent 3px);
+}
+:root[data-theme="steampunk"] .pd-box-header::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  width: 20px;
+  height: 20px;
+  opacity: 0.8;
+  background: var(--pd-accent);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M10.3 1h3.4l.5 2.6 1.6.7 2.2-1.5 2.4 2.4-1.5 2.2.7 1.6 2.6.5v3.4l-2.6.5-.7 1.6 1.5 2.2-2.4 2.4-2.2-1.5-1.6.7-.5 2.6h-3.4l-.5-2.6-1.6-.7-2.2 1.5-2.4-2.4 1.5-2.2-.7-1.6L1 13.7v-3.4l2.6-.5.7-1.6-1.5-2.2 2.4-2.4 2.2 1.5 1.6-.7zM12 8a4 4 0 100 8 4 4 0 000-8z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M10.3 1h3.4l.5 2.6 1.6.7 2.2-1.5 2.4 2.4-1.5 2.2.7 1.6 2.6.5v3.4l-2.6.5-.7 1.6 1.5 2.2-2.4 2.4-2.2-1.5-1.6.7-.5 2.6h-3.4l-.5-2.6-1.6-.7-2.2 1.5-2.4-2.4 1.5-2.2-.7-1.6L1 13.7v-3.4l2.6-.5.7-1.6-1.5-2.2 2.4-2.4 2.2 1.5 1.6-.7zM12 8a4 4 0 100 8 4 4 0 000-8z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+:root[data-theme="steampunk"] .pd-box:hover .pd-box-header::after {
+  animation: pd-spin 4s linear infinite;
+}
+@keyframes pd-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---------------------------------------------------------------- seasonal */
+
+:root[data-theme="halloween"] {
+  --pd-panel: 22 10 28;
+  --pd-solid: rgb(28 12 34 / 0.98);
+  --pd-border: rgb(255 122 24 / 0.45);
+  --pd-border-strong: rgb(255 160 60 / 0.85);
+  --pd-accent: #ff7a18;
+  --pd-fg: #ffe9d6;
+  --pd-strong: #ffffff;
+  --pd-muted: #b98cc4;
+  --pd-head: #ffa040;
+  --pd-glow: rgb(255 122 24 / 0.5);
+  --pd-bg: #12061a;
+  --pd-font: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --pd-radius: 14px;
+  --pd-title-prefix: "🎃 ";
+  --pd-title-size: 13px;
+  --pd-title-spacing: 0.06em;
+  --pd-title-weight: 700;
+  --pd-shadow: 0 0 26px rgb(255 122 24 / 0.2), 0 12px 30px rgb(0 0 0 / 0.5);
+}
+:root[data-theme="halloween"] .pd-box {
+  background-image: radial-gradient(ellipse at 50% 120%, rgb(140 60 220 / 0.28), transparent 60%);
+}
+
+/* Christmas: a string of blinking lights along the top of every box. */
+:root[data-theme="christmas"] {
+  --pd-panel: 12 36 24;
+  --pd-solid: rgb(16 42 30 / 0.98);
+  --pd-border: rgb(220 38 38 / 0.5);
+  --pd-border-strong: rgb(250 204 21 / 0.85);
+  --pd-accent: #ef4444;
+  --pd-fg: #f0fdf4;
+  --pd-strong: #ffffff;
+  --pd-muted: #86c49a;
+  --pd-head: #fde68a;
+  --pd-glow: rgb(239 68 68 / 0.45);
+  --pd-bg: #07170f;
+  --pd-font: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --pd-radius: 14px;
+  --pd-title-prefix: "🎄 ";
+  --pd-title-size: 13px;
+  --pd-title-spacing: 0.05em;
+  --pd-title-weight: 700;
+  --pd-shadow: 0 12px 30px rgb(0 0 0 / 0.45);
+}
+:root[data-theme="christmas"] .pd-box-header::after {
+  content: "";
+  position: absolute;
+  inset: 3px 10px auto;
+  height: 6px;
+  background-image: radial-gradient(circle, #ef4444 2.5px, transparent 3px), radial-gradient(circle, #facc15 2.5px, transparent 3px),
+    radial-gradient(circle, #22c55e 2.5px, transparent 3px), radial-gradient(circle, #38bdf8 2.5px, transparent 3px);
+  background-size: 48px 6px;
+  background-position: 0 0, 12px 0, 24px 0, 36px 0;
+  background-repeat: repeat-x;
+  filter: drop-shadow(0 0 3px rgb(255 255 255 / 0.6));
+  animation: pd-lights 1.6s steps(1) infinite;
+}
+@keyframes pd-lights {
+  50% { opacity: 0.45; background-position: 12px 0, 24px 0, 36px 0, 0 0; }
+}
+
+/* Tết: red and gold. */
+:root[data-theme="tet"] {
+  --pd-panel: 60 8 8;
+  --pd-solid: rgb(70 12 12 / 0.98);
+  --pd-border: rgb(250 204 21 / 0.5);
+  --pd-border-strong: rgb(253 224 71 / 0.9);
+  --pd-accent: #facc15;
+  --pd-fg: #fff7e0;
+  --pd-strong: #ffffff;
+  --pd-muted: #f3b4a0;
+  --pd-head: #fde047;
+  --pd-glow: rgb(250 204 21 / 0.5);
+  --pd-bg: #2a0505;
+  --pd-font: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --pd-radius: 12px;
+  --pd-title-prefix: "🧧 ";
+  --pd-title-size: 13px;
+  --pd-title-spacing: 0.05em;
+  --pd-title-weight: 700;
+  --pd-shadow: 0 0 24px rgb(250 204 21 / 0.18), 0 12px 30px rgb(0 0 0 / 0.45);
+}
+:root[data-theme="tet"] .pd-box {
+  border-width: 2px;
+  background-image: linear-gradient(135deg, rgb(250 204 21 / 0.25) 0 10px, transparent 10px),
+    linear-gradient(-45deg, rgb(250 204 21 / 0.25) 0 10px, transparent 10px);
+}
+
+/* Trung thu: night blue with a moon glow. */
+:root[data-theme="midautumn"] {
+  --pd-panel: 14 20 48;
+  --pd-solid: rgb(20 26 58 / 0.98);
+  --pd-border: rgb(251 191 36 / 0.4);
+  --pd-border-strong: rgb(253 230 138 / 0.85);
+  --pd-accent: #fbbf24;
+  --pd-fg: #fdf6e3;
+  --pd-strong: #ffffff;
+  --pd-muted: #a5b0d8;
+  --pd-head: #fde68a;
+  --pd-glow: rgb(251 191 36 / 0.45);
+  --pd-bg: #0a0f26;
+  --pd-font: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --pd-radius: 16px;
+  --pd-title-prefix: "🏮 ";
+  --pd-title-size: 13px;
+  --pd-title-spacing: 0.05em;
+  --pd-title-weight: 700;
+  --pd-shadow: 0 12px 30px rgb(0 0 20 / 0.5);
+}
+:root[data-theme="midautumn"] .pd-box {
+  background-image: radial-gradient(circle at 88% 18%, rgb(253 230 138 / 0.35) 0 14px, rgb(253 230 138 / 0.1) 15px, transparent 42px);
+}
+
+/* ---------------------------------------------------------------- effect layers */
+
+.pd-fx {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+.pd-fx-back {
+  z-index: 0;
+}
+.pd-fx-front {
+  z-index: 950;
+}
+html[data-view="overlay"],
+html[data-view="overlay"] body {
+  background: transparent;
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root :is(.pd-box, .pd-widget, .pd-box-title, .pd-box-header)::after,
+  :root :is(.pd-box, .pd-widget, .pd-box-title) {
+    animation: none !important;
+  }
+}

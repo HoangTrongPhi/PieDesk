@@ -55,6 +55,20 @@ pub fn import(dir: &Path, source: &str) -> Result<Imported, String> {
     Ok(Imported { path: dest.to_string_lossy().into_owned(), origin: Origin::Kept })
 }
 
+/// Copies a shortcut into a box and leaves the original alone (Start Menu entries).
+pub fn copy_in(dir: &Path, source: &str) -> Result<Imported, String> {
+    let src = Path::new(source);
+    if !is_shortcut(src) {
+        return import(dir, source);
+    }
+    fs::create_dir_all(dir).map_err(|e| e.to_string())?;
+    let name = src.file_stem().unwrap_or_default().to_string_lossy().into_owned();
+    let ext = src.extension().unwrap_or_default().to_string_lossy().to_lowercase();
+    let dest = unique(dir, &name, &ext);
+    fs::copy(src, &dest).map_err(|e| e.to_string())?;
+    Ok(Imported { path: dest.to_string_lossy().into_owned(), origin: Origin::Kept })
+}
+
 /// For items imported before shortcuts moved into boxes: take the original off the desktop now.
 pub fn claim(dir: &Path, path: &str, source: &str) -> Origin {
     let src = Path::new(source);
