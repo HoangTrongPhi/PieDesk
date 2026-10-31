@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<defs>
+<path id="xm-wreath-n" d="M0 0Q5-3.4 11.5 0Q5 3.4 0 0z"/>
+<path id="xm-wreath-m" d="M0 0Q4-2.6 8.5 0Q4 2.6 0 0z"/>
+<linearGradient id="xm-wreath-lit" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eaffef" stop-opacity=".38"/><stop offset=".45" stop-color="#eaffef" stop-opacity="0"/><stop offset=".6" stop-color="#021a0c" stop-opacity="0"/><stop offset="1" stop-color="#021a0c" stop-opacity=".45"/></linearGradient>
+<radialGradient id="xm-wreath-berry" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#ff9a9a"/><stop offset=".4" stop-color="#ef4444"/><stop offset="1" stop-color="#8f1d27"/></radialGradient>
+<linearGradient id="xm-wreath-gold" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff1a8"/><stop offset=".45" stop-color="#facc15"/><stop offset="1" stop-color="#b45309"/></linearGradient>
+<linearGradient id="xm-wreath-bow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff5a63"/><stop offset="1" stop-color="#b3202c"/></linearGradient>
+<g id="xm-wreath-bell"><path d="M0-4.2C2-4.2 3.1-2.6 3.1 0.4L4 2.6H-4L-3.1 0.4C-3.1-2.6-2-4.2 0-4.2z" fill="url(#xm-wreath-gold)"/><circle cy="3.4" r="1.1" fill="#b45309"/><path d="M-1.6-2C-1.9-1-2-0.2-2 1" stroke="#fff" stroke-width=".8" stroke-linecap="round" fill="none" opacity=".8"/></g>
+</defs>
+<circle cx="32" cy="32" r="20" fill="none" stroke="#123f22" stroke-width="11.5"/>
+<use href="#xm-wreath-n" transform="translate(52.5 32) rotate(68)" fill="#1b7a3d"/>
+<use href="#xm-wreath-n" transform="translate(52.4 38.6) rotate(95)" fill="#22a04e"/>
+<use href="#xm-wreath-n" transform="translate(48.6 44) rotate(104)" fill="#15803d"/>
+<use href="#xm-wreath-n" transform="translate(44.6 49.4) rotate(131)" fill="#2bb35c"/>
+<use href="#xm-wreath-n" transform="translate(38.3 51.5) rotate(140)" fill="#1b7a3d"/>
+<use href="#xm-wreath-n" transform="translate(32 53.5) rotate(167)" fill="#22a04e"/>
+<use href="#xm-wreath-n" transform="translate(25.7 51.5) rotate(176)" fill="#15803d"/>
+<use href="#xm-wreath-n" transform="translate(19.4 49.4) rotate(203)" fill="#2bb35c"/>
+<use href="#xm-wreath-n" transform="translate(15.4 44) rotate(212)" fill="#1b7a3d"/>
+<use href="#xm-wreath-n" transform="translate(11.6 38.6) rotate(239)" fill="#22a04e"/>
+<use href="#xm-wreath-n" transform="translate(11.5 32) rotate(248)" fill="#15803d"/>
+<use href="#xm-wreath-n" transform="translate(11.6 25.4) rotate(275)" fill="#2bb35c"/>
+<use href="#xm-wreath-n" transform="translate(15.4 20) rotate(284)" fill="#1b7a3d"/>
+<use href="#xm-wreath-n" transform="translate(19.4 14.6) rotate(311)" fill="#22a04e"/>
+<use href="#xm-wreath-n" transform="translate(25.7 12.5) rotate(320)" fill="#15803d"/>
+<use href="#xm-wreath-n" transform="translate(32 10.5) rotate(347)" fill="#2bb35c"/>
+<use href="#xm-wreath-n" transform="translate(38.3 12.5) rotate(356)" fill="#1b7a3d"/>
+<use href="#xm-wreath-n" transform="translate(44.6 14.6) rotate(383)" fill="#22a04e"/>
+<use href="#xm-wreath-n" transform="translate(48.6 20) rotate(392)" fill="#15803d"/>
+<use href="#xm-wreath-n" transform="translate(52.4 25.4) rotate(419)" fill="#2bb35c"/>
+<use href="#xm-wreath-n" transform="translate(49.8 34.5) rotate(136) scale(0.9)" fill="#166534"/>
+<use href="#xm-wreath-n" transform="translate(46.6 40.6) rotate(148.5) scale(0.9)" fill="#1f9447"/>
+<use href="#xm-wreath-n" transform="translate(42.8 46.4) rotate(181) scale(0.9)" fill="#14532d"/>
+<use href="#xm-wreath-n" transform="translate(36.3 48.5) rotate(193.5) scale(0.9)" fill="#22a04e"/>
+<use href="#xm-wreath-n" transform="translate(29.5 49.8) rotate(226) scale(0.9)" fill="#166534"/>
+<use href="#xm-wreath-n" transform="translate(23.4 46.6) rotate(238.5) scale(0.9)" fill="#1f9447"/>
+<use href="#xm-wreath-n" transform="translate(17.6 42.8) rotate(271) scale(0.9)" fill="#14532d"/>
+<use href="#xm-wreath-n" transform="translate(15.5 36.3) rotate(283.5) scale(0.9)" fill="#22a04e"/>
+<use href="#xm-wreath-n" transform="translate(14.2 29.5) rotate(316) scale(0.9)" fill="#166534"/>
+<use href="#xm-wreath-n" transform="translate(17.4 23.4) rotate(328.5) scale(0.9)" fill="#1f9447"/>
+<use href="#xm-wreath-n" transform="translate(21.2 17.6) rotate(361) scale(0.9)" fill="#14532d"/>
+<use href="#xm-wreath-n" transform="translate(27.7 15.5) rotate(373.5) scale(0.9)" fill="#22a04e"/>
+<use href="#xm-wreath-n" transform="translate(34.5 14.2) rotate(406) scale(0.9)" fill="#166534"/>
+<use href="#xm-wreath-n" transform="translate(40.6 17.4) rotate(418.5) scale(0.9)" fill="#1f9447"/>
+<use href="#xm-wreath-n" transform="translate(46.4 21.2) rotate(451) scale(0.9)" fill="#14532d"/>
+<use href="#xm-wreath-n" transform="translate(48.5 27.7) rotate(463.5) scale(0.9)" fill="#22a04e"/>
+<use href="#xm-wreath-n" transform="translate(51.9 34.1) rotate(90)" fill="#34c867"/>
+<use href="#xm-wreath-n" transform="translate(50.5 39.6) rotate(106.4)" fill="#22a04e"/>
+<use href="#xm-wreath-n" transform="translate(47.6 44.5) rotate(122.7)" fill="#4ade80"/>
+<use href="#xm-wreath-n" transform="translate(43.4 48.4) rotate(139.1)" fill="#1f9447"/>
+<use href="#xm-wreath-n" transform="translate(38.4 51) rotate(155.5)" fill="#34c867"/>
+<use href="#xm-wreath-n" transform="translate(32.8 52) rotate(171.8)" fill="#22a04e"/>
+<use href="#xm-wreath-n" transform="translate(27.1 51.4) rotate(188.2)" fill="#4ade80"/>
+<use href="#xm-wreath-n" transform="translate(21.8 49.2) rotate(204.5)" fill="#1f9447"/>
+<use href="#xm-wreath-n" transform="translate(17.4 45.7) rotate(220.9)" fill="#34c867"/>
+<use href="#xm-wreath-n" transform="translate(14.1 41) rotate(237.3)" fill="#22a04e"/>
+<use href="#xm-wreath-n" transform="translate(12.3 35.6) rotate(253.6)" fill="#4ade80"/>
+<use href="#xm-wreath-n" transform="translate(12.1 29.9) rotate(270)" fill="#1f9447"/>
+<use href="#xm-wreath-n" transform="translate(13.5 24.4) rotate(286.4)" fill="#34c867"/>
+<use href="#xm-wreath-n" transform="translate(16.4 19.5) rotate(302.7)" fill="#22a04e"/>
+<use href="#xm-wreath-n" transform="translate(20.6 15.6) rotate(319.1)" fill="#4ade80"/>
+<use href="#xm-wreath-n" transform="translate(25.6 13) rotate(335.5)" fill="#1f9447"/>
+<use href="#xm-wreath-n" transform="translate(31.2 12) rotate(351.8)" fill="#34c867"/>
+<use href="#xm-wreath-n" transform="translate(36.9 12.6) rotate(368.2)" fill="#22a04e"/>
+<use href="#xm-wreath-n" transform="translate(42.2 14.8) rotate(384.5)" fill="#4ade80"/>
+<use href="#xm-wreath-n" transform="translate(46.6 18.3) rotate(400.9)" fill="#1f9447"/>
+<use href="#xm-wreath-n" transform="translate(49.9 23) rotate(417.3)" fill="#34c867"/>
+<use href="#xm-wreath-n" transform="translate(51.7 28.4) rotate(433.6)" fill="#22a04e"/>
+<use href="#xm-wreath-m" transform="translate(52.9 37.2) rotate(90)" fill="#5fe08e"/>
+<use href="#xm-wreath-m" transform="translate(49.3 44.8) rotate(112.5)" fill="#3fcf74"/>
+<use href="#xm-wreath-m" transform="translate(43.1 50.4) rotate(135)" fill="#5fe08e"/>
+<use href="#xm-wreath-m" transform="translate(35.2 53.3) rotate(157.5)" fill="#3fcf74"/>
+<use href="#xm-wreath-m" transform="translate(26.8 52.9) rotate(180)" fill="#5fe08e"/>
+<use href="#xm-wreath-m" transform="translate(19.2 49.3) rotate(202.5)" fill="#3fcf74"/>
+<use href="#xm-wreath-m" transform="translate(13.6 43.1) rotate(225)" fill="#5fe08e"/>
+<use href="#xm-wreath-m" transform="translate(10.7 35.2) rotate(247.5)" fill="#3fcf74"/>
+<use href="#xm-wreath-m" transform="translate(11.1 26.8) rotate(270)" fill="#5fe08e"/>
+<use href="#xm-wreath-m" transform="translate(14.7 19.2) rotate(292.5)" fill="#3fcf74"/>
+<use href="#xm-wreath-m" transform="translate(20.9 13.6) rotate(315)" fill="#5fe08e"/>
+<use href="#xm-wreath-m" transform="translate(28.8 10.7) rotate(337.5)" fill="#3fcf74"/>
+<use href="#xm-wreath-m" transform="translate(37.2 11.1) rotate(360)" fill="#5fe08e"/>
+<use href="#xm-wreath-m" transform="translate(44.8 14.7) rotate(382.5)" fill="#3fcf74"/>
+<use href="#xm-wreath-m" transform="translate(50.4 20.9) rotate(405)" fill="#5fe08e"/>
+<use href="#xm-wreath-m" transform="translate(53.3 28.8) rotate(427.5)" fill="#3fcf74"/>
+<circle cx="32" cy="3.2" r="2.2" fill="none" stroke="#7a4a05" stroke-width="2"/><circle cx="32" cy="3.2" r="2.2" fill="none" stroke="#f5c542" stroke-width="1.1"/>
+<circle cx="32" cy="32" r="20" fill="none" stroke="url(#xm-wreath-lit)" stroke-width="12"/>
+<circle cx="10.1" cy="31.4" r="2.1" fill="url(#xm-wreath-berry)"/>
+<circle cx="9.4" cy="30.7" r=".6" fill="#fff" opacity=".9"/>
+<circle cx="13.8" cy="30.8" r="2.1" fill="url(#xm-wreath-berry)"/>
+<circle cx="13.1" cy="30.1" r=".6" fill="#fff" opacity=".9"/>
+<circle cx="12" cy="33.8" r="2.1" fill="url(#xm-wreath-berry)"/>
+<circle cx="11.3" cy="33.1" r=".6" fill="#fff" opacity=".9"/>
+<circle cx="17.8" cy="15.6" r="2.1" fill="url(#xm-wreath-berry)"/>
+<circle cx="17.1" cy="14.9" r=".6" fill="#fff" opacity=".9"/>
+<circle cx="21.5" cy="15" r="2.1" fill="url(#xm-wreath-berry)"/>
+<circle cx="20.8" cy="14.3" r=".6" fill="#fff" opacity=".9"/>
+<circle cx="19.7" cy="18" r="2.1" fill="url(#xm-wreath-berry)"/>
+<circle cx="19" cy="17.3" r=".6" fill="#fff" opacity=".9"/>
+<circle cx="36.9" cy="12.6" r="2.1" fill="url(#xm-wreath-berry)"/>
+<circle cx="36.2" cy="11.9" r=".6" fill="#fff" opacity=".9"/>
+<circle cx="40.6" cy="12" r="2.1" fill="url(#xm-wreath-berry)"/>
+<circle cx="39.9" cy="11.3" r=".6" fill="#fff" opacity=".9"/>
+<circle cx="38.8" cy="15" r="2.1" fill="url(#xm-wreath-berry)"/>
+<circle cx="38.1" cy="14.3" r=".6" fill="#fff" opacity=".9"/>
+<circle cx="49.1" cy="25.2" r="2.1" fill="url(#xm-wreath-berry)"/>
+<circle cx="48.4" cy="24.5" r=".6" fill="#fff" opacity=".9"/>
+<circle cx="52.8" cy="24.6" r="2.1" fill="url(#xm-wreath-berry)"/>
+<circle cx="52.1" cy="23.9" r=".6" fill="#fff" opacity=".9"/>
+<circle cx="51" cy="27.6" r="2.1" fill="url(#xm-wreath-berry)"/>
+<circle cx="50.3" cy="26.9" r=".6" fill="#fff" opacity=".9"/>
+<use href="#xm-wreath-bell" transform="translate(15.5 44.9) rotate(18)"/>
+<use href="#xm-wreath-bell" transform="translate(48.5 44.9) rotate(-18)"/>
+<g transform="translate(32 52)">
+<path d="M-1.5 1L-7 10.5L-4 9.2L-2.4 11.8L1.5 1.5z" fill="#b3202c"/>
+<path d="M1.5 1L6.4 10.2L3.4 9L1.6 11.6L-1 1.5z" fill="#c42631"/>
+<path d="M0 0C-3-7.5-12.5-9.5-13-3.5C-13.3 0.5-7 1.3 0 0z" fill="url(#xm-wreath-bow)"/>
+<path d="M0 0C3-7.5 12.5-9.5 13-3.5C13.3 0.5 7 1.3 0 0z" fill="url(#xm-wreath-bow)"/>
+<path d="M-2-1.2C-4.5-5.5-9.5-6.4-10-3.8C-10.2-2.2-6.5-1.5-2-1.2zM2-1.2C4.5-5.5 9.5-6.4 10-3.8C10.2-2.2 6.5-1.5 2-1.2z" fill="#7f1420" opacity=".55"/>
+<path d="M-4-4.6C-6.5-6.8-10-7.2-11.4-5.4" fill="none" stroke="#ffb3b8" stroke-width=".9" stroke-linecap="round"/>
+<ellipse cy="-.4" rx="3" ry="2.7" fill="#d62f3a"/><ellipse cx="-.8" cy="-1.3" rx="1.2" ry=".8" fill="#ffb3b8"/>
+</g>
+</svg>

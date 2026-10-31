@@ -36,12 +36,15 @@ export function useFxAllowed(enabled: boolean) {
   return enabled && !fullscreen && !reduced && !(battery && fxBattery);
 }
 
-// Boxes and widgets on screen, re-measured at most 4× a second.
+// Boxes and widgets on screen, re-measured at most 4× a second — every frame while one is being
+// dragged, so ornaments hanging from it can swing.
 let obstacles: Obstacle[] = [];
 let measuredAt = 0;
+let measuredFor = 0;
 function sampleObstacles(now: number): Obstacle[] {
-  if (now - measuredAt < 250) return obstacles;
-  measuredAt = now;
+  if (now === measuredFor) return obstacles;
+  if (now - measuredAt < 250 && !document.querySelector("[data-dragging]")) return obstacles;
+  measuredAt = measuredFor = now;
   obstacles = [...document.querySelectorAll<HTMLElement>("[data-box-id], [data-widget-id]")]
     .filter((el) => !el.classList.contains("pd-widget-bare"))
     .map((el) => {
@@ -81,6 +84,7 @@ export function FxLayer({ ids, enabled, withBoxes = true, floor }: Props) {
 function Layer({ defs, className, run, withBoxes, floor }: { defs: FxDef[]; className: string; run: boolean; withBoxes: boolean; floor?: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const sims = useMemo<Sim[]>(() => defs.map((d) => d.make()), [defs]);
+  const trails = defs.some((d) => d.trails);
   const started = useRef(performance.now());
 
   useEffect(() => {
@@ -110,8 +114,7 @@ function Layer({ defs, className, run, withBoxes, floor }: { defs: FxDef[]; clas
       if (now - last < 1000 / FPS - 2) return;
       const dt = Math.min(0.1, (now - last) / 1000);
       last = now;
-      // Front layers redraw from scratch; back layers may keep trails (matrix) and clear themselves.
-      if (className.includes("front")) ctx.clearRect(0, 0, w, h);
+      if (!trails) ctx.clearRect(0, 0, w, h);
       const c: FxContext = {
         ctx,
         w,
@@ -129,7 +132,7 @@ function Layer({ defs, className, run, withBoxes, floor }: { defs: FxDef[]; clas
       cancelAnimationFrame(raf);
       removeEventListener("resize", size);
     };
-  }, [sims, run, className, withBoxes, floor]);
+  }, [sims, trails, run, withBoxes, floor]);
 
   return <canvas ref={ref} className={className} />;
 }

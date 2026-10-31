@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 80">
+  <defs>
+    <radialGradient id="hw-witch-eye" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffd166" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#ffb020" stop-opacity="0"/>
+    </radialGradient>
+    <g id="hw-witch-sil">
+      <!-- broom -->
+      <path d="M40 54 C30 53 16 50.5 4.5 47.5 C3 49 4 50.6 2.6 52.2 C4.2 54.2 2.2 56.2 3.2 58.2 C2.2 61 4.2 63 2.8 66 C4.2 68 3.2 70 4.8 71.6 C16 66.5 30 62.2 40 60.2 Z"/>
+      <path d="M35.8 55.3 L146.6 41.3 C148 41.2 148.6 42.4 148.5 43.4 C148.4 44.4 147.9 44.8 147 44.9 L36.2 58.7 Z"/>
+      <!-- cat -->
+      <path d="M45 52.6 C39.5 51.6 36.4 46 37.4 41 C38.2 37.2 42 35.4 44.2 37.4 C45 38.2 44.6 39.6 43.4 39.4 C41.4 39 40.2 40.6 40 42.4 C39.6 46.4 42 49.6 45.6 50.4 Z"/>
+      <path d="M43.4 55.4 C41.8 50 42.4 44 46 40.4 C48 38.4 52.4 38 55 39.6 C58 42 59 48 58 54.6 Z"/>
+      <path d="M56 55 C55.6 53.2 56.6 52.2 58.2 52.4 C59.6 52.6 60 54 59.6 55 Z"/>
+      <circle cx="51.2" cy="35" r="5.3"/>
+      <path d="M46.6 33.2 L45.8 26.6 L50.4 30.4 Z M52.2 30.2 L56.6 26.8 L56.2 33.4 Z"/>
+      <!-- witch: skirt, leg, boot -->
+      <path d="M84.5 40 C83 46 80 52 73.8 57.8 Q76.6 59.6 79 58 Q80.6 61.6 83.4 59.6 Q86 62.6 88.4 59.8 Q91 61.4 92.4 58 C96.6 56 99.4 52 99.4 46 L98.6 40 Z"/>
+      <path d="M93.6 50.4 L97.6 49.8 L102 58.4 L99.2 59.8 Z"/>
+      <path d="M98.4 58.4 L103 58.6 C105.6 58.8 107.6 58.2 109.8 56.4 C109.6 59.8 106.8 62.2 102 62.2 L98.2 62.2 Z"/>
+      <!-- cape -->
+      <path d="M101.5 26.4 C92 23.4 81 21.8 72.4 23.2 Q68.4 24.2 70.8 27.2 Q72.8 29.8 69.8 31.8 Q67.6 34 71.4 35.8 Q74.6 37.2 73.6 39.8 Q78 39.8 80.6 41.2 Q84 41 87.2 42.2 C89.2 37 93.2 32.2 101.5 30.2 Z"/>
+      <!-- torso, arm, hand -->
+      <path d="M84.8 41.4 C85.8 35 90 30 96 26.8 L104.2 27.4 C105 32 102.2 37.2 99 41.4 Z"/>
+      <path d="M99.6 27.6 C106 30.8 111 35.8 114 40.4 L120.2 41.8 L116.6 46.2 C112 42 106.4 36.8 100.4 33.2 Z"/>
+      <circle cx="118.4" cy="46.2" r="1.9"/>
+      <!-- hair, head, nose -->
+      <path d="M101.4 17 C96 18 91.6 20 88.6 24.2 C90 24.6 91.4 24.2 92.6 23.6 C90.6 26.2 88.4 28.2 85.6 30.2 C89.8 30.2 93.4 28.2 96 26.2 C95.2 28.2 94.6 30.2 94.2 32.4 C97.2 30.2 99.6 27.2 101.2 25 Z"/>
+      <circle cx="106.4" cy="22" r="5.3"/>
+      <path d="M110.4 19.8 L117 23.4 L111 24.8 Z"/>
+      <path d="M108 26 C109.6 26.6 111 26.6 112 25.6 C111.6 27.6 109.6 28.2 107.6 27.6 Z"/>
+      <!-- hat -->
+      <path d="M97.4 16.6 C96.4 11 93 6.4 83 1.8 C92 3.4 100.2 7 110.6 14 Z"/>
+      <ellipse cx="103.6" cy="16" rx="13.6" ry="2.4" transform="rotate(-10 103.6 16)"/>
+    </g>
+  </defs>
+
+  <g transform="translate(0 3)">
+    <!-- rim light: purple outline + warm edge toward the front/top -->
+    <use href="#hw-witch-sil" fill="#a855f7" stroke="#a855f7" stroke-width="1.5" stroke-linejoin="round" opacity="0.6"/>
+    <use href="#hw-witch-sil" fill="#ffb06b" opacity="0.7" transform="translate(0.7 -0.8)"/>
+    <use href="#hw-witch-sil" fill="#26103a"/>
+
+    <!-- broom details -->
+    <g fill="none" stroke-linecap="round">
+      <path d="M38 55.4 L7 49.6 M38 56.4 L4.6 54.2 M38 57.4 L4.6 59.2 M38 58.4 L5.6 64.2 M38 59.4 L7.6 68.6" stroke="#5e3a5a" stroke-width="0.6"/>
+      <path d="M42 55.6 L146 42.4" stroke="#7d5a8c" stroke-width="0.7"/>
+    </g>
+    <path d="M37.4 53.4 L41.2 53 L41.6 60.4 L37.8 60.8 Z" fill="#ff7a18"/>
+    <path d="M38.6 53.3 L39 60.7 M40.2 53.1 L40.6 60.5" stroke="#9a3412" stroke-width="0.5"/>
+
+    <!-- witch details -->
+    <g fill="none" stroke-linecap="round" stroke-width="0.7">
+      <path d="M99 28 C90 26.2 82 25.6 74.6 27" stroke="#5b3a85"/>
+      <path d="M97 31 C90 31.6 83 33.4 76 37.6" stroke="#4a2a6e"/>
+      <path d="M90 43 C88 48 85.4 52.4 81.4 57.4 M95 44 C94.4 49 92.6 53.6 89.4 58" stroke="#4a2a6e"/>
+      <path d="M99.6 20.2 C95.6 21.4 92.4 23.4 90.4 25.6 M100.2 23 C97 25.2 93.6 27.6 89.6 29.4" stroke="#7c3aed" stroke-opacity="0.8"/>
+    </g>
+    <path d="M95.2 51.6 L98.2 51 L99 52.6 L96 53.2 Z M96.8 54.8 L99.8 54.2 L100.6 55.8 L97.6 56.4 Z" fill="#7c3aed"/>
+    <path d="M97.7 15.4 L109.9 12.9 L108.5 10.9 L97.2 13.3 Z" fill="#8b5cf6"/>
+    <rect x="101.6" y="12.2" width="2.6" height="2.4" rx="0.4" transform="rotate(-12 102.9 13.4)" fill="none" stroke="#ffd166" stroke-width="0.7"/>
+
+    <!-- cat eyes -->
+    <circle cx="49" cy="35" r="2.8" fill="url(#hw-witch-eye)"/>
+    <circle cx="53.6" cy="35" r="2.8" fill="url(#hw-witch-eye)"/>
+    <ellipse cx="49" cy="35" rx="1.35" ry="1.1" fill="#ffd166"/>
+    <ellipse cx="53.6" cy="35" rx="1.35" ry="1.1" fill="#ffd166"/>
+    <ellipse cx="49.1" cy="35" rx="0.32" ry="0.85" fill="#1a0b26"/>
+    <ellipse cx="53.7" cy="35" rx="0.32" ry="0.85" fill="#1a0b26"/>
+    <path d="M47.4 30.6 L47 28.2 L48.8 29.8 Z M54.4 29.8 L55.8 28.4 L55.6 30.8 Z" fill="#6b3a6a"/>
+  </g>
+</svg>

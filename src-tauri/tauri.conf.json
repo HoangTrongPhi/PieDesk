@@ -32,6 +32,7 @@
     "createUpdaterArtifacts": true,
     "targets": ["nsis"],
     "category": "Utility",
+    "resources": ["wallpapers/*.jpg"],
     "shortDescription": "Desktop boxes & widgets",
     "icon": [
       "icons/32x32.png",

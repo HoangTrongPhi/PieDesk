@@ -296,6 +296,14 @@ function EffectsSection() {
         label={tr("Theme theo mùa tự bật (Tết, Trung thu, Halloween, Giáng sinh)", "Seasonal themes switch on by themselves (Tết, Mid-Autumn, Halloween, Christmas)")
           + (season ? tr(` — đang là ${THEMES.find((t) => t.id === season)?.name}`, ` — now: ${THEMES.find((t) => t.id === season)?.name}`) : "")}
         checked={settings.seasonal} onChange={(seasonal) => set({ seasonal })} />
+      <Toggle label={tr("Trang trí theo theme — cây thông, bí ngô, mai đào, trăng rằm trên desktop; đồ treo đung đưa dưới box",
+        "Theme decor — a tree, pumpkins, blossoms, the moon on the desktop; ornaments swinging under boxes")}
+        checked={settings.decor} onChange={(decor) => set({ decor })} />
+      <Toggle label={tr("Hiệu ứng theme bay trên mọi cửa sổ — tuyết phủ taskbar, xe tuần lộc, đàn dơi, pháo hoa, đèn Khổng Minh",
+        "Theme effects above every window — snow burying the taskbar, Santa's sleigh, bat swarms, fireworks, sky lanterns")}
+        checked={settings.themeOverlay} onChange={(themeOverlay) => set({ themeOverlay })} />
+      <Toggle label={tr("Đổi hình nền Windows theo theme lễ hội (trả lại hình nền cũ khi hết lễ)", "Holiday themes set their own Windows wallpaper (yours comes back afterwards)")}
+        checked={settings.themeWallpaper} onChange={(themeWallpaper) => set({ themeWallpaper })} />
       <Toggle label={tr("Dừng hiệu ứng khi chạy pin", "Pause effects on battery")} checked={settings.fxBattery} onChange={(fxBattery) => set({ fxBattery })} />
       <Field label={tr("Hiệu ứng phủ màn hình (trên mọi cửa sổ, chuột xuyên qua)", "Screen overlay (above every window, click-through)")}>
         <Segmented value={settings.overlayFx} onChange={(overlayFx) => set({ overlayFx })}

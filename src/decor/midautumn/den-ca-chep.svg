@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 46">
+  <defs>
+    <radialGradient id="ma-den-ca-chep-halo" cx="38" cy="25" r="34" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fb923c" stop-opacity="0.42"/>
+      <stop offset="0.6" stop-color="#f97316" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#f97316" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ma-den-ca-chep-body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d91a2a"/>
+      <stop offset="0.45" stop-color="#f97316"/>
+      <stop offset="0.85" stop-color="#fcd34d"/>
+      <stop offset="1" stop-color="#fde68a"/>
+    </linearGradient>
+    <linearGradient id="ma-den-ca-chep-head" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ef4444"/>
+      <stop offset="0.5" stop-color="#fb923c"/>
+      <stop offset="1" stop-color="#fde68a"/>
+    </linearGradient>
+    <linearGradient id="ma-den-ca-chep-tail" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#e11d2e"/>
+      <stop offset="0.5" stop-color="#f97316"/>
+      <stop offset="1" stop-color="#facc15"/>
+    </linearGradient>
+    <linearGradient id="ma-den-ca-chep-fin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#facc15"/>
+      <stop offset="1" stop-color="#ef4444"/>
+    </linearGradient>
+    <radialGradient id="ma-den-ca-chep-glow" cx="41" cy="25.5" r="19" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fffbe6" stop-opacity="0.95"/>
+      <stop offset="0.35" stop-color="#fde68a" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#fde68a" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="ma-den-ca-chep-scales" width="3.6" height="4.4" patternUnits="userSpaceOnUse">
+      <path d="M3.6,0 A2.2,2.2 0 0 0 3.6,4.4 M1.8,2.2 A2.2,2.2 0 0 0 1.8,6.6 M1.8,-2.2 A2.2,2.2 0 0 0 1.8,2.2" fill="none" stroke="#ffe08a" stroke-width="0.5"/>
+    </pattern>
+    <clipPath id="ma-den-ca-chep-clip">
+      <path d="M66.5,24.5 C66.2,19 61,14.5 53,13 C45,11.6 35,13 27,17.5 L21,20.5 C20.6,23 20.6,25 21,27 L27,29.5 C35,35 46,36.8 54,35 C61,33.4 66.8,29.5 66.5,24.5 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- warm halo -->
+  <ellipse cx="38" cy="25" rx="34" ry="21" fill="url(#ma-den-ca-chep-halo)"/>
+
+  <!-- string -->
+  <path d="M36,0 L36,13" stroke="#dcc08a" stroke-width="0.9"/>
+
+  <!-- dorsal fin -->
+  <path d="M29,16.6 C31.5,11 35.5,7.8 40.5,6.6 C40,8.6 41.6,9.2 43.6,8.2 C43.8,9.8 45.8,10.6 48,10 C47.4,11.5 48.6,12.6 50.5,13 L47,13.4 C41,12.4 34,13.6 29,16.6 Z" fill="url(#ma-den-ca-chep-fin)"/>
+  <path d="M32,14.6 L37,9.4 M35.4,13.4 L40.6,8.4 M39,12.8 L43.4,9.6 M42.6,12.6 L46.4,10.8" stroke="#c2410c" stroke-width="0.45" stroke-linecap="round" opacity="0.6"/>
+
+  <!-- pelvic fin (behind body) -->
+  <path d="M34,33.6 C32,37.6 28.6,40.4 24,42 C25.6,38.8 26,36.2 26.6,31.4 Z" fill="url(#ma-den-ca-chep-fin)"/>
+
+  <!-- flowing tail -->
+  <path d="M22,20.8 C16,16 10,9 2.5,4.5 C5.5,9.5 6,13 9.5,17 C7,18.5 6.5,21 11,23.6 C6.5,26 6,29 9,31 C5.5,34.5 4.5,37.5 2,41.5 C10,37.5 16,32 22,26.8 Z" fill="url(#ma-den-ca-chep-tail)"/>
+  <path d="M21.5,22 C16,17 11,12 5,7 M21,23.2 C16,21 12.5,20 9.6,19.4 M21,24.6 C16,25.6 12.6,26.6 10.2,28 M21.4,25.8 C16,31 11,35.5 4.6,39.6" fill="none" stroke="#b91c1c" stroke-width="0.5" stroke-linecap="round" opacity="0.55"/>
+  <path d="M20.6,21.6 C15.6,18 11,14 6.4,9.2" fill="none" stroke="#fef3c7" stroke-width="0.6" stroke-linecap="round" opacity="0.6"/>
+
+  <!-- body -->
+  <path d="M66.5,24.5 C66.2,19 61,14.5 53,13 C45,11.6 35,13 27,17.5 L21,20.5 C20.6,23 20.6,25 21,27 L27,29.5 C35,35 46,36.8 54,35 C61,33.4 66.8,29.5 66.5,24.5 Z" fill="url(#ma-den-ca-chep-body)"/>
+  <g clip-path="url(#ma-den-ca-chep-clip)">
+    <!-- inner candle glow -->
+    <rect x="18" y="10" width="50" height="28" fill="url(#ma-den-ca-chep-glow)"/>
+    <!-- scales -->
+    <rect x="18" y="10" width="40" height="28" fill="url(#ma-den-ca-chep-scales)" opacity="0.75"/>
+    <!-- head -->
+    <path d="M55.5,12 C51,19 51,29 56,37 L70,37 L70,12 Z" fill="url(#ma-den-ca-chep-head)"/>
+    <!-- belly sheen + back shade -->
+    <path d="M24,27.8 C33,33.6 46,35.6 56,33.6" fill="none" stroke="#fffbeb" stroke-width="1.2" stroke-linecap="round" opacity="0.55"/>
+    <path d="M27,17.5 C35,13 45,11.6 53,13" fill="none" stroke="#9f1239" stroke-width="2.4" opacity="0.25"/>
+  </g>
+  <!-- gill -->
+  <path d="M55.5,15.3 C51.6,20 51.6,29 56,34.3" fill="none" stroke="#fde68a" stroke-width="0.9" stroke-linecap="round"/>
+  <!-- back rim light -->
+  <path d="M28.5,17 C36,13.2 45,12 53,13.2 C59,14.4 63.6,17.4 65.6,21" fill="none" stroke="#ffd29a" stroke-width="0.6" stroke-linecap="round" opacity="0.8"/>
+
+  <!-- pectoral fin -->
+  <path d="M52.4,32.4 C50.6,37.4 46.4,41 40.4,43.4 C42.4,40.4 43,38.2 44,34.8 C47,34.6 49.8,33.8 52.4,32.4 Z" fill="url(#ma-den-ca-chep-fin)"/>
+  <path d="M50.6,34 L42.6,41.6 M48,34.8 L43.4,39" stroke="#c2410c" stroke-width="0.45" stroke-linecap="round" opacity="0.6"/>
+
+  <!-- eye -->
+  <circle cx="60.4" cy="21.4" r="2.5" fill="#fffbeb" stroke="#facc15" stroke-width="0.6"/>
+  <circle cx="60.9" cy="21.6" r="1.5" fill="#2a1408"/>
+  <circle cx="61.4" cy="21" r="0.55" fill="#ffffff"/>
+  <!-- mouth + barbels -->
+  <path d="M66.4,26.1 C65.4,26.8 64.4,26.8 63.6,26.4" fill="none" stroke="#9f1239" stroke-width="0.6" stroke-linecap="round"/>
+  <path d="M65.6,27 C66.8,29.2 68.8,30 70.6,29 M64.2,27.6 C64.4,30.4 66,32.4 68.4,32.8" fill="none" stroke="#fcd34d" stroke-width="0.7" stroke-linecap="round"/>
+</svg>

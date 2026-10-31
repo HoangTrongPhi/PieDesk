@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 92">
+<defs>
+<linearGradient id="tet-firecrackers-red" x1="0" y1="-2.4" x2="0" y2="2.4" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff6b76"/><stop offset=".35" stop-color="#e11d2e"/><stop offset="1" stop-color="#8f0e1c"/></linearGradient>
+<linearGradient id="tet-firecrackers-gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff1a6"/><stop offset=".5" stop-color="#facc15"/><stop offset="1" stop-color="#b8860b"/></linearGradient>
+<g id="tet-firecrackers-c">
+<rect x="0" y="-2.4" width="11" height="4.8" rx="1.3" fill="url(#tet-firecrackers-red)" stroke="#7f0d14" stroke-width=".4"/>
+<rect x="8.8" y="-2.4" width="2.4" height="4.8" rx="1" fill="url(#tet-firecrackers-gold)"/>
+<rect x="1.4" y="-2.4" width="1.1" height="4.8" fill="#facc15"/>
+<path d="M3.2-1.4H8.2" stroke="#ffb3b8" stroke-width=".6" stroke-linecap="round"/>
+</g>
+</defs>
+<path d="M13 5.6C10.6 3.8 10.8 .65 13 .65C15.2 .65 15.4 3.8 13 5.6" fill="none" stroke="#facc15" stroke-width="1.3"/>
+<path d="M13 16V85" stroke="#d9a400" stroke-width="1.3"/>
+<!-- knot -->
+<g stroke="#facc15" stroke-width=".8">
+<circle cx="8" cy="11.5" r="2.4" fill="#c8102e"/><circle cx="18" cy="11.5" r="2.4" fill="#c8102e"/>
+<path d="M13 5.8L18.2 11.5L13 17.2L7.8 11.5Z" fill="#e11d2e" stroke-linejoin="round"/>
+<path d="M10.4 8.6L15.6 14.4M15.6 8.6L10.4 14.4" stroke-width=".6"/>
+</g>
+<!-- crackers, alternating left/right -->
+<use href="#tet-firecrackers-c" transform="translate(13 19.0)scale(-1 1)rotate(28)"/>
+<use href="#tet-firecrackers-c" transform="translate(13 22.8)rotate(28)"/>
+<use href="#tet-firecrackers-c" transform="translate(13 26.6)scale(-1 1)rotate(28)"/>
+<use href="#tet-firecrackers-c" transform="translate(13 30.4)rotate(28)"/>
+<use href="#tet-firecrackers-c" transform="translate(13 34.2)scale(-1 1)rotate(28)"/>
+<use href="#tet-firecrackers-c" transform="translate(13 38.0)rotate(28)"/>
+<use href="#tet-firecrackers-c" transform="translate(13 41.8)scale(-1 1)rotate(28)"/>
+<use href="#tet-firecrackers-c" transform="translate(13 45.6)rotate(28)"/>
+<use href="#tet-firecrackers-c" transform="translate(13 49.4)scale(-1 1)rotate(28)"/>
+<use href="#tet-firecrackers-c" transform="translate(13 53.2)rotate(28)"/>
+<use href="#tet-firecrackers-c" transform="translate(13 57.0)scale(-1 1)rotate(28)"/>
+<use href="#tet-firecrackers-c" transform="translate(13 60.8)rotate(28)"/>
+<use href="#tet-firecrackers-c" transform="translate(13 64.6)scale(-1 1)rotate(28)"/>
+<use href="#tet-firecrackers-c" transform="translate(13 68.4)rotate(28)"/>
+<use href="#tet-firecrackers-c" transform="translate(13 72.2)scale(-1 1)rotate(28)"/>
+<use href="#tet-firecrackers-c" transform="translate(13 76.0)rotate(28)"/>
+<!-- tassel -->
+<circle cx="13" cy="84" r="1.8" fill="url(#tet-firecrackers-gold)" stroke="#9a6a00" stroke-width=".4"/>
+<path d="M11.4 86.2H14.6L16 91.2Q13 92.4 10 91.2Z" fill="#e11d2e"/>
+<path d="M12.3 87V91.4M13.7 87V91.4" stroke="#ffb3a0" stroke-width=".4"/>
+<rect x="11" y="85.4" width="4" height="1.6" rx=".5" fill="#facc15"/>
+</svg>

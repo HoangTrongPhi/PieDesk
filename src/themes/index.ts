@@ -2,6 +2,7 @@
 // canvas effects (if any) are listed here. Seasonal themes switch on by themselves around their
 // holiday when the `seasonal` setting is on.
 
+import type { SceneGroup } from "../decor/DecorLayer";
 import type { FxId } from "../fx";
 import type { Text } from "../lib/i18n";
 import { lunarToSolar } from "../lib/lunar";
@@ -17,9 +18,49 @@ export type ThemeDef = {
   panel: string;
   border: string;
   accent: string;
-  /** Canvas effects only this theme has. */
-  fx?: FxId[];
+  /** Canvas effects only this theme has, on the desktop. */
+  fx?: readonly FxId[];
+  /** Effects in the sky: above every app (overlay window) with setting `themeOverlay`, else on the desktop. */
+  sky?: readonly FxId[];
+  /** Effects only the overlay window shows (snow burying the taskbar). */
+  overlay?: readonly FxId[];
+  /** Decor art standing on the desktop around the boxes (setting `decor`). */
+  scene?: readonly SceneGroup[];
+  /** Ships src-tauri/wallpapers/<id>.jpg, set as the Windows wallpaper while the theme is on (setting `themeWallpaper`). */
+  wallpaper?: boolean;
 };
+
+const xmasScene = [
+  { at: "floor", prefer: "right", on: "home", items: [{ art: "christmas/tree", w: 210 }, { art: "christmas/gifts", w: 130, dx: -78 }, { art: "christmas/snowman", w: 100, dx: -6 }] },
+  { at: "floor", prefer: "right", on: "other", items: [{ art: "christmas/snowman", w: 100 }, { art: "christmas/gifts", w: 120, dx: -12 }] },
+] as const satisfies readonly SceneGroup[];
+
+const halloweenScene = [
+  {
+    at: "floor",
+    prefer: "right",
+    on: "home",
+    items: [{ art: "halloween/tombstone", w: 80 }, { art: "halloween/cauldron", w: 112, dx: -4 }, { art: "halloween/pumpkins", w: 160, dx: -22 }, { art: "halloween/jack", w: 100, dx: -34 }],
+  },
+  { at: "floor", prefer: "right", on: "other", items: [{ art: "halloween/pumpkins", w: 150 }, { art: "halloween/jack", w: 96, dx: -30 }] },
+] as const satisfies readonly SceneGroup[];
+
+const tetScene = [
+  { at: "floor", prefer: "right", on: "home", items: [{ art: "tet/banh-chung-pot", w: 140 }, { art: "tet/mai-tree", w: 200, dx: -18 }] },
+  { at: "floor", prefer: "center", on: "home", items: [{ art: "tet/dao-tree", w: 190 }, { art: "tet/mam-ngu-qua", w: 120, dx: -46 }] },
+  { at: "floor", prefer: "right", on: "other", items: [{ art: "tet/mam-ngu-qua", w: 120 }, { art: "tet/dao-tree", w: 190, dx: -30 }] },
+] as const satisfies readonly SceneGroup[];
+
+const midautumnScene = [
+  { at: "sky", prefer: "right", on: "home", items: [{ art: "midautumn/moon", w: 210 }] },
+  {
+    at: "floor",
+    prefer: "right",
+    on: "home",
+    items: [{ art: "midautumn/den-keo-quan", w: 100 }, { art: "midautumn/banh-trung-thu", w: 150, dx: -6 }, { art: "midautumn/tho-ngoc", w: 60, dx: -10 }],
+  },
+  { at: "floor", prefer: "right", on: "other", items: [{ art: "midautumn/tho-ngoc", w: 60 }, { art: "midautumn/den-keo-quan", w: 100, dx: -4 }] },
+] as const satisfies readonly SceneGroup[];
 
 export const THEMES = [
   { id: "neon", name: "Neon Room", kind: "basic", desc: ["HUD sci-fi, chữ mono, viền xanh neon", "Sci-fi HUD, mono type, neon cyan edges"], panel: "#061225", border: "#4f8fcf", accent: "#66e0ff" },
@@ -44,10 +85,30 @@ export const THEMES = [
   { id: "lofi", name: "Lofi Rain", kind: "special", desc: ["Giọt mưa đọng và chảy trên kính box, thỉnh thoảng có sấm", "Raindrops bead and run down the glass, the odd lightning"], panel: "#1e2230", border: "#94a3b8", accent: "#f9a8d4", fx: ["rainGlass"] },
   { id: "steampunk", name: "Steampunk", kind: "special", desc: ["Đồng thau, đinh tán, bánh răng quay khi dùng box", "Brass and rivets; the gear turns while you use a box"], panel: "#281a0e", border: "#cda05a", accent: "#d4a24c" },
 
-  { id: "halloween", name: "Halloween", kind: "seasonal", desc: ["Dơi bay, bí ngô — tự bật 24/10 → 1/11", "Bats and pumpkins — on by itself Oct 24 → Nov 1"], panel: "#160a1c", border: "#ff7a18", accent: "#ff7a18", fx: ["bats"] },
-  { id: "christmas", name: "Giáng sinh", kind: "seasonal", desc: ["Tuyết và dây đèn nhấp nháy — 15/12 → 26/12", "Snow and twinkling lights — Dec 15 → 26"], panel: "#0c2418", border: "#ef4444", accent: "#facc15", fx: ["christmas"] },
-  { id: "tet", name: "Tết", kind: "seasonal", desc: ["Hoa mai đào rơi, pháo hoa — quanh Tết Nguyên Đán", "Apricot blossoms and fireworks — around Lunar New Year"], panel: "#3c0808", border: "#facc15", accent: "#facc15", fx: ["tet"] },
-  { id: "midautumn", name: "Trung thu", kind: "seasonal", desc: ["Đèn lồng bay, trăng rằm — quanh Rằm tháng Tám", "Rising lanterns and a full moon — around Mid-Autumn"], panel: "#0e1430", border: "#fbbf24", accent: "#fbbf24", fx: ["lanterns"] },
+  {
+    id: "halloween", name: "Halloween", kind: "seasonal",
+    desc: ["Bí ngô, vạc phù thuỷ, mạng nhện, nhện thả tơ, đàn dơi, phù thuỷ bay — 24/10 → 1/11", "Pumpkins, a cauldron, cobwebs, dangling spiders, bat swarms and a witch — Oct 24 → Nov 1"],
+    panel: "#160a1c", border: "#ff7a18", accent: "#ff7a18",
+    fx: ["fog", "hwHang", "bats", "ghosts", "hwTrim"], sky: ["batSwarm", "witch", "spiderDrop"], scene: halloweenScene, wallpaper: true,
+  },
+  {
+    id: "christmas", name: "Giáng sinh", kind: "seasonal",
+    desc: ["Bão tuyết phủ cả taskbar, cây thông, quà, người tuyết, xe tuần lộc — 15/12 → 26/12", "A blizzard that buries the taskbar, a tree, gifts, a snowman and Santa's sleigh — Dec 15 → 26"],
+    panel: "#0c2418", border: "#ef4444", accent: "#facc15",
+    fx: ["xmasHang", "christmas", "xmasTrim"], sky: ["sleigh"], overlay: ["blizzard"], scene: xmasScene, wallpaper: true,
+  },
+  {
+    id: "tet", name: "Tết", kind: "seasonal",
+    desc: ["Mai đào, lì xì, dây pháo, nồi bánh chưng, pháo hoa nhiều màu — quanh Tết Nguyên Đán", "Apricot and peach blossoms, lì xì, firecrackers, bánh chưng and fireworks — around Lunar New Year"],
+    panel: "#3c0808", border: "#facc15", accent: "#facc15",
+    fx: ["tetHang", "tet", "tetTrim"], sky: ["tetSky"], scene: tetScene, wallpaper: true,
+  },
+  {
+    id: "midautumn", name: "Trung thu", kind: "seasonal",
+    desc: ["Trăng rằm, đèn ông sao, đèn cá chép, đèn kéo quân, đèn Khổng Minh, bánh trung thu — quanh Rằm tháng Tám", "Full moon, star, carp and revolving lanterns, sky lanterns and mooncakes — around Mid-Autumn"],
+    panel: "#0e1430", border: "#fbbf24", accent: "#fbbf24",
+    fx: ["clouds", "maHang"], sky: ["lanterns"], scene: midautumnScene, wallpaper: true,
+  },
 ] as const satisfies readonly ThemeDef[];
 
 export type ThemeId = (typeof THEMES)[number]["id"];

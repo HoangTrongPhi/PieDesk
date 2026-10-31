@@ -73,6 +73,12 @@ export type Settings = {
   fxBattery?: boolean;
   /** Effect drawn above every app, in its own click-through window. */
   overlayFx?: OverlayFx;
+  /** Theme scenery on the desktop (a Christmas tree, pumpkins, the moon…) and ornaments on boxes. */
+  decor?: boolean;
+  /** A theme's sky effects (sleigh, bats, fireworks, sky lanterns, the blizzard on the taskbar) go above every app. */
+  themeOverlay?: boolean;
+  /** Holiday themes set their own Windows wallpaper while on, and put the user's back after. */
+  themeWallpaper?: boolean;
   /** Pie the cat: on the desktop (walks on boxes), on top of every app, or off. */
   pet?: "off" | "desktop" | "top";
   /** Newly installed programs drop into the box of their group. */

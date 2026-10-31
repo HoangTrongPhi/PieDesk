@@ -1,5 +1,6 @@
 //! Overlay windows: one transparent, click-through, always-on-top window per monitor for effects
-//! that float above every app (setting `overlayFx`) and for Pie the cat "on top" (`pet`).
+//! that float above every app (setting `overlayFx`, and the theme's sky effects with `themeOverlay`)
+//! and for Pie the cat "on top" (`pet`).
 //! They exist only while one of those is on, never take focus or the mouse, and hide with the
 //! surfaces (fullscreen guard, show / hide desktop).
 
@@ -18,9 +19,9 @@ static NEXT: AtomicUsize = AtomicUsize::new(0);
 static OPEN: Mutex<Option<HashMap<String, String>>> = Mutex::new(None);
 
 fn wanted(app: &AppHandle) -> bool {
-    app.state::<AppState>().store.read(|d| {
-        d.setting_str("overlayFx").is_some_and(|v| v != "off") || d.setting_str("pet").as_deref() == Some("top")
-    })
+    let state = app.state::<AppState>();
+    state.theme_overlay.load(Ordering::Relaxed)
+        || state.store.read(|d| d.setting_str("overlayFx").is_some_and(|v| v != "off") || d.setting_str("pet").as_deref() == Some("top"))
 }
 
 /// Opens, moves or closes overlay windows to match the settings and the connected monitors.

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+<defs>
+<radialGradient id="tet-flower-mai-g" cx="0" cy="0" r="11.6" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#f59e0b"/><stop offset=".38" stop-color="#ffc425"/><stop offset=".72" stop-color="#ffd23f"/><stop offset="1" stop-color="#fff0a0"/></radialGradient>
+<path id="tet-flower-mai-p" d="M0-.8C-5.4-2.2-6.8-9.4-2-11.2C-.7-11.7.7-11.7 2-11.2C6.8-9.4 5.4-2.2 0-.8Z"/>
+</defs>
+<g transform="translate(12 12.4)">
+<g fill="url(#tet-flower-mai-g)" stroke="#d99100" stroke-width=".6" stroke-linejoin="round">
+<use href="#tet-flower-mai-p"/><use href="#tet-flower-mai-p" transform="rotate(72)"/><use href="#tet-flower-mai-p" transform="rotate(144)"/><use href="#tet-flower-mai-p" transform="rotate(216)"/><use href="#tet-flower-mai-p" transform="rotate(288)"/>
+</g>
+<circle r="2.9" fill="#e8590c"/>
+<circle r="1.2" fill="#ffd23f"/>
+<g fill="#c2410c"><circle cx="2.7" cy="-3.7" r=".85"/><circle cx="4.4" cy="1.4" r=".85"/><circle cx="0" cy="4.6" r=".85"/><circle cx="-4.4" cy="1.4" r=".85"/><circle cx="-2.7" cy="-3.7" r=".85"/></g>
+</g>
+</svg>

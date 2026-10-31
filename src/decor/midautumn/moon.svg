@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220">
+  <defs>
+    <radialGradient id="ma-moon-halo" cx="110" cy="110" r="110" gradientUnits="userSpaceOnUse">
+      <stop offset="0.55" stop-color="#fff1c2" stop-opacity="0.8"/>
+      <stop offset="0.66" stop-color="#fde68a" stop-opacity="0.42"/>
+      <stop offset="0.78" stop-color="#facc15" stop-opacity="0.19"/>
+      <stop offset="0.9" stop-color="#f59e0b" stop-opacity="0.075"/>
+      <stop offset="1" stop-color="#f59e0b" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="ma-moon-disc" cx="0.38" cy="0.33" r="0.78">
+      <stop offset="0" stop-color="#fffdf4"/>
+      <stop offset="0.38" stop-color="#fff4d6"/>
+      <stop offset="0.78" stop-color="#fbe3a2"/>
+      <stop offset="1" stop-color="#ecc77e"/>
+    </radialGradient>
+    <radialGradient id="ma-moon-shade" cx="0.3" cy="0.26" r="0.86">
+      <stop offset="0.62" stop-color="#d9a855" stop-opacity="0"/>
+      <stop offset="1" stop-color="#c18a3a" stop-opacity="0.42"/>
+    </radialGradient>
+    <linearGradient id="ma-moon-rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="0.5" stop-color="#fff4d6" stop-opacity="0.15"/>
+      <stop offset="1" stop-color="#ffe6a8" stop-opacity="0.55"/>
+    </linearGradient>
+    <linearGradient id="ma-moon-tree" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d1a052"/>
+      <stop offset="1" stop-color="#b07c35"/>
+    </linearGradient>
+    <filter id="ma-moon-soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2.4"/>
+    </filter>
+    <clipPath id="ma-moon-clip">
+      <circle cx="110" cy="110" r="72"/>
+    </clipPath>
+  </defs>
+  <style>
+    @media (prefers-reduced-motion: no-preference) {
+      .ma-moon-halo { transform-origin: 110px 110px; animation: ma-moon-breathe 8s ease-in-out infinite; }
+      .ma-moon-face { animation: ma-moon-bright 8s ease-in-out infinite; }
+    }
+    @keyframes ma-moon-breathe {
+      0%, 100% { transform: scale(0.92); opacity: 0.78; }
+      50% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes ma-moon-bright {
+      0%, 100% { opacity: 0.94; }
+      50% { opacity: 1; }
+    }
+  </style>
+
+  <!-- halo -->
+  <circle class="ma-moon-halo" cx="110" cy="110" r="110" fill="url(#ma-moon-halo)"/>
+
+  <g class="ma-moon-face">
+    <!-- disc -->
+    <circle cx="110" cy="110" r="72" fill="url(#ma-moon-disc)"/>
+
+    <g clip-path="url(#ma-moon-clip)">
+      <!-- maria -->
+      <g filter="url(#ma-moon-soft)" fill="#e0b25f" opacity="0.42">
+        <ellipse cx="86" cy="80" rx="17" ry="11" transform="rotate(-18 86 80)"/>
+        <ellipse cx="124" cy="68" rx="12" ry="7.5" transform="rotate(12 124 68)"/>
+        <path d="M134,90 C146,84 160,90 160,102 C160,112 150,116 142,112 C134,108 126,98 134,90 Z"/>
+        <ellipse cx="66" cy="114" rx="7" ry="12" transform="rotate(10 66 114)"/>
+        <ellipse cx="104" cy="100" rx="9" ry="5" opacity="0.6"/>
+      </g>
+
+      <!-- craters -->
+      <g>
+        <circle cx="100" cy="57" r="3.6" fill="#e2b76a" opacity="0.55"/>
+        <circle cx="100.7" cy="57.7" r="2.7" fill="#fff3d2" opacity="0.7"/>
+        <circle cx="151" cy="79" r="2.8" fill="#e2b76a" opacity="0.5"/>
+        <circle cx="151.6" cy="79.6" r="2" fill="#fff1cc" opacity="0.65"/>
+        <circle cx="78" cy="97" r="2.3" fill="#e2b76a" opacity="0.5"/>
+        <circle cx="78.5" cy="97.5" r="1.6" fill="#fff1cc" opacity="0.6"/>
+        <circle cx="132" cy="51" r="2" fill="#e2b76a" opacity="0.45"/>
+        <circle cx="62" cy="88" r="1.7" fill="#e2b76a" opacity="0.45"/>
+        <circle cx="160" cy="112" r="2.2" fill="#e2b76a" opacity="0.42"/>
+        <circle cx="160.4" cy="112.4" r="1.5" fill="#fff1cc" opacity="0.55"/>
+      </g>
+
+      <!-- terminator shade -->
+      <circle cx="110" cy="110" r="72" fill="url(#ma-moon-shade)"/>
+
+      <!-- cay da + chu Cuoi -->
+      <g fill="url(#ma-moon-tree)" opacity="0.86">
+        <!-- ground -->
+        <path d="M30,180 C58,168 88,163.5 112,164 C140,164.5 166,169 192,179 L192,200 L30,200 Z"/>
+        <!-- trunk splitting into two big limbs -->
+        <path d="M109,166.5 C115.6,165 118.4,160 118.3,153 C118.2,149.6 116.4,147 112.4,144.6 L103.6,141.4 L107.6,140 C111.6,141.6 115.4,143.4 119,146 C119.8,144 119.9,142 119.5,140 L128.5,140 C128,142.4 128.2,144.4 128.9,146.2 C132.8,143.4 137.6,141.4 143.6,139.8 L147.4,141 C141.2,143.6 134.8,146.8 131.2,150.4 C130.6,158 133.4,164.6 140.4,166.5 Z"/>
+        <!-- wide layered canopy -->
+        <path d="M80,141 C77,136 79,131 85,130 C83,124 88,120 94,121 C94,114 101,110 107,112 C109,105 117,101 124,103 C129,99 138,100 141,105 C147,103 154,107 154,113 C160,113 164,118 162,123 C168,124 171,129 168,134 C172,136 172,141 167,142 C163,144 159,141 157,143 C153,146 148,143 146,144 C142,146 137,143 134,144 C130,146 126,143 122,144 C118,146 114,143 110,144 C106,146 102,143 99,144 C95,146 91,143 88,144 C84,145 81,144 80,141 Z"/>
+      </g>
+      <!-- foliage tiers (soft light edges) -->
+      <g fill="none" stroke="#efcd8a" stroke-linecap="round" stroke-width="1" opacity="0.55">
+        <path d="M86,133 C90,130.4 95,130.4 98,132.4"/>
+        <path d="M97,124 C101,121 106,121 109,123"/>
+        <path d="M112,114.4 C116,111.6 121,111.4 124.4,113.4"/>
+        <path d="M128,110 C132,107.6 137,107.8 140,110.4"/>
+        <path d="M143,117 C147,115 151,115.4 153.6,118"/>
+        <path d="M152,128 C156,126 160,126.4 162.4,129"/>
+        <path d="M116,128.6 C121,126 127,126 131,128.6"/>
+        <path d="M134,134.4 C138,132.4 143,132.6 146,135"/>
+        <path d="M100,137 C104,135 109,135.2 112,137.4"/>
+      </g>
+      <!-- hanging aerial roots -->
+      <g fill="none" stroke="url(#ma-moon-tree)" stroke-linecap="round" opacity="0.86">
+        <path d="M86,143.5 C85.6,146.5 86.4,148.5 86,151.5" stroke-width="0.9"/>
+        <path d="M92.5,144 C92,147.5 93,150 92.4,154" stroke-width="1"/>
+        <path d="M99,144.5 C98.6,146.6 99.4,148.2 99,150.4" stroke-width="0.85"/>
+        <path d="M139,144 C138.4,151 139.8,158 139.2,166" stroke-width="1.7"/>
+        <path d="M145.5,144 C145,148 146,151.5 145.4,156.5" stroke-width="1"/>
+        <path d="M151.5,144 C151.2,147 152,149.5 151.5,153" stroke-width="0.9"/>
+        <path d="M157.5,143.4 C157.1,146 157.9,148 157.5,150.6" stroke-width="0.8"/>
+        <path d="M163,142.6 C162.8,144.4 163.3,145.8 163,147.4" stroke-width="0.7"/>
+      </g>
+      <!-- chu Cuoi sitting, knees up, under the tree -->
+      <g fill="url(#ma-moon-tree)" opacity="0.92">
+        <circle cx="110.6" cy="150.4" r="3.3"/>
+        <circle cx="112.6" cy="147.4" r="1.3"/>
+        <path d="M107.6,154 C106.6,157.4 106.8,161.4 107.8,165 L115,165 C115.2,160.6 114.6,156.6 113.2,154 Z"/>
+        <path d="M111,163.6 L103.2,157.6 L101.2,165.4" fill="none" stroke="url(#ma-moon-tree)" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M109.4,155.6 L104.2,158.2" fill="none" stroke="url(#ma-moon-tree)" stroke-width="1.9" stroke-linecap="round"/>
+      </g>
+    </g>
+
+    <!-- rim light -->
+    <circle cx="110" cy="110" r="71.2" fill="none" stroke="url(#ma-moon-rim)" stroke-width="1.6"/>
+  </g>
+</svg>

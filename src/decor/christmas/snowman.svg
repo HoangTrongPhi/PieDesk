@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 150">
+<defs>
+<radialGradient id="xm-snowman-ball" cx=".38" cy=".3" r=".78"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="#f4f9ff"/><stop offset=".8" stop-color="#d3e4f5"/><stop offset="1" stop-color="#a6c4e3"/></radialGradient>
+<linearGradient id="xm-snowman-hat" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3a4560"/><stop offset=".4" stop-color="#1f2638"/><stop offset="1" stop-color="#0d111c"/></linearGradient>
+<linearGradient id="xm-snowman-scarf" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f25660"/><stop offset=".55" stop-color="#d62f3a"/><stop offset="1" stop-color="#97202a"/></linearGradient>
+<linearGradient id="xm-snowman-carrot" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb35c"/><stop offset="1" stop-color="#e2620f"/></linearGradient>
+<radialGradient id="xm-snowman-coal" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#5a6274"/><stop offset=".5" stop-color="#262b37"/><stop offset="1" stop-color="#14171f"/></radialGradient>
+<radialGradient id="xm-snowman-sh"><stop offset=".3" stop-color="#7d9fc4" stop-opacity=".6"/><stop offset="1" stop-color="#7d9fc4" stop-opacity="0"/></radialGradient>
+</defs>
+<style>@media (prefers-reduced-motion:no-preference){.xm-snowman-tail{transform-origin:70px 63px;animation:xm-snowman-sway 3.4s ease-in-out infinite}.xm-snowman-wave{transform-origin:35px 74px;animation:xm-snowman-wave 2.8s ease-in-out infinite}@keyframes xm-snowman-sway{0%,100%{transform:rotate(0)}50%{transform:rotate(-7deg)}}@keyframes xm-snowman-wave{0%,100%{transform:rotate(0)}50%{transform:rotate(9deg)}}}</style>
+<!-- ground drift -->
+<path d="M12 150C14 144 22 141 32 142C40 139 48 140 55 141C64 139 74 139 82 142C91 141 97 145 98 150z" fill="#e3eef9"/>
+<!-- twig arms (behind the body) -->
+<g class="xm-snowman-wave" fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path d="M37 76L22 61L11 47M22 61L15 60M16 54L8 52M11 47L6 41M11 47L13 39" stroke="#6b4226" stroke-width="2.6"/>
+<path d="M36 74.5L22 60.5L12 47" stroke="#b07a4a" stroke-width=".9"/>
+</g>
+<g fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path d="M73 78L88 73L103 66M88 73L95 77M96 69.5L101 74M103 66L108 63M103 66L106 71" stroke="#6b4226" stroke-width="2.6"/>
+<path d="M74 76.8L88 72L102 65.4" stroke="#b07a4a" stroke-width=".9"/>
+</g>
+<!-- body -->
+<circle cx="55" cy="119" r="30" fill="url(#xm-snowman-ball)" stroke="#a6c4e3" stroke-width=".8"/>
+<ellipse cx="55" cy="99" rx="19" ry="5" fill="url(#xm-snowman-sh)"/>
+<circle cx="55" cy="78" r="22" fill="url(#xm-snowman-ball)" stroke="#a6c4e3" stroke-width=".8"/>
+<circle cx="55" cy="44" r="16" fill="url(#xm-snowman-ball)" stroke="#a6c4e3" stroke-width=".8"/>
+<path d="M30 106A28 28 0 0 1 40 95" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".9"/>
+<path d="M38 70A19 19 0 0 1 46 60" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" opacity=".9"/>
+<!-- buttons -->
+<g fill="url(#xm-snowman-coal)"><circle cx="55" cy="74" r="2.5"/><circle cx="55" cy="83" r="2.5"/><circle cx="55.5" cy="92" r="2.4"/></g>
+<g fill="#cbd5e1" opacity=".8"><circle cx="54.2" cy="73.2" r=".8"/><circle cx="54.2" cy="82.2" r=".8"/><circle cx="54.7" cy="91.2" r=".8"/></g>
+<!-- face -->
+<g fill="url(#xm-snowman-coal)"><circle cx="49" cy="40" r="2.3"/><circle cx="61" cy="40" r="2.3"/>
+<circle cx="46.8" cy="49.6" r="1.2"/><circle cx="50" cy="52" r="1.25"/><circle cx="54" cy="53.2" r="1.3"/><circle cx="58" cy="52.6" r="1.25"/><circle cx="61.4" cy="50.6" r="1.2"/></g>
+<circle cx="48.2" cy="39.1" r=".8" fill="#fff"/><circle cx="60.2" cy="39.1" r=".8" fill="#fff"/>
+<ellipse cx="45" cy="46" rx="2.6" ry="1.6" fill="#fda4af" opacity=".55"/><ellipse cx="65" cy="46" rx="2.6" ry="1.6" fill="#fda4af" opacity=".45"/>
+<path d="M55 43C61 43.5 68 45 73 47.5C68 48.5 61 48.6 55 48.2C53.6 46.6 53.6 44.4 55 43z" fill="url(#xm-snowman-carrot)"/>
+<path d="M59 44.2L59.6 47.2M63.5 45L64 47.6" stroke="#c2410c" stroke-width=".7" stroke-linecap="round"/>
+<path d="M56 44.2C60 44.4 65 45.3 69 46.5" fill="none" stroke="#ffe0b8" stroke-width=".8" stroke-linecap="round" opacity=".9"/>
+<!-- scarf -->
+<g class="xm-snowman-tail">
+<path d="M68 61C76 61 86 62.5 95 59.5C93 63 94 66.5 97 69C88 70.5 78 68.5 69 68z" fill="url(#xm-snowman-scarf)"/>
+<path d="M77 61.6L77.6 68.6M85 61.4L85.6 69.2" stroke="#fff" stroke-width="2.2" opacity=".9"/>
+<path d="M95.2 59.6L100 57.6M94.6 62.3L100.4 61.4M94.8 65L100.6 65.4M96.4 67.8L101 69.6" stroke="#ef4444" stroke-width="1.6" stroke-linecap="round"/>
+</g>
+<path d="M64 62C68 63 71 65 70 70C69.5 77 70.5 84 72.5 90L64.5 91.5C62.5 84 62.5 76 63 69z" fill="url(#xm-snowman-scarf)"/>
+<path d="M63.3 74.5L70.2 73.5M63.4 81.5L71 80.4" stroke="#fff" stroke-width="2.2" opacity=".9"/>
+<path d="M65.2 91.4L64.8 95.6M67.4 91.1L67.4 95.6M69.6 90.7L70 95.2M71.8 90.3L72.8 94.6" stroke="#ef4444" stroke-width="1.6" stroke-linecap="round"/>
+<path d="M38 57.5C44 62.5 66 63.5 72 57.5C73.5 59.5 73.5 63 72 65C66 70 44 69.5 38.5 64.5C37 62.5 36.8 59.5 38 57.5z" fill="url(#xm-snowman-scarf)"/>
+<path d="M39.8 59.4C46 63.6 64 64.2 70.6 59.4" fill="none" stroke="#ff9aa1" stroke-width="1.2" stroke-linecap="round" opacity=".8"/>
+<path d="M46.5 61.6L46 67.6M55 62.6V68.4" stroke="#fff" stroke-width="2.2" opacity=".9"/>
+<ellipse cx="68" cy="64" rx="4.6" ry="4" fill="#c22631"/>
+<!-- hat -->
+<g transform="rotate(-8 55 30)">
+<path d="M41.5 29L43.5 6.5C43.6 5 44.6 4 46 4H64C65.4 4 66.4 5 66.5 6.5L68.5 29z" fill="url(#xm-snowman-hat)"/>
+<path d="M44.6 7L43 27" stroke="#5b6886" stroke-width="1.3" stroke-linecap="round"/>
+<ellipse cx="55" cy="5" rx="10.6" ry="2" fill="#2f3850" stroke="#56627f" stroke-width=".7"/>
+<path d="M42.4 21H67.6L68.1 27H41.9z" fill="#d62f3a"/>
+<path d="M42.4 21H67.6" stroke="#ff8a91" stroke-width=".9"/>
+<ellipse cx="55" cy="30" rx="20" ry="4.4" fill="#141a28" stroke="#4a5672" stroke-width=".9"/>
+<path d="M36.5 29.4C40 32 70 32 73.5 29.4" fill="none" stroke="#6b7898" stroke-width=".9" stroke-linecap="round" opacity=".8"/>
+<path d="M47 24C43 20 39.5 20.5 37.5 22C40.5 22 40.5 25 43 25.5C44.5 26 46 25 47 24z" fill="#22a04e"/>
+<path d="M47 24C45 19.5 46 16 48.5 15C48 18 51 19 50.5 21.5C50.2 23 48.5 24 47 24z" fill="#15803d"/>
+<circle cx="48.6" cy="24.6" r="1.8" fill="#ef4444"/><circle cx="51" cy="23.4" r="1.6" fill="#d62f3a"/>
+<circle cx="48.1" cy="24" r=".55" fill="#fff"/>
+</g>
+</svg>

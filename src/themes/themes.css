@@ -551,6 +551,24 @@
 .pd-fx-front {
   z-index: 950;
 }
+/* Theme scenery (src/decor/DecorLayer): under the boxes, glides to a new spot when they move. */
+.pd-decor {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+}
+.pd-decor img {
+  position: absolute;
+  height: auto;
+  filter: drop-shadow(0 8px 10px rgb(0 0 0 / 0.35));
+  transition: left 0.7s cubic-bezier(0.2, 0.8, 0.2, 1), top 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: pd-decor-in 0.6s ease-out both;
+}
+@keyframes pd-decor-in {
+  from { opacity: 0; }
+}
 html[data-view="overlay"],
 html[data-view="overlay"] body {
   background: transparent;

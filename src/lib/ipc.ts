@@ -36,6 +36,8 @@ export const ipc = {
   mediaControl: (action: "toggle" | "next" | "prev") => invoke("media_control", { action }),
   openManager: (tab?: string) => invoke("open_manager", { tab }),
   toggleSurfaces: () => invoke("toggle_surfaces"),
+  /** Theme sky effects above every app (overlay windows), and the theme's wallpaper id (null: the user's own). */
+  themeEffects: (overlay: boolean, wallpaper: string | null) => invoke("theme_effects", { overlay, wallpaper }),
 };
 
 /** Shell icon for a path, sized for the current DPI. Served by the Rust `icon://` protocol. */

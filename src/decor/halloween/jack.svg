@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 100">
+  <defs>
+    <radialGradient id="hw-jack-ground" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffb347" stop-opacity="0.6"/>
+      <stop offset="0.55" stop-color="#ff7a18" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#ff7a18" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="hw-jack-rib" cx="0.4" cy="0.3" r="0.8">
+      <stop offset="0" stop-color="#ffb35a"/>
+      <stop offset="0.42" stop-color="#ff8a1f"/>
+      <stop offset="0.8" stop-color="#ef6a12"/>
+      <stop offset="1" stop-color="#c2470b"/>
+    </radialGradient>
+    <radialGradient id="hw-jack-rib2" cx="0.45" cy="0.3" r="0.8">
+      <stop offset="0" stop-color="#fb9a3c"/>
+      <stop offset="0.55" stop-color="#ea6812"/>
+      <stop offset="1" stop-color="#ad3d09"/>
+    </radialGradient>
+    <radialGradient id="hw-jack-in" gradientUnits="userSpaceOnUse" cx="55" cy="68" r="40">
+      <stop offset="0" stop-color="#fffbe6"/>
+      <stop offset="0.35" stop-color="#ffe68c"/>
+      <stop offset="0.7" stop-color="#ffc443"/>
+      <stop offset="1" stop-color="#ff9a2e"/>
+    </radialGradient>
+    <linearGradient id="hw-jack-stem" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#a3ad55"/>
+      <stop offset="0.5" stop-color="#6b7a26"/>
+      <stop offset="1" stop-color="#3f4a14"/>
+    </linearGradient>
+    <linearGradient id="hw-jack-leaf" x1="1" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#4d7c0f"/>
+      <stop offset="1" stop-color="#a3e635"/>
+    </linearGradient>
+    <filter id="hw-jack-blur" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+    <path id="hw-jack-face" d="M30 57.5 L47 56.5 L40 43 Z M80 57.5 L63 56.5 L70 43 Z M51.5 65.5 L58.5 65.5 L55 60 Z M24 68 C30 73 37 75 43 75.4 L43 80 L49 80 L49 75.8 L61 75.8 L61 80 L67 80 L67 75.4 C73 75 80 73 86 68 C83 81 72 89.5 59.5 91 L59.5 86 L50.5 86 L50.5 91 C38 89.5 27 81 24 68 Z"/>
+    <clipPath id="hw-jack-clip"><use href="#hw-jack-face"/></clipPath>
+  </defs>
+  <style>
+    @media (prefers-reduced-motion: no-preference) {
+      .hw-jack-flk { animation: hw-jack-flk 2.7s linear infinite; }
+      .hw-jack-spill { animation: hw-jack-spill 3.3s linear infinite; }
+      .hw-jack-gnd { animation: hw-jack-flk 3.1s linear -1.2s infinite; }
+      @keyframes hw-jack-flk {
+        0%, 100% { opacity: 1; } 7% { opacity: .84; } 11% { opacity: .97; } 19% { opacity: .78; }
+        26% { opacity: 1; } 38% { opacity: .9; } 44% { opacity: .98; } 55% { opacity: .74; }
+        61% { opacity: .94; } 72% { opacity: .86; } 83% { opacity: 1; } 91% { opacity: .82; }
+      }
+      @keyframes hw-jack-spill {
+        0%, 100% { opacity: .72; } 9% { opacity: .5; } 16% { opacity: .66; } 27% { opacity: .44; }
+        35% { opacity: .76; } 48% { opacity: .58; } 57% { opacity: .74; } 69% { opacity: .46; }
+        78% { opacity: .7; } 88% { opacity: .54; }
+      }
+    }
+  </style>
+
+  <!-- halo + ground glow -->
+  <ellipse class="hw-jack-gnd" cx="55" cy="66" rx="55" ry="34" fill="url(#hw-jack-ground)" opacity="0.5"/>
+  <ellipse class="hw-jack-gnd" cx="55" cy="93" rx="55" ry="7" fill="url(#hw-jack-ground)"/>
+
+  <!-- pumpkin ribs -->
+  <g stroke="#a83c0a" stroke-width="1" stroke-opacity="0.75">
+    <ellipse cx="31" cy="67" rx="24" ry="30" fill="url(#hw-jack-rib2)"/>
+    <ellipse cx="79" cy="67" rx="24" ry="30" fill="url(#hw-jack-rib2)"/>
+    <ellipse cx="42" cy="66" rx="24" ry="33" fill="url(#hw-jack-rib)"/>
+    <ellipse cx="68" cy="66" rx="24" ry="33" fill="url(#hw-jack-rib)"/>
+    <ellipse cx="55" cy="65.5" rx="19" ry="34" fill="url(#hw-jack-rib)"/>
+  </g>
+  <!-- gloss -->
+  <g fill="none" stroke="#ffe6c2" stroke-linecap="round">
+    <path d="M43.5 40 Q46.5 35.2 52 34.2" stroke-width="1.8" stroke-opacity="0.6"/>
+    <path d="M12.5 57 Q13 47 20 41" stroke-width="2" stroke-opacity="0.32"/>
+    <path d="M25.5 45 Q28 39 34 36.5" stroke-width="1.5" stroke-opacity="0.35"/>
+  </g>
+  <ellipse cx="55" cy="34" rx="9" ry="2.8" fill="#9a3608" opacity="0.55"/>
+
+  <!-- light spilling onto the rind -->
+  <use class="hw-jack-spill" href="#hw-jack-face" fill="#ffd166" opacity="0.7" filter="url(#hw-jack-blur)"/>
+
+  <!-- carved holes: dark inner wall + glowing interior -->
+  <use href="#hw-jack-face" fill="#6b230a"/>
+  <g clip-path="url(#hw-jack-clip)">
+    <use class="hw-jack-flk" href="#hw-jack-face" transform="translate(0 1.7)" fill="url(#hw-jack-in)"/>
+  </g>
+  <use href="#hw-jack-face" fill="none" stroke="#ffd59a" stroke-width="0.7" stroke-opacity="0.6" stroke-linejoin="round"/>
+
+  <!-- stem, leaf, vine -->
+  <path d="M51 33 C46 25 38 22 30 24.5 C33.5 31 41.5 35.5 51 33 Z" fill="url(#hw-jack-leaf)" stroke="#3f6212" stroke-width="0.6"/>
+  <path d="M50 32.5 C44 29 37.5 26.5 31.5 25 M42 29 L39.5 31.8 M38 27.4 L35 29.4 M44 30 L45 27" fill="none" stroke="#3f6212" stroke-width="0.7" stroke-linecap="round"/>
+  <path d="M50.5 34 C50 27 51.5 21 56 15.5 C57 14.3 59.5 14.8 60.5 16 C61.3 17 61 18 60.3 18.8 C57.5 22.5 57.5 28 59.5 34 Z" fill="url(#hw-jack-stem)" stroke="#3a4312" stroke-width="0.6"/>
+  <path d="M52.6 31 C52.4 26 53.6 21.5 56.6 17.6" fill="none" stroke="#c9d17e" stroke-width="0.9" stroke-opacity="0.7" stroke-linecap="round"/>
+  <ellipse cx="58.3" cy="16.4" rx="2.4" ry="1.3" transform="rotate(-38 58.3 16.4)" fill="#c2c97a"/>
+  <path d="M59 33 C65 33.5 70 30 69.5 25.5 C69 22 64.5 21.5 64 24.5 C63.7 26.5 66 27.6 67 26" fill="none" stroke="#65a30d" stroke-width="1.4" stroke-linecap="round"/>
+</svg>

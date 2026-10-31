@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+<defs>
+<radialGradient id="tet-flower-dao-g" cx="0" cy="0" r="11.6" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#d63a76"/><stop offset=".36" stop-color="#ec6f9a"/><stop offset=".72" stop-color="#f9a8c4"/><stop offset="1" stop-color="#fff0f6"/></radialGradient>
+<path id="tet-flower-dao-p" d="M0-.8C-5.8-2-7.4-8.4-3.9-10.8C-2.2-11.8-.8-11.3 0-10.3C.8-11.3 2.2-11.8 3.9-10.8C7.4-8.4 5.8-2 0-.8Z"/>
+</defs>
+<g transform="translate(12 12.4)">
+<g fill="url(#tet-flower-dao-g)" stroke="#e05a8e" stroke-width=".6" stroke-linejoin="round">
+<use href="#tet-flower-dao-p"/><use href="#tet-flower-dao-p" transform="rotate(72)"/><use href="#tet-flower-dao-p" transform="rotate(144)"/><use href="#tet-flower-dao-p" transform="rotate(216)"/><use href="#tet-flower-dao-p" transform="rotate(288)"/>
+</g>
+<circle r="2.7" fill="#be185d"/>
+<g fill="#ffd23f"><circle cx="2.7" cy="-3.7" r=".9"/><circle cx="4.4" cy="1.4" r=".9"/><circle cx="0" cy="4.6" r=".9"/><circle cx="-4.4" cy="1.4" r=".9"/><circle cx="-2.7" cy="-3.7" r=".9"/></g>
+<circle r="1" fill="#ffd23f"/>
+</g>
+</svg>

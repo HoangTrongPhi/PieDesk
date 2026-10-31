@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150">
+<style>
+@media (prefers-reduced-motion:no-preference){
+.tet-banh-chung-pot-fl{transform-origin:75px 148px;animation:tet-banh-chung-pot-fl 1.1s ease-in-out infinite}
+.tet-banh-chung-pot-fl2{animation-duration:.8s;animation-delay:-.3s}
+.tet-banh-chung-pot-fl3{animation-duration:.6s;animation-delay:-.15s}
+.tet-banh-chung-pot-gl{animation:tet-banh-chung-pot-gl 1.6s ease-in-out infinite alternate}
+.tet-banh-chung-pot-st{opacity:0;animation:tet-banh-chung-pot-st 4.2s ease-out infinite}
+.tet-banh-chung-pot-st2{animation-delay:-1.4s}
+.tet-banh-chung-pot-st3{animation-delay:-2.8s}
+}
+@keyframes tet-banh-chung-pot-fl{0%,100%{transform:scale(1,1) skewX(0)}25%{transform:scale(1.04,.9) skewX(2.5deg)}50%{transform:scale(.97,1.06) skewX(-2deg)}75%{transform:scale(1.02,.95) skewX(1.5deg)}}
+@keyframes tet-banh-chung-pot-gl{from{opacity:.55}to{opacity:.9}}
+@keyframes tet-banh-chung-pot-st{0%{opacity:0;transform:translate(0,6px)}25%{opacity:1}100%{opacity:0;transform:translate(3px,-16px)}}
+</style>
+<defs>
+<linearGradient id="tet-banh-chung-pot-body" x1="18" x2="132" y1="0" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5b5a68"/><stop offset=".12" stop-color="#3a3944"/><stop offset=".55" stop-color="#2a2932"/><stop offset=".88" stop-color="#25242c"/><stop offset="1" stop-color="#4a4655"/></linearGradient>
+<radialGradient id="tet-banh-chung-pot-warm" cx="75" cy="122" r="46" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff9a3c" stop-opacity=".95"/><stop offset=".45" stop-color="#e8590c" stop-opacity=".45"/><stop offset="1" stop-color="#e8590c" stop-opacity="0"/></radialGradient>
+<radialGradient id="tet-banh-chung-pot-glow" cx="75" cy="132" r="52" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffb347" stop-opacity=".8"/><stop offset=".5" stop-color="#f97316" stop-opacity=".25"/><stop offset="1" stop-color="#f97316" stop-opacity="0"/></radialGradient>
+<linearGradient id="tet-banh-chung-pot-rim" x1="25" x2="125" y1="0" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#7d7c8c"/><stop offset=".3" stop-color="#b4b3c2"/><stop offset=".6" stop-color="#6c6b7a"/><stop offset="1" stop-color="#4b4a57"/></linearGradient>
+<linearGradient id="tet-banh-chung-pot-f1" x1="0" x2="0" y1="96" y2="148" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#e11d2e"/><stop offset=".55" stop-color="#f97316"/><stop offset="1" stop-color="#f5b301"/></linearGradient>
+<linearGradient id="tet-banh-chung-pot-f2" x1="0" x2="0" y1="104" y2="148" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#f97316"/><stop offset="1" stop-color="#ffd23f"/></linearGradient>
+<linearGradient id="tet-banh-chung-pot-f3" x1="0" x2="0" y1="116" y2="148" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffd23f"/><stop offset="1" stop-color="#fff8d6"/></linearGradient>
+<linearGradient id="tet-banh-chung-pot-lt" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#5cb85f"/><stop offset="1" stop-color="#3b8f3e"/></linearGradient>
+<g id="tet-banh-chung-pot-c">
+<path d="M0 12L8 2H36L28 12Z" fill="url(#tet-banh-chung-pot-lt)"/>
+<path d="M0 12H28V18H0Z" fill="#2f7d32"/>
+<path d="M28 12L36 2V8L28 18Z" fill="#245f27"/>
+<path d="M4 9.6L10 3.4M14 11L21 3M24 11L31 3" stroke="#8fd694" stroke-width=".5" opacity=".7"/>
+<path d="M2.7 8.7H30.7V14.7M5.3 5.3H33.3V11.3M9.3 18V12L17.3 2M18.7 18V12L26.7 2" fill="none" stroke="#f1e3b5" stroke-width="1.5"/>
+<path d="M.7 11.5L8.3 2.6H35.3" fill="none" stroke="#a5e3a1" stroke-width=".7"/>
+</g>
+<path id="tet-banh-chung-pot-lf" d="M0 0C-5-6-6-16 0-26C6-16 5-6 0 0Z"/>
+</defs>
+<!-- glow + back brick -->
+<ellipse class="tet-banh-chung-pot-gl" cx="75" cy="132" rx="60" ry="26" fill="url(#tet-banh-chung-pot-glow)"/>
+<path d="M62 108H88V124H62Z" fill="#9a4426"/><path d="M62 108L64 105H90L88 108Z" fill="#c8673f"/>
+<!-- back log -->
+<rect x="44" y="131" width="62" height="9" rx="4.5" fill="#6b3a22"/><path d="M48 133H102" stroke="#9b6038" stroke-width="2" stroke-linecap="round"/>
+<!-- flames -->
+<g class="tet-banh-chung-pot-fl"><path d="M44 148C36 136 40 122 47 112C47 121 51 126 56 124C52 112 58 100 69 92C67 103 73 110 78 106C82 100 80 94 78 89C91 98 96 110 92 121C96 119 99 114 99 108C108 118 112 134 104 148Z" fill="url(#tet-banh-chung-pot-f1)"/></g>
+<g class="tet-banh-chung-pot-fl tet-banh-chung-pot-fl2"><path d="M52 148C46 138 50 126 56 119C57 126 60 129 64 128C62 118 66 109 74 103C73 112 78 116 82 113C84 109 84 105 83 102C92 110 94 122 90 130C93 128 95 124 95 121C101 129 102 140 97 148Z" fill="url(#tet-banh-chung-pot-f2)"/></g>
+<g class="tet-banh-chung-pot-fl tet-banh-chung-pot-fl3"><path d="M60 148C56 140 59 132 64 127C65 132 67 134 70 133C69 126 72 120 77 116C77 122 80 125 83 124C88 130 89 141 86 148Z" fill="url(#tet-banh-chung-pot-f3)"/></g>
+<!-- pot -->
+<path d="M14 62C8 61 6 66 9 70C11 73 15 73 19 72" fill="none" stroke="#3d3c48" stroke-width="4.5" stroke-linecap="round"/>
+<path d="M136 62C142 61 144 66 141 70C139 73 135 73 131 72" fill="none" stroke="#2c2b34" stroke-width="4.5" stroke-linecap="round"/>
+<path d="M13 61.4C9.6 61.8 8.6 64.6 9.6 67" fill="none" stroke="#8d8c9c" stroke-width="1.2" stroke-linecap="round"/>
+<path d="M27 52C18 66 16 86 24 100C31 110 50 116 75 116C100 116 119 110 126 100C134 86 132 66 123 52Z" fill="url(#tet-banh-chung-pot-body)"/>
+<path d="M27 52C18 66 16 86 24 100C31 110 50 116 75 116C100 116 119 110 126 100C134 86 132 66 123 52Z" fill="url(#tet-banh-chung-pot-warm)" class="tet-banh-chung-pot-gl"/>
+<path d="M27 60C22 72 21 86 27 97" fill="none" stroke="#a9a8b8" stroke-width="2.6" stroke-linecap="round" opacity=".45"/>
+<path d="M36 64C33 74 33 84 36 92" fill="none" stroke="#a9a8b8" stroke-width="1.2" stroke-linecap="round" opacity=".25"/>
+<g fill="#1e1d24" opacity=".3"><ellipse cx="98" cy="84" rx="9" ry="5"/><ellipse cx="60" cy="98" rx="11" ry="4"/><ellipse cx="112" cy="70" rx="5" ry="7"/></g>
+<!-- rim (back) + interior -->
+<ellipse cx="75" cy="50" rx="50" ry="10" fill="url(#tet-banh-chung-pot-rim)"/>
+<ellipse cx="75" cy="49.6" rx="45" ry="8" fill="#22303a"/>
+<ellipse cx="75" cy="51" rx="41" ry="5.6" fill="#2f4552"/>
+<!-- leaves lining the pot -->
+<use href="#tet-banh-chung-pot-lf" transform="translate(36 52)rotate(-28)" fill="#2f7d32"/>
+<use href="#tet-banh-chung-pot-lf" transform="translate(114 52)rotate(30)" fill="#2f7d32"/>
+<use href="#tet-banh-chung-pot-lf" transform="translate(37 52)rotate(-28)scale(.5 1)" fill="#4caf50"/>
+<use href="#tet-banh-chung-pot-lf" transform="translate(113 52)rotate(30)scale(.5 1)" fill="#4caf50"/>
+<path d="M36 52L24 29M114 52L127 29" stroke="#a5e3a1" stroke-width=".7" opacity=".8"/>
+<!-- banh chung -->
+<use href="#tet-banh-chung-pot-c" transform="translate(35 36)rotate(-4)"/>
+<use href="#tet-banh-chung-pot-c" transform="translate(79 34)rotate(3)"/>
+<use href="#tet-banh-chung-pot-c" x="56" y="42"/>
+<!-- rim (front) -->
+<path d="M25 50A50 10 0 0 0 125 50L120 49.6A45 8 0 0 1 30 49.6Z" fill="url(#tet-banh-chung-pot-rim)"/>
+<path d="M25 50V54A50 10 0 0 0 125 54V50A50 10 0 0 1 25 50Z" fill="#4e4d5a"/>
+<path d="M27 54.6A50 10 0 0 0 75 64" fill="none" stroke="#c9c8d6" stroke-width="1" opacity=".55"/>
+<!-- leaf draped over the rim -->
+<use href="#tet-banh-chung-pot-lf" transform="translate(44 55)rotate(200)scale(.75)" fill="#2f7d32"/>
+<path d="M44 55L37.6 72.6" stroke="#7fcf6a" stroke-width=".7"/>
+<!-- steam -->
+<g fill="none" stroke="#f4f1ec" stroke-linecap="round" opacity=".55">
+<path class="tet-banh-chung-pot-st" d="M52 30C47 24 56 19 51 12C48 8 52 5 51 2" stroke-width="3.2"/>
+<path class="tet-banh-chung-pot-st tet-banh-chung-pot-st2" d="M76 28C71 21 81 17 75 10C72 6 77 3 76 0" stroke-width="3.8"/>
+<path class="tet-banh-chung-pot-st tet-banh-chung-pot-st3" d="M99 28C94 22 103 18 98 11C95 7 99 4 98 1" stroke-width="3"/>
+</g>
+<!-- front bricks -->
+<path d="M12 117H40V150H12Z" fill="#b5532f"/>
+<path d="M12 117L16 112H44L40 117Z" fill="#d9774c"/>
+<path d="M40 117L44 112V145L40 150Z" fill="#e08a4a"/>
+<path d="M14 118.5H38" stroke="#efa77a" stroke-width="1" opacity=".7"/>
+<g fill="#8a3a20" opacity=".6"><circle cx="19" cy="126" r=".9"/><circle cx="31" cy="133" r="1.1"/><circle cx="23" cy="142" r=".8"/><circle cx="35" cy="122" r=".7"/></g>
+<path d="M110 117H138V150H110Z" fill="#a84a29"/>
+<path d="M110 117L106 112H134L138 117Z" fill="#cf6c42"/>
+<path d="M110 117L106 112V145L110 150Z" fill="#e08a4a"/>
+<path d="M112 118.5H136" stroke="#efa77a" stroke-width="1" opacity=".6"/>
+<g fill="#7d341c" opacity=".6"><circle cx="117" cy="128" r="1"/><circle cx="129" cy="137" r=".9"/><circle cx="123" cy="144" r=".8"/><circle cx="132" cy="123" r=".7"/></g>
+<!-- front logs (cut ends) -->
+<path d="M52 144L66 132" stroke="#5a3020" stroke-width="10" stroke-linecap="round"/>
+<path d="M98 144L84 132" stroke="#5a3020" stroke-width="10" stroke-linecap="round"/>
+<path d="M50 140L62 129.6M100 140L88 129.6" stroke="#8a5434" stroke-width="2" stroke-linecap="round"/>
+<ellipse cx="52" cy="145" rx="5.6" ry="5" fill="#e3b27a"/><ellipse cx="52" cy="145" rx="3.2" ry="2.8" fill="none" stroke="#b07a45" stroke-width=".8"/><circle cx="52" cy="145" r="1" fill="#b07a45"/>
+<ellipse cx="98" cy="145" rx="5.6" ry="5" fill="#d9a46c"/><ellipse cx="98" cy="145" rx="3.2" ry="2.8" fill="none" stroke="#a66f3c" stroke-width=".8"/><circle cx="98" cy="145" r="1" fill="#a66f3c"/>
+<!-- embers -->
+<g fill="#ffb347"><circle cx="64" cy="148.4" r="1.4"/><circle cx="75" cy="149" r="1"/><circle cx="85" cy="148.6" r="1.3"/></g>
+</svg>

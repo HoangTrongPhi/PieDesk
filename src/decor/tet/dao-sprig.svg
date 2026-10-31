@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 48">
+<defs>
+<radialGradient id="tet-dao-sprig-pl" cx="0" cy="0" r="6.8" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#e14d85"/><stop offset=".35" stop-color="#f48fb6"/><stop offset=".7" stop-color="#f9a8c4"/><stop offset="1" stop-color="#fff0f6"/></radialGradient>
+<radialGradient id="tet-dao-sprig-pd" cx="0" cy="0" r="6.8" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#b3124f"/><stop offset=".35" stop-color="#d94a80"/><stop offset=".7" stop-color="#ec6f9a"/><stop offset="1" stop-color="#fbc4d8"/></radialGradient>
+<path id="tet-dao-sprig-p" d="M0-.4C-3.4-1.1-4.4-4.8-2.3-6.3C-1.3-6.9-.5-6.6 0-6C.5-6.6 1.3-6.9 2.3-6.3C4.4-4.8 3.4-1.1 0-.4Z"/>
+<g id="tet-dao-sprig-ps"><use href="#tet-dao-sprig-p"/><use href="#tet-dao-sprig-p" transform="rotate(72)"/><use href="#tet-dao-sprig-p" transform="rotate(144)"/><use href="#tet-dao-sprig-p" transform="rotate(216)"/><use href="#tet-dao-sprig-p" transform="rotate(288)"/></g>
+<g id="tet-dao-sprig-st">
+<path d="M0 0L1.1-3M0 0L3-1M0 0L1.9 2.5M0 0L-1.9 2.5M0 0L-3-1M0 0L-1.1-3" stroke="#a3134a" stroke-width=".5" stroke-linecap="round"/>
+<circle r="1.6" fill="#be185d"/>
+<g fill="#ffd23f"><circle cx="1.2" cy="-3.4" r=".6"/><circle cx="3.4" cy="-1.1" r=".6"/><circle cx="2.1" cy="2.8" r=".6"/><circle cx="-2.1" cy="2.8" r=".6"/><circle cx="-3.4" cy="-1.1" r=".6"/><circle cx="-1.2" cy="-3.4" r=".6"/></g>
+</g>
+<g id="tet-dao-sprig-f"><use href="#tet-dao-sprig-ps" fill="url(#tet-dao-sprig-pl)" stroke="#e77aa3" stroke-width=".4"/><use href="#tet-dao-sprig-st"/></g>
+<g id="tet-dao-sprig-g"><use href="#tet-dao-sprig-ps" fill="url(#tet-dao-sprig-pd)" stroke="#d65288" stroke-width=".4"/><use href="#tet-dao-sprig-st"/></g>
+<g id="tet-dao-sprig-b"><path d="M0 0V-1.6" stroke="#4caf50" stroke-width=".9"/><ellipse cy="-3.8" rx="2.4" ry="3" fill="#ec6f9a"/><ellipse cx="-.8" cy="-4.6" rx=".8" ry="1.3" fill="#fbc4d8"/><path d="M-2.4-3.2C-2.2-1.6-1.2-1.1 0-1.1C1.2-1.1 2.2-1.6 2.4-3.2L1.2-2.3L0-3.4L-1.2-2.3Z" fill="#8a2140"/></g>
+<g id="tet-dao-sprig-tw" fill="none" stroke-linecap="round">
+<path d="M-2 1C8 4 20 9 31 17" stroke-width="3"/>
+<path d="M31 17C39 23 47 30 54 39" stroke-width="2"/>
+<path d="M19 9C21 19 18 28 11 37" stroke-width="1.5"/>
+<path d="M31 17C39 13 45 10 52 9" stroke-width="1.3"/>
+</g>
+</defs>
+<use href="#tet-dao-sprig-tw" stroke="#9b7563" transform="translate(-.7 -.7)"/>
+<use href="#tet-dao-sprig-tw" stroke="#4a2c1d"/>
+<path d="M42.4 11.8C41.2 7.6 43.4 4.4 47.6 3C48.2 7.2 46.2 10.4 42.4 11.8Z" fill="#4caf50"/>
+<path d="M42.4 11.8C43.8 8.8 45.4 6 47.6 3" fill="none" stroke="#2f7d32" stroke-width=".5"/>
+<path d="M47.4 31.6C44.6 30.4 41.6 31.2 39.8 34C42.8 35.4 46 34.6 47.4 31.6Z" fill="#4caf50"/>
+<path d="M47.4 31.6C44.8 32.2 42.2 33 39.8 34" fill="none" stroke="#2f7d32" stroke-width=".5"/>
+<use href="#tet-dao-sprig-b" transform="translate(54 39)rotate(140)"/>
+<use href="#tet-dao-sprig-b" transform="translate(52 9)rotate(84)"/>
+<use href="#tet-dao-sprig-g" transform="translate(11.6 35.6)rotate(20)scale(1.04)"/>
+<use href="#tet-dao-sprig-f" transform="translate(40 24.4)rotate(-12)scale(1.1)"/>
+<use href="#tet-dao-sprig-f" transform="translate(23.6 11.2)rotate(8)scale(1.22)"/>
+</svg>

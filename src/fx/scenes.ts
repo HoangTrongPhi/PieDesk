@@ -9,6 +9,7 @@ const GLYPHS = "アイウエオカキクケコサシスセソタチツテトナ�
 export function matrix(): FxDef {
   return {
     layer: "back",
+    trails: true,
     make: () => {
       const size = 14;
       let drops: number[] = [];
@@ -45,7 +46,6 @@ export function synthGrid(): FxDef {
     layer: "back",
     make: () => (c) => {
       const { ctx } = c;
-      ctx.clearRect(0, 0, c.w, c.h);
       for (const o of c.obstacles) {
         if (o.h < 90) continue;
         ctx.save();
@@ -103,7 +103,6 @@ export function stars(): FxDef {
         const ty = c.pointer ? (c.pointer.y - c.h / 2) / c.h : 0;
         ox += (tx - ox) * Math.min(1, c.dt * 3);
         oy += (ty - oy) * Math.min(1, c.dt * 3);
-        ctx.clearRect(0, 0, c.w, c.h);
         ctx.save();
         clipToObstacles(c, 18);
         for (const s of field) {
@@ -149,7 +148,6 @@ export function aquarium(): FxDef {
       }));
       return (c) => {
         const { ctx } = c;
-        ctx.clearRect(0, 0, c.w, c.h);
         for (const f of fish) {
           f.x += f.v * c.dt;
           if (f.x > 1.08) f.x = -0.08;

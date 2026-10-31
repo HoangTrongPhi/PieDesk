@@ -24,6 +24,8 @@ export type Sim = (c: FxContext) => void;
 export type FxDef = {
   /** back: under boxes (shows through their glass); front: over them. */
   layer: "back" | "front";
+  /** Keeps the previous frame (matrix trails); otherwise the runner clears the canvas each frame. */
+  trails?: boolean;
   make: () => Sim;
 };
 
@@ -45,6 +47,7 @@ export function landingOn(c: FxContext, x: number, y: number, band = 6): Obstacl
 /** Runs several effects of the same layer as one. */
 export const compose = (layer: FxDef["layer"], ...defs: FxDef[]): FxDef => ({
   layer,
+  trails: defs.some((d) => d.trails),
   make: () => {
     const sims = defs.map((d) => d.make());
     return (c) => sims.forEach((s) => s(c));

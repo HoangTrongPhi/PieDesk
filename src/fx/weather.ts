@@ -1,55 +1,197 @@
-// Things that fall: snow that piles up on boxes, petals and leaves that land and slide off,
-// rain, rain on the glass of boxes, and fireflies.
+// Things that fall: snow that piles up on boxes and along the taskbar, petals and leaves that land
+// and slide off, rain, rain on the glass of boxes, and fireflies.
 
+import { sprite } from "../decor/assets";
 import { clipToObstacles, landingOn, pick, rand, type FxContext, type FxDef, type Obstacle } from "./types";
 
-type Flake = { x: number; y: number; r: number; vy: number; phase: number };
+type Flake = { x: number; y: number; r: number; vy: number; phase: number; crystal: number; rot: number; spin: number };
 
-/**
- * Snow. With `pile`, flakes that hit the top of a box build a cap on it; moving the box shakes
- * the cap off as a little burst of flakes.
- */
-export function snow({ count = 140, pile = true } = {}): FxDef {
+const CRYSTALS = ["christmas/flake-1", "christmas/flake-2", "christmas/flake-3"];
+
+type SnowOpts = {
+  count?: number;
+  /** Flakes that hit the top of a box build a cap on it; moving the box shakes it off. */
+  pile?: boolean;
+  /** Extra, larger crystal flakes drawn from the Christmas art. */
+  crystals?: number;
+  /** Snow builds up along the floor (the top of the taskbar in the overlay) and some keeps falling over the taskbar. */
+  drift?: boolean;
+  /** Gusts of wind now and then. */
+  gusts?: boolean;
+};
+
+/** Snow, from flurries on the desktop to the overlay's blizzard that buries the taskbar. */
+export function snow({ count = 140, pile = true, crystals = 0, drift = false, gusts = false }: SnowOpts = {}): FxDef {
   return {
     layer: "front",
     make: () => {
       const flakes: Flake[] = [];
       const piles = new Map<string, { at: string; depth: number }>();
-      const spawn = (c: FxContext, top = false): Flake => ({
-        x: rand(0, c.w),
+      let ground: Drift | null = null;
+      const specks: { x: number; y: number; r: number; life: number; melt: number }[] = [];
+      let wind = 0;
+      let gust = 0;
+      let nextGust = rand(6, 15);
+      const spawn = (c: FxContext, top: boolean, crystal: boolean): Flake => ({
+        x: rand(-20, c.w + 20),
         y: top ? rand(-40, -4) : rand(-c.h, c.h),
-        r: rand(1, 3.2),
-        vy: rand(22, 60),
+        r: crystal ? rand(4.5, 9) : rand(1, 3.2),
+        vy: crystal ? rand(26, 48) : rand(22, 60),
         phase: rand(0, Math.PI * 2),
+        crystal: crystal ? Math.floor(rand(0, CRYSTALS.length)) : -1,
+        rot: rand(0, 6.28),
+        spin: rand(-0.8, 0.8),
       });
       return (c) => {
-        const { ctx } = c;
-        while (flakes.length < count) flakes.push(spawn(c, flakes.length > 0 && c.t > 0.5));
+        const { ctx, dt } = c;
+        if (drift && (!ground || ground.w !== c.w)) ground = new Drift(c.w);
+        while (flakes.length < count + crystals) flakes.push(spawn(c, flakes.length > 0 && c.t > 0.5, flakes.length >= count));
+        if (gusts) {
+          if (c.t > nextGust) {
+            gust = rand(40, 110) * (Math.random() < 0.5 ? -1 : 1);
+            nextGust = c.t + rand(9, 22);
+          }
+          gust *= 1 - Math.min(1, dt * 0.35);
+          wind += (gust - wind) * Math.min(1, dt * 0.9);
+        }
         ctx.fillStyle = "rgb(255 255 255 / 0.9)";
         for (let i = flakes.length - 1; i >= 0; i--) {
           const f = flakes[i];
-          f.y += f.vy * c.dt;
-          f.x += Math.sin(c.t * 1.3 + f.phase) * 18 * c.dt;
+          f.y += f.vy * dt;
+          f.x += (Math.sin(c.t * 1.3 + f.phase) * 18 + wind * (0.5 + f.r / 6)) * dt;
+          f.rot += f.spin * dt;
+          if (f.x < -30) f.x += c.w + 60;
+          else if (f.x > c.w + 30) f.x -= c.w + 60;
           const hit = pile && f.y > 0 ? landingOn(c, f.x, f.y, 3) : undefined;
           if (hit) {
             const p = piles.get(hit.id) ?? { at: `${hit.x},${hit.y},${hit.w}`, depth: 0 };
-            p.depth = Math.min(7, p.depth + 0.05 * f.r);
+            p.depth = Math.min(9, p.depth + 0.05 * f.r);
             piles.set(hit.id, p);
           }
-          if (hit || f.y > c.floor + 4) {
-            flakes[i] = spawn(c, true);
+          let gone = !!hit;
+          if (ground && f.y >= c.floor - ground.at(f.x) && f.y < c.floor + 3) {
+            // Most flakes land on the drift; the rest fall on over the taskbar.
+            if (Math.random() < 0.6) {
+              ground.add(f.x, 0.9 * f.r);
+              gone = true;
+            } else f.y = c.floor + 3;
+          } else if (ground && f.y > c.floor + 6 && Math.random() < dt * 0.6 && specks.length < 160) {
+            specks.push({ x: f.x, y: f.y, r: Math.min(f.r, 2.4), life: 1, melt: rand(7, 12) });
+            gone = true;
+          }
+          if (gone || f.y > c.h + 4 || (!ground && f.y > c.floor + 4)) {
+            flakes[i] = spawn(c, true, f.crystal >= 0);
             continue;
           }
-          ctx.globalAlpha = 0.5 + f.r / 7;
+          if (f.crystal >= 0) {
+            const s = sprite(CRYSTALS[f.crystal], 24);
+            if (s) {
+              ctx.save();
+              ctx.globalAlpha = 0.85;
+              ctx.translate(f.x, f.y);
+              ctx.rotate(f.rot);
+              const d = f.r * 2.4;
+              ctx.drawImage(s, -d / 2, -d / 2, d, d);
+              ctx.restore();
+              continue;
+            }
+          }
+          const r = Math.min(f.r, 3.2);
+          ctx.globalAlpha = 0.5 + r / 7;
           ctx.beginPath();
-          ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+          ctx.arc(f.x, f.y, r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        // Flakes resting on the taskbar melt away.
+        for (let i = specks.length - 1; i >= 0; i--) {
+          const s = specks[i];
+          s.life -= dt / s.melt;
+          if (s.life <= 0) {
+            specks.splice(i, 1);
+            continue;
+          }
+          ctx.globalAlpha = s.life * 0.75;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
           ctx.fill();
         }
         ctx.globalAlpha = 1;
         drawPiles(c, piles, flakes);
+        ground?.draw(c);
       };
     },
   };
+}
+
+/** Snow lying along the floor line: a height per 6 px column that grows as flakes land. */
+class Drift {
+  static STEP = 6;
+  static MAX = 11;
+  cols: Float32Array;
+  drips: { x: number; len: number }[] = [];
+  constructor(readonly w: number) {
+    this.cols = new Float32Array(Math.ceil(w / Drift.STEP) + 2);
+    // A thin first layer so it shows right away.
+    for (let i = 0; i < this.cols.length; i++) this.cols[i] = 2 + Math.sin(i * 0.31) * 0.8 + Math.random() * 0.8;
+    for (let x = rand(20, 80); x < w; x += rand(60, 150)) this.drips.push({ x, len: rand(3, 8) });
+  }
+  at(x: number) {
+    return this.cols[Math.max(0, Math.min(this.cols.length - 1, Math.round(x / Drift.STEP)))];
+  }
+  add(x: number, amount: number) {
+    const i = Math.round(x / Drift.STEP);
+    for (let j = -2; j <= 2; j++) {
+      const k = i + j;
+      if (k >= 0 && k < this.cols.length) this.cols[k] = Math.min(Drift.MAX, this.cols[k] + amount * (1 - Math.abs(j) / 3));
+    }
+  }
+  draw(c: FxContext) {
+    const { ctx, floor, dt } = c;
+    const cols = this.cols;
+    // Neighbours even out, so the drift stays soft instead of spiky.
+    for (let i = 1; i < cols.length - 1; i++) cols[i] += ((cols[i - 1] + cols[i + 1]) / 2 - cols[i]) * Math.min(1, dt * 0.8);
+    const base = floor + 3;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(-2, base);
+    for (let i = 0; i < cols.length; i++) ctx.lineTo(i * Drift.STEP, floor - cols[i]);
+    ctx.lineTo(this.w + 2, base);
+    ctx.closePath();
+    const g = ctx.createLinearGradient(0, floor - Drift.MAX, 0, base);
+    g.addColorStop(0, "#ffffff");
+    g.addColorStop(1, "#d3e4f5");
+    ctx.fillStyle = g;
+    ctx.shadowColor = "rgb(10 20 40 / 0.45)";
+    ctx.shadowBlur = 5;
+    ctx.shadowOffsetY = 1.5;
+    ctx.fill();
+    ctx.shadowColor = "transparent";
+    // Frost creeping down over the taskbar as the snow deepens, faint enough to keep icons readable.
+    if (c.h - base > 8) {
+      let sum = 0;
+      for (let i = 0; i < cols.length; i++) sum += cols[i];
+      const frost = Math.min(0.16, (sum / cols.length / Drift.MAX) * 0.2);
+      const f = ctx.createLinearGradient(0, base, 0, base + 18);
+      f.addColorStop(0, `rgb(235 245 255 / ${frost})`);
+      f.addColorStop(1, "rgb(235 245 255 / 0)");
+      ctx.fillStyle = f;
+      ctx.fillRect(0, base, this.w, 18);
+    }
+    // Where the snow is deep enough, icicles hang over the edge of the taskbar.
+    ctx.fillStyle = "rgb(214 236 255 / 0.85)";
+    for (const d of this.drips) {
+      const depth = this.at(d.x);
+      if (depth < 4) continue;
+      const len = d.len * Math.min(1, (depth - 4) / 4);
+      ctx.beginPath();
+      ctx.moveTo(d.x - 2.2, base - 1);
+      ctx.lineTo(d.x + 2.2, base - 1);
+      ctx.lineTo(d.x, base + len);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+  }
 }
 
 function drawPiles(c: FxContext, piles: Map<string, { at: string; depth: number }>, flakes: Flake[]) {
@@ -61,7 +203,7 @@ function drawPiles(c: FxContext, piles: Map<string, { at: string; depth: number 
     if (!o || at !== p.at) {
       // Moved or gone: the cap falls off as a burst of flakes.
       const [x, y, w] = p.at.split(",").map(Number);
-      for (let k = 0; k < p.depth * 6; k++) flakes.push({ x: x + rand(0, w), y: y - rand(0, p.depth), r: rand(1, 2.5), vy: rand(60, 140), phase: rand(0, 6) });
+      for (let k = 0; k < p.depth * 6; k++) flakes.push({ x: x + rand(0, w), y: y - rand(0, p.depth), r: rand(1, 2.5), vy: rand(60, 140), phase: rand(0, 6), crystal: -1, rot: 0, spin: 0 });
       piles.delete(id);
       continue;
     }
@@ -84,7 +226,13 @@ function drawPiles(c: FxContext, piles: Map<string, { at: string; depth: number 
 type Petal = { x: number; y: number; vx: number; vy: number; rot: number; spin: number; size: number; color: string; on: Obstacle | null };
 
 /** Petals or leaves: drift down, land on box tops, slide to the nearer edge and fall again. */
-export function petals({ count = 46, colors = ["#ffc4dd", "#ffb0cf", "#ffd9e8", "#f9a8d4"], size = [5, 9] as [number, number] } = {}): FxDef {
+export function petals({
+  count = 46,
+  colors = ["#ffc4dd", "#ffb0cf", "#ffd9e8", "#f9a8d4"],
+  size = [5, 9] as [number, number],
+  /** Decor art to draw instead of plain petals (whole blossoms), picked like `colors`. */
+  sprites = [] as string[],
+} = {}): FxDef {
   return {
     layer: "front",
     make: () => {
@@ -97,7 +245,7 @@ export function petals({ count = 46, colors = ["#ffc4dd", "#ffb0cf", "#ffd9e8", 
         rot: rand(0, 6.28),
         spin: rand(-2, 2),
         size: rand(size[0], size[1]),
-        color: pick(colors),
+        color: sprites.length ? pick(sprites) : pick(colors),
         on: null,
       });
       return (c) => {
@@ -128,11 +276,15 @@ export function petals({ count = 46, colors = ["#ffc4dd", "#ffb0cf", "#ffd9e8", 
           ctx.save();
           ctx.translate(p.x, p.y);
           ctx.rotate(p.on ? 0.2 : p.rot);
-          ctx.fillStyle = p.color;
           ctx.globalAlpha = 0.9;
-          ctx.beginPath();
-          ctx.ellipse(0, 0, p.size, p.size * 0.55, 0, 0, Math.PI * 2);
-          ctx.fill();
+          const art = sprites.length ? sprite(p.color, 24) : null;
+          if (art) ctx.drawImage(art, -p.size, -p.size, p.size * 2, p.size * 2);
+          else {
+            ctx.fillStyle = sprites.length ? "#facc15" : p.color;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, p.size, p.size * 0.55, 0, 0, Math.PI * 2);
+            ctx.fill();
+          }
           ctx.restore();
         }
       };

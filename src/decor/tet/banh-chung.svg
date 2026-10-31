@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 52">
+<defs>
+<linearGradient id="tet-banh-chung-top" x1="13" y1="3" x2="42" y2="31" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#6fc872"/><stop offset=".55" stop-color="#47a34b"/><stop offset="1" stop-color="#358f39"/></linearGradient>
+<linearGradient id="tet-banh-chung-front" x1="0" y1="31" x2="0" y2="50" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#2a702d"/><stop offset="1" stop-color="#205a24"/></linearGradient>
+<clipPath id="tet-banh-chung-tc"><path d="M3 31L13.5 3H57.6L47 31Z"/></clipPath>
+</defs>
+<!-- soft outline -->
+<path d="M3 31L13.5 3H57.6V22.6L47 49.6H3Z" fill="#174a1c" stroke="#174a1c" stroke-width="4.4" stroke-linejoin="round"/>
+<!-- faces (self-stroked for rounded corners) -->
+<g stroke-width="2.6" stroke-linejoin="round">
+<path d="M47 31L57.6 3V22.6L47 49.6Z" fill="#1d5122" stroke="#1d5122"/>
+<path d="M3 31H47V49.6H3Z" fill="url(#tet-banh-chung-front)" stroke="url(#tet-banh-chung-front)"/>
+<path d="M3 31L13.5 3H57.6L47 31Z" fill="url(#tet-banh-chung-top)" stroke="url(#tet-banh-chung-top)"/>
+</g>
+<!-- lá dong veins + soft highlight -->
+<g clip-path="url(#tet-banh-chung-tc)" fill="none">
+<ellipse cx="22" cy="12" rx="15" ry="7" fill="#c4f0c0" opacity=".22"/>
+<path d="M8 30L52 4" stroke="#a3e3a3" stroke-width=".9" opacity=".7"/>
+<path d="M4 22L30 4M10 31L44 9M24 31L56 11M36 31L58 18" stroke="#a3e3a3" stroke-width=".55" opacity=".35"/>
+</g>
+<path d="M4 36H46M4 42H46M48.6 34L56 15M48.6 41L56 22" stroke="#4caf50" stroke-width=".6" opacity=".4"/>
+<!-- bamboo strips (lat) -->
+<g fill="none">
+<path d="M17.7 49.6V31L28.2 3M32.3 49.6V31L42.8 3M6.5 21.7H50.5V40.6M10 12.3H54.1V31.6" stroke="#9c7f45" stroke-width="3.4"/>
+<path d="M17.7 31L28.2 3M32.3 31L42.8 3M6.5 21.7H50.5M10 12.3H54.1" stroke="#f6ebc8" stroke-width="2.3"/>
+<path d="M17.7 49.6V31M32.3 49.6V31M50.5 21.7V40.6M54.1 12.3V31.6" stroke="#dcc68c" stroke-width="2.3"/>
+<path d="M17.1 49V31.6M31.7 49V31.6M7 21H49.8M10.4 11.6H53.4" stroke="#fffbea" stroke-width=".55" opacity=".9"/>
+</g>
+<!-- edge light -->
+<path d="M3.6 30.2L13.8 3.6H57" fill="none" stroke="#c9f2c4" stroke-width=".9" stroke-linecap="round"/>
+<path d="M4 31.4H46.4" stroke="#7fcf6a" stroke-width=".8" stroke-linecap="round" opacity=".8"/>
+</svg>

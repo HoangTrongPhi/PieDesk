@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 24">
+<defs>
+<linearGradient id="xm-icicles-ice" gradientUnits="userSpaceOnUse" x1="0" y1="3" x2="0" y2="22"><stop offset="0" stop-color="#fff" stop-opacity=".97"/><stop offset=".4" stop-color="#d6ecfc" stop-opacity=".88"/><stop offset="1" stop-color="#7fbfee" stop-opacity=".62"/></linearGradient>
+<linearGradient id="xm-icicles-band" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".6" stop-color="#e7f1fb"/><stop offset="1" stop-color="#bcd7ef"/></linearGradient>
+</defs>
+<path d="M4.3 2.6C4.5 8.18 6.4 12.52 7.1 15C7.8 12.52 10.5 8.18 10.7 2.6zM18.9 2.6C19.1 5.93 21.1 8.52 21.8 10C22.5 8.52 23.9 5.93 24.1 2.6zM33.4 2.6C33.6 11.33 36.8 18.12 37.5 22C38.2 18.12 40.4 11.33 40.6 2.6zM49.7 2.6C49.9 7.28 51.5 10.92 52.2 13C52.9 10.92 55.1 7.28 55.3 2.6zM63.6 2.6C63.8 10.21 65.8 16.12 66.5 19.5C67.2 16.12 70.2 10.21 70.4 2.6zM80.1 2.6C80.3 5.48 82 7.72 82.7 9C83.4 7.72 84.7 5.48 84.9 2.6zM93.9 2.6C94.1 10.88 97.2 17.32 97.9 21C98.6 17.32 100.9 10.88 101.1 2.6zM109.6 2.6C109.8 7.73 111.5 11.72 112.2 14C112.9 11.72 115.2 7.73 115.4 2.6z" fill="url(#xm-icicles-ice)" stroke="#a7cdec" stroke-width=".4" stroke-opacity=".8"/>
+<path d="M5.4 4.2C5.5 7.85 7 10.05 7.06 11.7M20 4.2C20.1 6.1 21 7.3 21.48 8.2M34.5 4.2C34.6 10.3 36.5 13.9 37.1 16.6M50.8 4.2C50.9 7.15 52 8.95 52.12 10.3M64.7 4.2C64.8 9.43 66.5 12.53 66.5 14.85M81.2 4.2C81.3 5.75 82 6.75 82.42 7.5M95 4.2C95.1 9.95 97 13.35 97.54 15.9M110.7 4.2C110.8 7.5 112 9.5 112.12 11" fill="none" stroke="#fff" stroke-width=".8" stroke-linecap="round" opacity=".9"/>
+<g fill="#cfe8fb" opacity=".9"><ellipse cx="37.5" cy="22.9" rx=".75" ry=".95"/><ellipse cx="97.9" cy="21.9" rx=".75" ry=".95"/></g>
+<path d="M0 0H120V3.2Q115 4.6 110 3.2Q105 1.9 100 3.2Q95 4.6 90 3.2Q85 1.9 80 3.2Q75 4.6 70 3.2Q65 1.9 60 3.2Q55 4.6 50 3.2Q45 1.9 40 3.2Q35 4.6 30 3.2Q25 1.9 20 3.2Q15 4.6 10 3.2Q5 1.9 0 3.2z" fill="url(#xm-icicles-band)"/>
+<path d="M0 1H120" stroke="#fff" stroke-width=".8" opacity=".9"/>
+</svg>

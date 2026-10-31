@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 48">
+<defs>
+<radialGradient id="tet-mai-sprig-pg" cx="0" cy="0" r="6.4" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#f59e0b"/><stop offset=".32" stop-color="#ffbf1f"/><stop offset=".7" stop-color="#ffd23f"/><stop offset="1" stop-color="#fff2a8"/></radialGradient>
+<path id="tet-mai-sprig-p" d="M0-.4C-3-1.2-3.8-5.2-1.1-6.2C-.4-6.5.4-6.5 1.1-6.2C3.8-5.2 3-1.2 0-.4Z"/>
+<g id="tet-mai-sprig-f">
+<g fill="url(#tet-mai-sprig-pg)" stroke="#e39b00" stroke-width=".4"><use href="#tet-mai-sprig-p"/><use href="#tet-mai-sprig-p" transform="rotate(72)"/><use href="#tet-mai-sprig-p" transform="rotate(144)"/><use href="#tet-mai-sprig-p" transform="rotate(216)"/><use href="#tet-mai-sprig-p" transform="rotate(288)"/></g>
+<path d="M0 0L1.1-3.2M0 0L3.2-1M0 0L2 2.7M0 0L-2 2.7M0 0L-3.2-1M0 0L-1.1-3.2" stroke="#d9480f" stroke-width=".5" stroke-linecap="round"/>
+<circle r="1.7" fill="#e8590c"/><circle r=".7" fill="#ffd23f"/>
+<g fill="#c2410c"><circle cx="1.2" cy="-3.6" r=".6"/><circle cx="3.6" cy="-1.1" r=".6"/><circle cx="2.2" cy="3" r=".6"/><circle cx="-2.2" cy="3" r=".6"/><circle cx="-3.6" cy="-1.1" r=".6"/><circle cx="-1.2" cy="-3.6" r=".6"/></g>
+</g>
+<g id="tet-mai-sprig-b"><path d="M0 0V-1.8" stroke="#4caf50" stroke-width=".9"/><circle cy="-3.8" r="2.5" fill="#ffd23f"/><circle cx="-.8" cy="-4.5" r=".85" fill="#fff2a8"/><path d="M-2.5-3.6C-2.3-1.7-1.3-1.1 0-1.1C1.3-1.1 2.3-1.7 2.5-3.6L1.3-2.6L0-3.8L-1.3-2.6Z" fill="#4caf50"/></g>
+<g id="tet-mai-sprig-tw" fill="none" stroke-linecap="round">
+<path d="M-2 1C8 4 20 9 31 17" stroke-width="3"/>
+<path d="M31 17C39 23 47 30 54 39" stroke-width="2"/>
+<path d="M19 9C21 19 18 28 11 37" stroke-width="1.5"/>
+<path d="M31 17C39 13 45 10 52 9" stroke-width="1.3"/>
+</g>
+</defs>
+<use href="#tet-mai-sprig-tw" stroke="#a06a45" transform="translate(-.7 -.7)"/>
+<use href="#tet-mai-sprig-tw" stroke="#4a2c1d"/>
+<use href="#tet-mai-sprig-b" transform="translate(54 39)rotate(140)"/>
+<use href="#tet-mai-sprig-b" transform="translate(52 9)rotate(84)"/>
+<use href="#tet-mai-sprig-f" transform="translate(11.6 35.6)rotate(20)scale(1.08)"/>
+<use href="#tet-mai-sprig-f" transform="translate(40 24.4)rotate(-12)scale(1.16)"/>
+<use href="#tet-mai-sprig-f" transform="translate(23.6 11.2)rotate(8)scale(1.28)"/>
+</svg>

@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
-import { iconUrl, uid } from "../lib/ipc";
+import { iconUrl, ipc, uid } from "../lib/ipc";
 import { useHitReporter } from "../lib/hit";
 import type { BoxModel, SurfaceInfo, WidgetModel } from "../lib/types";
 import { systemLang, useDoc } from "../stores/doc";
@@ -9,7 +9,8 @@ import { initSurfaceInfo, useSurface } from "../stores/surface";
 import { addNewApps } from "../lib/groups";
 import { useAppearance } from "../lib/appearance";
 import { FxLayer } from "../fx/FxLayer";
-import type { FxId } from "../fx";
+import { DECOR_FX, type FxId } from "../fx";
+import { DecorLayer } from "../decor/DecorLayer";
 import { tr } from "../lib/i18n";
 import { widgetDef } from "../widgets/registry";
 import { ACCENTS, BoxView } from "./BoxView";
@@ -139,16 +140,32 @@ export function Surface() {
     return () => void un.then((f) => f());
   }, []);
 
+  // The overlay window (above every app) and the wallpaper follow the theme in use; the home
+  // surface tells the backend, which opens/closes the overlays and swaps the wallpaper.
+  const skyOnTop = settings.fx !== false && settings.themeOverlay !== false;
+  const wantOverlay = skyOnTop && !!(theme.sky?.length || theme.overlay?.length);
+  const wantWallpaper = settings.themeWallpaper !== false && theme.wallpaper ? theme.id : null;
+  useEffect(() => {
+    if (!ready || !info?.primary) return;
+    ipc.themeEffects(wantOverlay, wantWallpaper).catch(console.error);
+  }, [ready, info?.primary, wantOverlay, wantWallpaper]);
+  const layoutKey = useMemo(() => ({}), [boxes, widgets]);
+
   if (!info || !ready) return null;
   const mine = (monitor: string) => monitor === info.monitor || (info.primary && !info.monitors.includes(monitor));
   const onNewBox = (near: BoxModel) =>
     useDoc.getState().upsertBox(newBox(info.monitor, { x: Math.min(near.x + 40, bounds.w - 420), y: Math.min(near.y + 40, bounds.h - 260) }));
 
-  const fx: FxId[] = [...(settings.fx === false ? [] : (theme.fx ?? [])), ...(settings.pet === "desktop" ? (["pet"] as const) : [])];
+  const decor = settings.decor !== false;
+  const fx: FxId[] = [
+    ...(settings.fx === false ? [] : [...(theme.fx ?? []), ...(skyOnTop ? [] : (theme.sky ?? []))]).filter((id) => decor || !DECOR_FX.has(id)),
+    ...(settings.pet === "desktop" ? (["pet"] as const) : []),
+  ];
 
   return (
     <div ref={setRoot} className="pd-surface fixed inset-0">
       <FxLayer ids={fx} enabled />
+      {decor && theme.scene && <DecorLayer groups={theme.scene} home={info.primary} bounds={bounds} layoutKey={layoutKey} />}
       {Object.values(widgets)
         .filter((w) => mine(w.monitor))
         .map((w) => <WidgetFrame key={w.id} widget={w} bounds={bounds} />)}

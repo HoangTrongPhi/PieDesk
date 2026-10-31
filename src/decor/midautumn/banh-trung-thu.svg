@@ -1,0 +1,163 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 90">
+  <defs>
+    <radialGradient id="ma-banh-trung-thu-tray" cx="0.45" cy="0.4" r="0.6">
+      <stop offset="0" stop-color="#c8262b"/>
+      <stop offset="1" stop-color="#7f1a1a"/>
+    </radialGradient>
+    <linearGradient id="ma-banh-trung-thu-trayside" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#6b1414"/>
+      <stop offset="0.4" stop-color="#b91c1c"/>
+      <stop offset="1" stop-color="#5f1212"/>
+    </linearGradient>
+    <radialGradient id="ma-banh-trung-thu-top" cx="0.38" cy="0.3" r="0.75">
+      <stop offset="0" stop-color="#f7c46e"/>
+      <stop offset="0.55" stop-color="#e09a3e"/>
+      <stop offset="1" stop-color="#c0731f"/>
+    </radialGradient>
+    <linearGradient id="ma-banh-trung-thu-side" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#8f4a12"/>
+      <stop offset="0.35" stop-color="#cf8530"/>
+      <stop offset="1" stop-color="#7a3d0e"/>
+    </linearGradient>
+    <linearGradient id="ma-banh-trung-thu-paste" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f0cf8a"/>
+      <stop offset="1" stop-color="#d9a85a"/>
+    </linearGradient>
+    <radialGradient id="ma-banh-trung-thu-yolk" cx="0.4" cy="0.38" r="0.65">
+      <stop offset="0" stop-color="#fdba74"/>
+      <stop offset="0.6" stop-color="#f97316"/>
+      <stop offset="1" stop-color="#d9520a"/>
+    </radialGradient>
+    <radialGradient id="ma-banh-trung-thu-clay" cx="0.36" cy="0.32" r="0.72">
+      <stop offset="0" stop-color="#d98a5c"/>
+      <stop offset="0.5" stop-color="#a64d26"/>
+      <stop offset="1" stop-color="#6b2b12"/>
+    </radialGradient>
+    <linearGradient id="ma-banh-trung-thu-cup" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#d9d2bf"/>
+      <stop offset="0.35" stop-color="#fffaf0"/>
+      <stop offset="1" stop-color="#c9c0aa"/>
+    </linearGradient>
+    <clipPath id="ma-banh-trung-thu-half">
+      <rect x="-20" y="-10" width="40" height="10"/>
+    </clipPath>
+
+    <!-- embossed flower motif (circle space, squashed onto the top face) -->
+    <g id="ma-banh-trung-thu-motif" fill="none">
+      <circle r="12.4"/>
+      <circle r="8"/>
+      <circle cx="10.2" cy="0" r="1.3"/>
+      <circle cx="-10.2" cy="0" r="1.3"/>
+      <circle cx="0" cy="10.2" r="1.3"/>
+      <circle cx="0" cy="-10.2" r="1.3"/>
+      <circle cx="7.2" cy="7.2" r="1.3"/>
+      <circle cx="-7.2" cy="7.2" r="1.3"/>
+      <circle cx="7.2" cy="-7.2" r="1.3"/>
+      <circle cx="-7.2" cy="-7.2" r="1.3"/>
+      <ellipse rx="1.7" ry="4.6"/>
+      <ellipse rx="4.6" ry="1.7"/>
+      <ellipse rx="1.7" ry="4.6" transform="rotate(45)"/>
+      <ellipse rx="1.7" ry="4.6" transform="rotate(-45)"/>
+      <circle r="1.4"/>
+    </g>
+    <g id="ma-banh-trung-thu-emboss">
+      <use href="#ma-banh-trung-thu-motif" transform="translate(0 0.55) scale(1 0.44)" stroke="#8a4510" stroke-width="1.2" opacity="0.75"/>
+      <use href="#ma-banh-trung-thu-motif" transform="translate(0 -0.2) scale(1 0.44)" stroke="#ffe0a3" stroke-width="0.8" opacity="0.85"/>
+    </g>
+
+    <!-- a whole mooncake, top-face centre at 0,0 -->
+    <g id="ma-banh-trung-thu-cake">
+      <path d="M-17,0 V9 A17,7.5 0 0 0 17,9 V0 Z" fill="url(#ma-banh-trung-thu-side)"/>
+      <path d="M-15,3.5 v9 M-12,5.3 v9 M-9,6.4 v9 M-6,7 v9 M-3,7.4 v9 M0,7.5 v9 M3,7.4 v9 M6,7 v9 M9,6.4 v9 M12,5.3 v9 M15,3.5 v9" stroke="#6b3209" stroke-width="0.7" opacity="0.5"/>
+      <path d="M-13.4,4.6 v9 M-10.4,5.9 v9 M-7.4,6.8 v9 M-4.4,7.2 v9 M-1.4,7.5 v9 M1.6,7.5 v9 M4.6,7.2 v9" stroke="#f6c47a" stroke-width="0.5" opacity="0.5"/>
+      <ellipse rx="17" ry="7.5" fill="url(#ma-banh-trung-thu-top)"/>
+      <ellipse rx="17" ry="7.5" fill="none" stroke="#e8a752" stroke-width="2.2" stroke-dasharray="0.01 3.1" stroke-linecap="round"/>
+      <ellipse rx="15.6" ry="6.8" fill="none" stroke="#a65a17" stroke-width="0.5" opacity="0.6"/>
+      <use href="#ma-banh-trung-thu-emboss"/>
+      <ellipse cx="-6" cy="-3" rx="6" ry="1.8" fill="#fff6dc" opacity="0.22"/>
+    </g>
+  </defs>
+  <style>
+    .ma-banh-trung-thu-steam { opacity: 0.35; }
+    @media (prefers-reduced-motion: no-preference) {
+      .ma-banh-trung-thu-steam { animation: ma-banh-trung-thu-rise 4s ease-in-out infinite; }
+      .ma-banh-trung-thu-steam.b { animation-delay: -2s; }
+    }
+    @keyframes ma-banh-trung-thu-rise {
+      0% { opacity: 0; transform: translateY(3px); }
+      40% { opacity: 0.55; }
+      100% { opacity: 0; transform: translateY(-7px); }
+    }
+  </style>
+
+  <!-- mâm bồng: red lacquer pedestal tray -->
+  <ellipse cx="53" cy="88.6" rx="25" ry="1.4" fill="#3d0c0c"/>
+  <path d="M28,85.4 C28,82.4 39,80.6 53,80.6 C67,80.6 78,82.4 78,85.4 L78,86.4 C78,88.8 67,90 53,90 C39,90 28,88.8 28,86.4 Z" fill="url(#ma-banh-trung-thu-trayside)"/>
+  <path d="M29,85.2 C33,83.2 73,83.2 77,85.2" fill="none" stroke="#fbbf24" stroke-width="0.9"/>
+  <path d="M44,70 C46,74 47,77 45,82.6 L61,82.6 C59,77 60,74 62,70 Z" fill="url(#ma-banh-trung-thu-trayside)"/>
+  <path d="M44.6,75.6 L61.4,75.6" stroke="#fbbf24" stroke-width="1.2"/>
+  <path d="M2,55 V58 A51,12.5 0 0 0 104,58 V55 Z" fill="url(#ma-banh-trung-thu-trayside)"/>
+  <path d="M3,59.6 A50,12 0 0 0 103,59.6" fill="none" stroke="#fbbf24" stroke-width="0.6" stroke-dasharray="1.2 1.6" opacity="0.85"/>
+  <ellipse cx="53" cy="55" rx="51" ry="12.5" fill="url(#ma-banh-trung-thu-tray)"/>
+  <ellipse cx="53" cy="55" rx="50.2" ry="11.9" fill="none" stroke="#fbbf24" stroke-width="1.6"/>
+  <ellipse cx="53" cy="55.6" rx="45" ry="10" fill="none" stroke="#f59e0b" stroke-width="0.5" opacity="0.6"/>
+  <path d="M6,51.4 C18,44.6 38,43 53,43" fill="none" stroke="#ffe08a" stroke-width="0.7" stroke-linecap="round" opacity="0.7"/>
+
+  <!-- mooncakes: two at the back, one stacked on top -->
+  <use href="#ma-banh-trung-thu-cake" transform="translate(30 42) scale(1.3)"/>
+  <use href="#ma-banh-trung-thu-cake" transform="translate(76 40) scale(1.3)"/>
+  <use href="#ma-banh-trung-thu-cake" transform="translate(53 27.5) scale(1.3)"/>
+
+  <!-- the cut one: half cake, cut face to the front -->
+  <g transform="translate(53 55) scale(1.3)">
+    <path d="M-17,0 A17,7.5 0 0 1 17,0 Z" fill="url(#ma-banh-trung-thu-top)"/>
+    <path d="M-17,0 A17,7.5 0 0 1 17,0" fill="none" stroke="#e8a752" stroke-width="2.2" stroke-dasharray="0.01 3.1" stroke-linecap="round"/>
+    <g clip-path="url(#ma-banh-trung-thu-half)">
+      <use href="#ma-banh-trung-thu-emboss"/>
+    </g>
+    <rect x="-17" y="0" width="34" height="9.4" rx="0.8" fill="#a85a17"/>
+    <rect x="-15.8" y="1.1" width="31.6" height="7.2" rx="0.6" fill="url(#ma-banh-trung-thu-paste)"/>
+    <circle cx="0" cy="4.7" r="3.5" fill="#fdba74"/>
+    <circle cx="0" cy="4.7" r="3" fill="url(#ma-banh-trung-thu-yolk)"/>
+    <ellipse cx="-1" cy="3.6" rx="1.2" ry="0.7" fill="#fff4d6" opacity="0.7"/>
+    <path d="M-17,0.3 L17,0.3" stroke="#f6c47a" stroke-width="0.6"/>
+    <g fill="#c98f45" opacity="0.6">
+      <circle cx="-10" cy="3.4" r="0.45"/>
+      <circle cx="-7" cy="6.6" r="0.4"/>
+      <circle cx="8" cy="3" r="0.45"/>
+      <circle cx="11.6" cy="6" r="0.4"/>
+    </g>
+  </g>
+
+  <!-- clay teapot (spout to the right) -->
+  <g transform="translate(123 89.8) scale(-1.1 1.1) translate(-127 -89.8)">
+    <ellipse cx="127" cy="88.4" rx="9.6" ry="1.4" fill="#4a1d0b"/>
+    <path d="M115.6,71.4 C111,70.2 108,66 105.8,62 L104.4,63.2 C105.8,67.8 108.8,73.6 114.6,78 Z" fill="#8a3a18"/>
+    <path d="M105.2,62.6 L104.4,63.2" stroke="#d98a5c" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M138.6,68.4 C147.4,66.4 149.4,80 138.8,81.6 L139.4,78.8 C144.8,77.8 144.4,70.6 139.2,71 Z" fill="#8a3a18"/>
+    <ellipse cx="127" cy="76" rx="14" ry="11.6" fill="url(#ma-banh-trung-thu-clay)"/>
+    <path d="M139.4,72.4 C138,67.6 133.4,64.8 128,64.4" fill="none" stroke="#f0aa7c" stroke-width="0.9" stroke-linecap="round" opacity="0.8"/>
+    <ellipse cx="127" cy="65.2" rx="7.6" ry="2.2" fill="#7a3216"/>
+    <path d="M120,64.8 C120.4,61.4 133.6,61.4 134,64.8 C131.6,66 122.4,66 120,64.8 Z" fill="#a64d26"/>
+    <path d="M132.4,63.8 C130.4,62.6 126,62.4 123.6,63" fill="none" stroke="#e8a07a" stroke-width="0.6" stroke-linecap="round"/>
+    <circle cx="127" cy="61.2" r="1.9" fill="#a64d26"/>
+    <circle cx="127.6" cy="60.6" r="0.6" fill="#f0b48e"/>
+    <path d="M115.4,79.6 C121,82.4 133,82.4 138.6,79.6" fill="none" stroke="#5a2410" stroke-width="0.6" opacity="0.6"/>
+  </g>
+
+  <!-- steam from the spout -->
+  <g fill="none" stroke="#fff4d6" stroke-width="1" stroke-linecap="round">
+    <path class="ma-banh-trung-thu-steam" d="M144,56.4 C142,53.8 145.4,51.2 143.2,48.2 C141.6,45.8 144,43.8 142.8,41.4"/>
+    <path class="ma-banh-trung-thu-steam b" d="M141,55.4 C139.4,53.2 142.4,51 140.6,48.4"/>
+  </g>
+
+  <!-- tea cup -->
+  <g transform="translate(-48 0)">
+    <ellipse cx="141" cy="89.4" rx="3.6" ry="0.6" fill="#8f8775"/>
+    <path d="M134.6,83.2 C135,86.8 136.6,88.8 138.6,89.4 L143.4,89.4 C145.4,88.8 147,86.8 147.4,83.2 Z" fill="url(#ma-banh-trung-thu-cup)"/>
+    <path d="M135.4,85.6 C138,86.4 144,86.4 146.6,85.6" fill="none" stroke="#2f5fd0" stroke-width="0.8" opacity="0.8"/>
+    <ellipse cx="141" cy="83.2" rx="6.4" ry="1.8" fill="#fffaf0"/>
+    <ellipse cx="141" cy="83.4" rx="5.4" ry="1.3" fill="#c27a12"/>
+    <ellipse cx="139.8" cy="83.1" rx="1.8" ry="0.4" fill="#fde68a" opacity="0.7"/>
+  </g>
+</svg>

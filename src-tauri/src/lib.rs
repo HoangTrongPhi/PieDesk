@@ -22,6 +22,7 @@ mod shell;
 mod startup;
 mod store;
 mod surfaces;
+mod wallpaper;
 
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -56,6 +57,8 @@ pub struct AppState {
     pub icons: IconService,
     pub watches: Watches,
     pub user_hidden: AtomicBool,
+    /// The theme in use has sky effects to show above every app (overlays.rs).
+    pub theme_overlay: AtomicBool,
     pub surfaces: Mutex<HashMap<String, SurfaceInfo>>,
     pub hotkey: Mutex<Option<String>>,
     /// Newer version found by the background check (shown in the tray).
@@ -102,6 +105,16 @@ fn store_apply(app: AppHandle, window: WebviewWindow, state: tauri::State<AppSta
         refresh_tray(&app);
     }
     rev
+}
+
+/// The theme in use, as the home surface sees it (seasonal themes switch by date): whether its sky
+/// effects go above every app, and the theme whose wallpaper to show (None: the user's own).
+#[tauri::command]
+fn theme_effects(app: AppHandle, state: tauri::State<AppState>, overlay: bool, wallpaper: Option<String>) {
+    if state.theme_overlay.swap(overlay, Ordering::Relaxed) != overlay {
+        overlays::sync_later(&app);
+    }
+    wallpaper::set_later(&app, wallpaper);
 }
 
 /// Writes pending changes now: the updater quits the app to run the installer.
@@ -365,6 +378,7 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
             "update" => show_manager(app, Some("settings")),
             "quit" => {
                 app.state::<AppState>().store.flush();
+                wallpaper::restore_now(app);
                 app.exit(0);
             }
             _ => {}
@@ -492,6 +506,7 @@ pub fn run() {
                 icons: IconService::new(cache.join("icons")),
                 watches: Watches::default(),
                 user_hidden: AtomicBool::new(false),
+                theme_overlay: AtomicBool::new(false),
                 surfaces: Mutex::new(HashMap::new()),
                 hotkey: Mutex::new(None),
                 update: Mutex::new(None),
@@ -519,6 +534,7 @@ pub fn run() {
             store_get,
             store_apply,
             store_flush,
+            theme_effects,
             hit_rects,
             hit_capture,
             open_path,

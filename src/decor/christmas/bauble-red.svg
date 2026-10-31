@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 30">
+<defs>
+<radialGradient id="xm-bauble-red-ball" cx=".36" cy=".3" r=".78"><stop offset="0" stop-color="#ffb3b3"/><stop offset="0.3" stop-color="#ef4444"/><stop offset="0.62" stop-color="#d62f3a"/><stop offset="1" stop-color="#6e111b"/></radialGradient>
+<linearGradient id="xm-bauble-red-cap" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff1a8"/><stop offset="0.5" stop-color="#e8b923"/><stop offset="1" stop-color="#9a5a06"/></linearGradient>
+<clipPath id="xm-bauble-red-clip"><circle cx="12" cy="18.3" r="11.6"/></clipPath>
+<linearGradient id="xm-bauble-red-band" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fde68a"/><stop offset=".45" stop-color="#facc15"/><stop offset="1" stop-color="#a16207"/></linearGradient>
+</defs>
+<circle cx="12" cy="1.9" r="1.4" fill="none" stroke="#fff1a8" stroke-width="1"/>
+<circle cx="12" cy="18.3" r="11.6" fill="url(#xm-bauble-red-ball)"/>
+<g clip-path="url(#xm-bauble-red-clip)">
+<path d="M0 15.4Q12 19.6 24 15.4V20.6Q12 24.8 0 20.6z" fill="url(#xm-bauble-red-band)"/>
+<path d="M0.5 18.2L2.9 16.7L5.3 18.6L7.7 17.6L10 19.2L12.3 18.4L14.7 19.2L17 17.7L19.4 18.7L21.7 16.9L24 18.3" fill="none" stroke="#a3121f" stroke-width=".9" stroke-linejoin="round"/>
+<path d="M0 12Q12 15.6 24 12M0 24.2Q12 28.2 24 24.2" fill="none" stroke="#facc15" stroke-width=".9"/>
+</g>
+<path d="M22.4 22.6A11 11 0 0 1 15.2 28.9" fill="none" stroke="#ff8a91" stroke-width="1.1" stroke-linecap="round" opacity=".75"/>
+<ellipse cx="7.6" cy="12.6" rx="3.1" ry="1.8" transform="rotate(-42 7.6 12.6)" fill="#fff" opacity=".85"/>
+<circle cx="11" cy="9.6" r=".9" fill="#fff" opacity=".8"/>
+<path d="M9 3.6H15V7.2Q12 8.2 9 7.2z" fill="url(#xm-bauble-red-cap)"/>
+<path d="M10.4 4.2V7.4M12 4.2V7.8M13.6 4.2V7.4" stroke="#000" stroke-width=".45" opacity=".25"/>
+<path d="M8.6 3.4H15.4" stroke="#fff1a8" stroke-width="1" stroke-linecap="round"/>
+</svg>

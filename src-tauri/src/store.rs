@@ -175,7 +175,7 @@ impl Store {
         }
     }
 
-    fn log(&self, line: &str) {
+    pub fn log(&self, line: &str) {
         let Some(path) = &self.0.log else { return };
         if let Some(dir) = path.parent() {
             let _ = fs::create_dir_all(dir);

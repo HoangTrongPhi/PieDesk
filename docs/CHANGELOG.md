@@ -1,5 +1,28 @@
 # PieDesk — Changelog
 
+## Chưa phát hành — theme lễ hội
+- **Decor theo theme** (`src/decor`, 52 SVG vẽ tay, mỗi file một chunk lazy): cảnh đứng trên desktop tự tìm chỗ trống
+  không đè box / widget (tránh cột icon bên trái), trượt sang chỗ mới khi box di chuyển. Đồ trang trí trên box
+  (`src/fx/ornaments.ts`): cành ở góc, vật ngồi trên nóc, nhũ băng dưới đáy, đồ treo dưới box đung đưa như con lắc khi
+  kéo box; nhện leo lên xuống sợi tơ. Cài đặt `decor`.
+  - Giáng sinh: cây thông đèn nhấp nháy, quà, người tuyết; nhựa ruồi, nhũ băng, quả châu / kẹo gậy / tất treo;
+    bông tuyết tinh thể; xe tuần lộc bay ngang.
+  - Halloween: bia mộ, vạc sủi bọt, bí ngô khắc mặt nến chập chờn; mạng nhện góc box, bí ngô nhỏ trên nóc, nhện thả tơ;
+    sương tím dưới chân, ma trôi; đàn dơi bùng ra từ góc màn hình, phù thuỷ cưỡi chổi.
+  - Tết: chậu mai, chậu đào, nồi bánh chưng bốc khói, mâm ngũ quả; cành mai / đào góc box; lì xì, đèn lồng, dây pháo
+    treo; hoa mai đào rơi; pháo hoa 6 kiểu nhiều màu, bắn dày 15 phút đầu giao thừa.
+  - Trung thu: trăng rằm có cây đa chú Cuội, đèn kéo quân xoay bóng, mâm bánh trung thu, thỏ ngọc; đèn ông sao, cá chép,
+    thỏ, đèn lồng tròn treo dưới box; đèn Khổng Minh bay lên; mây.
+- **Hiệu ứng theme trên mọi cửa sổ** (`themeOverlay`, mặc định bật): phần "sky" của theme chạy trong cửa sổ overlay
+  (xe tuần lộc, đàn dơi, phù thuỷ, nhện, pháo hoa, đèn Khổng Minh). Giáng sinh có bão tuyết phủ cả taskbar: tuyết đọng
+  thành lớp trên mép taskbar, nhũ băng nhỏ, sương giá, bông tuyết tan dần trên taskbar. Lệnh `theme_effects`.
+- **Hình nền theo theme** (`themeWallpaper`, mặc định bật, `src-tauri/src/wallpaper.rs`): 4 hình nền tạo bằng Gemini
+  (`src-tauri/wallpapers`, bundle resource) đặt cho mọi màn hình khi theme lễ bật; hết lễ hoặc Thoát PieDesk thì trả lại
+  hình nền cũ từng màn hình (lưu ở `<config>/wallpaper.json`). Màn hình nào người dùng tự đổi hình thì giữ nguyên.
+  Slideshow của Windows được tạm dừng rồi bật lại đúng như cũ (ảnh / thư mục, chu kỳ, xáo trộn).
+- Runner FX xoá canvas mỗi frame (trừ effect có `trails`), đo lại vị trí box mỗi frame khi đang kéo.
+- Dev: `dev/decor.html?theme=<id>` xem toàn bộ SVG.
+
 ## v0.3.0
 - **Widget Đang phát** (Now Playing): bài đang phát trên Spotify, trình duyệt, trình nghe nhạc… (GSMTC của Windows,
   không cần plugin), ảnh bìa, nền mờ theo ảnh bìa, thanh tiến trình, nút trước / phát / sau.
