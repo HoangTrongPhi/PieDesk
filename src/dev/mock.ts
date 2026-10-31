@@ -10,6 +10,10 @@ export async function installMock() {
   mockConvertFileSrc("windows");
 
   const doc: Doc = { rev: 0, settings: {}, boxes: {}, widgets: {} };
+  const displays = [
+    { id: "display-a", name: "DELL U2720Q", index: 0, primary: true, windowsPrimary: true, width: innerWidth, height: innerHeight },
+    { id: "display-b", name: "", index: 1, primary: false, windowsPrimary: false, width: 1080, height: 1880 },
+  ];
   const folder = ["Blender 5.1.lnk", "Discord.lnk", "Unity Hub.lnk", "PureRef.lnk", "notes.txt", "Refs"].map((n) => ({
     name: n.replace(/\.[^.]+$/, ""),
     path: `C:\\Users\\demo\\Desktop\\${n}`,
@@ -22,7 +26,9 @@ export async function installMock() {
       const a = args as Record<string, unknown>;
       switch (cmd) {
         case "surface_info":
-          return { label: "surface-0", monitor: "DISPLAY1", primary: true, monitors: ["DISPLAY1"], width: innerWidth, height: innerHeight };
+          return { label: "surface-0", monitor: displays[0].id, primary: true, monitors: displays.map((d) => d.id), displays, width: innerWidth, height: innerHeight };
+        case "list_displays":
+          return displays;
         case "store_get":
           return structuredClone(doc);
         case "store_apply":

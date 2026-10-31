@@ -61,6 +61,8 @@ export type Settings = {
   agentNotify?: boolean;
   /** Look for a new PieDesk version in the background. */
   autoUpdate?: boolean;
+  /** Monitor id that seeds the layout, gets new boxes and hosts orphans. Empty = Windows primary. */
+  homeMonitor?: string;
 };
 
 export type ThemeId = "neon" | "midnight" | "aurora" | "ember";
@@ -79,13 +81,30 @@ export type Doc = {
   widgets: Record<string, WidgetModel>;
 };
 
-export type SurfaceInfo = {
-  label: string;
-  monitor: string;
+export type Display = {
+  id: string;
+  /** EDID name; may be empty. */
+  name: string;
+  index: number;
+  /** PieDesk's home monitor. */
   primary: boolean;
-  monitors: string[];
+  windowsPrimary: boolean;
   width: number;
   height: number;
 };
+
+export type SurfaceInfo = {
+  label: string;
+  monitor: string;
+  /** This surface is on the home monitor. */
+  primary: boolean;
+  monitors: string[];
+  displays: Display[];
+  width: number;
+  height: number;
+};
+
+/** A box / widget being dragged towards another monitor (see src-tauri/src/surfaces.rs). */
+export type DragFrame = { coll: Coll; id: string; title: string; w: number; h: number; grabX: number; grabY: number };
 
 export type FolderEntry = { name: string; path: string; isDir: boolean; ext: string };

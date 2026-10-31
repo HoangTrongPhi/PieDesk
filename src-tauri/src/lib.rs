@@ -13,9 +13,11 @@ mod hittest;
 mod hub;
 mod icons;
 mod items;
+mod monitors;
 mod shell;
 mod startup;
 mod store;
+mod surfaces;
 
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -26,8 +28,7 @@ use serde::Serialize;
 use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{
-    AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize, RunEvent, WebviewUrl, WebviewWindow,
-    WebviewWindowBuilder,
+    AppHandle, Emitter, Manager, RunEvent, WebviewUrl, WebviewWindow, WebviewWindowBuilder,
 };
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 use tauri_plugin_notification::NotificationExt;
@@ -38,21 +39,11 @@ use hittest::HitTest;
 use hub::Hub;
 use icons::IconService;
 use store::{Op, Store};
+use surfaces::SurfaceInfo;
 
 pub const SURFACE_PREFIX: &str = "surface-";
 const MANAGER: &str = "manager";
 const DEFAULT_HOTKEY: &str = "Alt+Shift+D";
-
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SurfaceInfo {
-    pub label: String,
-    pub monitor: String,
-    pub primary: bool,
-    pub monitors: Vec<String>,
-    pub width: f64,
-    pub height: f64,
-}
 
 pub struct AppState {
     pub store: Store,
@@ -83,10 +74,10 @@ fn store_get(state: tauri::State<AppState>) -> store::Doc {
 }
 
 #[derive(Clone, Serialize)]
-struct OpsEvent<'a> {
-    origin: &'a str,
-    rev: u64,
-    ops: &'a [Op],
+pub(crate) struct OpsEvent<'a> {
+    pub origin: &'a str,
+    pub rev: u64,
+    pub ops: &'a [Op],
 }
 
 #[tauri::command]
@@ -96,6 +87,9 @@ fn store_apply(app: AppHandle, window: WebviewWindow, state: tauri::State<AppSta
     let touched = |key: &str| ops.iter().any(|op| matches!(op, Op::Settings { value } if value.get(key).is_some()));
     if touched("hotkey") {
         register_hotkey(&app);
+    }
+    if touched("homeMonitor") {
+        surfaces::poke();
     }
     if ["language", "locked", "party"].iter().any(|k| touched(k)) {
         refresh_tray(&app);
@@ -221,56 +215,6 @@ fn toggle_surfaces(app: AppHandle) {
 
 // ---------------------------------------------------------------------------------------------
 // Windows
-
-fn create_surfaces(app: &AppHandle) -> tauri::Result<()> {
-    let state = app.state::<AppState>();
-    let monitors = app.available_monitors()?;
-    let primary = app.primary_monitor()?.and_then(|m| m.name().cloned());
-    let keys: Vec<String> =
-        monitors.iter().enumerate().map(|(i, m)| m.name().cloned().unwrap_or_else(|| format!("monitor-{i}"))).collect();
-
-    for (i, m) in monitors.iter().enumerate() {
-        let label = format!("{SURFACE_PREFIX}{i}");
-        let area = m.work_area();
-        let scale = m.scale_factor();
-        let is_primary = primary.as_deref().map_or(i == 0, |p| Some(p) == m.name().map(String::as_str));
-        state.surfaces.lock().unwrap().insert(
-            label.clone(),
-            SurfaceInfo {
-                label: label.clone(),
-                monitor: keys[i].clone(),
-                primary: is_primary,
-                monitors: keys.clone(),
-                width: area.size.width as f64 / scale,
-                height: area.size.height as f64 / scale,
-            },
-        );
-        let win = WebviewWindowBuilder::new(app, &label, WebviewUrl::App("index.html?view=surface".into()))
-            .title("PieDesk Surface")
-            .transparent(true)
-            .decorations(false)
-            .shadow(false)
-            .skip_taskbar(true)
-            .resizable(false)
-            .focused(false)
-            // Built visible on purpose: on a hidden window WebView2 creates its child HWNDs after
-            // wry has installed its drop target, so its own target wins and Explorer drops are refused.
-            .position(area.position.x as f64 / scale, area.position.y as f64 / scale)
-            .inner_size(area.size.width as f64 / scale, area.size.height as f64 / scale)
-            .always_on_bottom(true)
-            .build()?;
-        win.set_position(PhysicalPosition::new(area.position.x, area.position.y))?;
-        win.set_size(PhysicalSize::new(area.size.width, area.size.height))?;
-        desktop::pin(&win);
-        let _ = win.set_ignore_cursor_events(true);
-        state.hit.update(&label, |s| {
-            s.origin = (area.position.x as f64, area.position.y as f64);
-            s.scale = scale;
-        });
-        win.show()?;
-    }
-    Ok(())
-}
 
 fn surface_windows(app: &AppHandle) -> Vec<WebviewWindow> {
     app.webview_windows().into_iter().filter(|(l, _)| l.starts_with(SURFACE_PREFIX)).map(|(_, w)| w).collect()
@@ -515,7 +459,8 @@ pub fn run() {
             };
             app.manage(state);
 
-            create_surfaces(&handle)?;
+            surfaces::sync(&handle)?;
+            surfaces::start_watch(handle.clone());
             {
                 let state = handle.state::<AppState>();
                 state.hit.start(handle.clone());
@@ -551,6 +496,9 @@ pub fn run() {
             hub_unsubscribe,
             open_manager,
             toggle_surfaces,
+            surfaces::drag_over,
+            surfaces::drag_end,
+            surfaces::list_displays,
         ])
         .build(tauri::generate_context!())
         .expect("error while building PieDesk")

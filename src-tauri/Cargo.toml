@@ -40,6 +40,7 @@ rusqlite = { version = "0.41", features = ["bundled"] }
 [target.'cfg(windows)'.dependencies]
 # Same major as tauri's own `windows`, so the crate is compiled once.
 windows = { version = "0.62", features = [
+  "Win32_Devices_Display",
   "Win32_Foundation",
   "Win32_Graphics_Gdi",
   "Win32_Storage_FileSystem",

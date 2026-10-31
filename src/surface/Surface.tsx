@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
-import { iconUrl, ipc, uid } from "../lib/ipc";
+import { iconUrl, uid } from "../lib/ipc";
 import { useHitReporter } from "../lib/hit";
 import type { BoxModel, SurfaceInfo, WidgetModel } from "../lib/types";
 import { systemLang, useDoc } from "../stores/doc";
+import { initSurfaceInfo, useSurface } from "../stores/surface";
 import { useAppearance } from "../lib/appearance";
 import { tr } from "../lib/i18n";
 import { widgetDef } from "../widgets/registry";
@@ -67,8 +68,11 @@ async function seed(info: SurfaceInfo) {
   commit(ops);
 }
 
+type Ghost = { id: string; title: string; x: number; y: number; w: number; h: number };
+
 export function Surface() {
-  const [info, setInfo] = useState<SurfaceInfo | null>(null);
+  const info = useSurface((s) => s.info);
+  const [dropGhost, setDropGhost] = useState<Ghost | null>(null);
   const [root, setRoot] = useState<HTMLDivElement | null>(null);
   const [bounds, setBounds] = useState({ w: window.innerWidth, h: window.innerHeight });
   const { ready, boxes, widgets, settings } = useDoc();
@@ -77,11 +81,16 @@ export function Surface() {
   useAppearance();
 
   useEffect(() => {
-    ipc.surfaceInfo().then(setInfo);
+    initSurfaceInfo();
     useDoc.getState().init();
+    // A box or widget dragged here from another monitor.
+    const un = listen<Ghost | null>("drag://ghost", ({ payload }) => setDropGhost(payload));
     const onResize = () => setBounds({ w: window.innerWidth, h: window.innerHeight });
     window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      void un.then((f) => f());
+    };
   }, []);
 
   useEffect(() => {
@@ -131,6 +140,12 @@ export function Surface() {
       {Object.values(boxes)
         .filter((b) => mine(b.monitor))
         .map((b) => <BoxView key={b.id} box={b} bounds={bounds} onNewBox={onNewBox} />)}
+      {dropGhost && (
+        <div className="pd-drop-ghost pointer-events-none fixed z-[1150]"
+          style={{ left: dropGhost.x, top: dropGhost.y, width: dropGhost.w, height: dropGhost.h }}>
+          <span className="truncate">{dropGhost.title}</span>
+        </div>
+      )}
       {ghost && (
         <div className="pd-ghost pointer-events-none fixed z-[1200]" style={{ left: ghost.x - 24, top: ghost.y - 24 }}>
           <img src={iconUrl(ghost.item.path, 48)} width={48} height={48} alt="" />

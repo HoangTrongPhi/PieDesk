@@ -17,6 +17,8 @@ const TICK: Duration = Duration::from_millis(16);
 pub struct Surface {
     /// Physical screen position of the window's client area.
     pub origin: (f64, f64),
+    /// Physical size of the client area.
+    pub size: (f64, f64),
     pub scale: f64,
     /// `[x, y, w, h]` in CSS px, relative to the window.
     pub rects: Vec<[f64; 4]>,
@@ -35,6 +37,12 @@ impl Surface {
         let y = (cursor.1 - self.origin.1) / self.scale;
         self.rects.iter().any(|r| x >= r[0] && y >= r[1] && x < r[0] + r[2] && y < r[1] + r[3])
     }
+
+    /// The cursor is over this surface's monitor at all.
+    pub fn covers(&self, cursor: (f64, f64)) -> bool {
+        let (x, y) = (cursor.0 - self.origin.0, cursor.1 - self.origin.1);
+        x >= 0.0 && y >= 0.0 && x < self.size.0 && y < self.size.1
+    }
 }
 
 #[derive(Clone, Default)]
@@ -44,6 +52,14 @@ impl HitTest {
     pub fn update(&self, label: &str, f: impl FnOnce(&mut Surface)) {
         let mut map = self.0.lock().unwrap();
         f(map.entry(label.to_owned()).or_default());
+    }
+
+    pub fn remove(&self, label: &str) {
+        self.0.lock().unwrap().remove(label);
+    }
+
+    pub fn find(&self, mut pred: impl FnMut(&str, &Surface) -> bool) -> Option<(String, Surface)> {
+        self.0.lock().unwrap().iter().find(|(l, s)| pred(l, s)).map(|(l, s)| (l.clone(), s.clone()))
     }
 
     pub fn start(&self, app: AppHandle) {
@@ -95,7 +111,7 @@ impl HitTest {
 }
 
 #[cfg(windows)]
-fn cursor_pos() -> Option<(f64, f64)> {
+pub fn cursor_pos() -> Option<(f64, f64)> {
     use windows::Win32::Foundation::POINT;
     use windows::Win32::UI::WindowsAndMessaging::GetCursorPos;
     let mut p = POINT::default();
@@ -104,7 +120,7 @@ fn cursor_pos() -> Option<(f64, f64)> {
 }
 
 #[cfg(not(windows))]
-fn cursor_pos() -> Option<(f64, f64)> {
+pub fn cursor_pos() -> Option<(f64, f64)> {
     None
 }
 
@@ -124,6 +140,10 @@ mod tests {
         assert!(s.contains((1920.0 + 225.0, 225.0)));
         assert!(!s.contains((1920.0 + 50.0, 225.0)));
         assert!(!s.contains((225.0, 225.0)));
+        let sized = Surface { size: (2560.0, 1440.0), ..s.clone() };
+        assert!(sized.covers((1920.0, 0.0)));
+        assert!(!sized.covers((1919.0, 10.0)));
+        assert!(!sized.covers((1920.0 + 2560.0, 10.0)));
         let captured = Surface { capture: true, ..s };
         assert!(captured.contains((0.0, 0.0)));
     }

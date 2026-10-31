@@ -7,8 +7,9 @@ import { useAppearance } from "../lib/appearance";
 import { tr, tx, useLang, type Text } from "../lib/i18n";
 import { baseName, ipc } from "../lib/ipc";
 import { useUpdate } from "../lib/update";
-import type { ThemeId } from "../lib/types";
+import type { Display, ThemeId } from "../lib/types";
 import { settingsWithDefaults, useDoc } from "../stores/doc";
+import { displayName } from "../stores/surface";
 import { Field, Segmented, Toggle } from "../widgets/fields";
 import { WIDGETS, widgetDef } from "../widgets/registry";
 import { ACCENTS } from "../surface/BoxView";
@@ -31,8 +32,20 @@ export const THEMES: { id: ThemeId; name: string; desc: Text; panel: string; bor
   { id: "ember", name: "Ember", desc: ["Than hồng cam ấm, hợp hình nền tối", "Warm amber glow for dark wallpapers"], panel: "#1e100a", border: "#a8642f", accent: "#ffb547" },
 ];
 
-// Items created here have no monitor yet: surfaces show unknown monitors on the primary one.
+// Items created here have no monitor yet: surfaces show unknown monitors on the home one.
 const PRIMARY = "";
+
+/** Connected monitors, kept fresh when the setup changes. */
+function useDisplays() {
+  const [displays, setDisplays] = useState<Display[]>([]);
+  useEffect(() => {
+    const load = () => ipc.listDisplays().then(setDisplays).catch(() => {});
+    void load();
+    const un = listen("surface://info", load);
+    return () => void un.then((f) => f());
+  }, []);
+  return displays;
+}
 
 export function Manager() {
   const initial = new URLSearchParams(location.search).get("tab");
@@ -87,6 +100,13 @@ function Heading({ title, sub }: { title: string; sub: string }) {
 
 function LayoutTab() {
   const { boxes, widgets, upsertBox, deleteBox, deleteWidget } = useDoc();
+  const displays = useDisplays();
+  const home = displays.find((d) => d.primary);
+  const monitorLabel = (id: string) => {
+    const d = displays.find((d) => d.id === id);
+    if (d) return displayName(d);
+    return `${home ? displayName(home) : tr("màn hình chính", "home monitor")}${id ? tr(" (màn hình gốc đang rút)", " (its monitor is unplugged)") : ""}`;
+  };
   const count = Object.keys(boxes).length;
   const addFolderBox = async () => {
     const dir = await openDialog({ directory: true, title: tr("Thư mục cho Folder Box", "Folder for the Folder Box") });
@@ -121,7 +141,7 @@ function LayoutTab() {
               <div className="truncate text-sm font-medium">{b.title}</div>
               <div className="pd-muted truncate text-xs">
                 {b.kind === "folder" ? `${tr("Thư mục", "Folder")}: ${b.folder}` : `${b.items.length} ${tr("mục", "items")}`} ·{" "}
-                {b.monitor || tr("màn hình chính", "primary monitor")}
+                {monitorLabel(b.monitor)}
               </div>
             </div>
             <div className="flex gap-1">
@@ -229,6 +249,7 @@ function SettingsTab() {
   const set = useDoc((s) => s.setSettings);
   const [autostart, setAutostart] = useState<boolean | null>(null);
   const [hotkey, setHotkey] = useState(settings.hotkey);
+  const displays = useDisplays();
 
   useEffect(() => {
     ipc.autostartGet().then(setAutostart).catch(() => setAutostart(null));
@@ -261,6 +282,20 @@ function SettingsTab() {
           </Field>
           <Toggle label={tr("Party mode — LED RGB chạy quanh viền box & widget", "Party mode — RGB LEDs chasing around boxes & widgets")}
             checked={settings.party} onChange={(party) => set({ party })} />
+        </section>
+        <section className="pd-section">
+          <Field label={tr("Màn hình chính của PieDesk", "PieDesk home monitor")}
+            hint={tr(
+              "Box mới và box của màn hình đang rút ra sẽ hiện ở đây. Kéo box qua mép màn hình để chuyển sang màn khác.",
+              "New boxes, and boxes of an unplugged monitor, show here. Drag a box past the screen edge to move it to another monitor.",
+            )}>
+            <Segmented value={displays.some((d) => d.id === settings.homeMonitor) ? settings.homeMonitor : ""}
+              onChange={(homeMonitor) => set({ homeMonitor })}
+              options={[
+                { value: "", label: tr("Theo Windows", "Same as Windows") },
+                ...displays.map((d) => ({ value: d.id, label: `${displayName(d)}${d.windowsPrimary ? " ★" : ""}` })),
+              ]} />
+          </Field>
         </section>
         <section className="pd-section">
           <Toggle label={tr("Khởi động cùng Windows", "Start with Windows")} checked={!!autostart}

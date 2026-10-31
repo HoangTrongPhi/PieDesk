@@ -1,14 +1,15 @@
 import { memo, useRef, useState } from "react";
 import clsx from "clsx";
-import { Copy, GripHorizontal, Settings2, Trash2, X } from "lucide-react";
+import { Copy, GripHorizontal, Monitor, Settings2, Trash2, X } from "lucide-react";
 import { startFrameDrag } from "../lib/drag";
 import { tr, tx } from "../lib/i18n";
 import { useCapture } from "../lib/hit";
 import { uid } from "../lib/ipc";
 import type { WidgetModel } from "../lib/types";
 import { settingsWithDefaults, useDoc } from "../stores/doc";
+import { displayName, placeOn, useSurface } from "../stores/surface";
 import { widgetDef } from "../widgets/registry";
-import { useMenu } from "./ContextMenu";
+import { useMenu, type MenuEntry } from "./ContextMenu";
 
 type Props = { widget: WidgetModel; bounds: { w: number; h: number } };
 
@@ -19,6 +20,7 @@ export const WidgetFrame = memo(function WidgetFrame({ widget, bounds }: Props) 
   const showMenu = useMenu((s) => s.show);
   const ref = useRef<HTMLDivElement>(null);
   const [editing, setEditing] = useState(false);
+  const info = useSurface((s) => s.info);
 
   if (!def) return null;
   const x = Math.max(0, Math.min(widget.x, bounds.w - 60));
@@ -32,8 +34,20 @@ export const WidgetFrame = memo(function WidgetFrame({ widget, bounds }: Props) 
       grid: settings.grid,
       min: def.minSize,
       bounds,
-      onCommit: (r) => patchWidget(widget.id, mode === "move" ? { x: r.x, y: r.y } : { w: r.w, h: r.h }),
+      onCommit: (r) =>
+        patchWidget(widget.id, mode === "move" ? { x: r.x, y: r.y, monitor: info?.monitor ?? widget.monitor } : { w: r.w, h: r.h }),
+      cross: {
+        frame: { coll: "widgets", id: widget.id, title: tx(def.name) },
+        onLand: (monitor, at) => patchWidget(widget.id, { monitor, ...at }),
+      },
     });
+  const moveTo: MenuEntry[] = (info?.displays ?? [])
+    .filter((d) => d.id !== info?.monitor)
+    .map((d) => ({
+      label: `${tr("Chuyển sang", "Move to")} ${displayName(d)}`,
+      icon: Monitor,
+      onClick: () => patchWidget(widget.id, { monitor: d.id, ...placeOn(frame, info!, d) }),
+    }));
 
   const menu = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest("textarea, input")) return; // keep the native text menu
@@ -50,6 +64,7 @@ export const WidgetFrame = memo(function WidgetFrame({ widget, bounds }: Props) 
         })),
       },
       { label: tr("Nhân bản", "Duplicate"), icon: Copy, onClick: () => upsertWidget({ ...widget, id: uid(), x: x + 24, y: y + 24 }) },
+      ...moveTo,
       { kind: "sep" },
       { label: tr("Xoá widget", "Delete widget"), icon: Trash2, danger: true, onClick: () => deleteWidget(widget.id) },
     ]);

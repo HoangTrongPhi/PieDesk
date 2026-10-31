@@ -3,7 +3,7 @@
 //! - Owner = Progman: owned windows of the desktop survive Win+D / "Show desktop".
 //! - WS_EX_TOOLWINDOW: no taskbar button, no Alt+Tab entry.
 //! - A subclass forces HWND_BOTTOM on every z-order change, so clicking a box never lifts the
-//!   full-screen surface above other apps.
+//!   full-screen surface above other apps. It also reports display changes (`surfaces::poke`).
 
 use tauri::WebviewWindow;
 
@@ -14,8 +14,8 @@ mod imp {
     use windows::Win32::UI::Shell::{DefSubclassProc, SetWindowSubclass};
     use windows::Win32::UI::WindowsAndMessaging::{
         FindWindowW, GetWindowLongPtrW, SetWindowLongPtrW, SetWindowPos, GWLP_HWNDPARENT, GWL_EXSTYLE, HWND_BOTTOM,
-        SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, WINDOWPOS, WM_WINDOWPOSCHANGING, WS_EX_APPWINDOW,
-        WS_EX_TOOLWINDOW,
+        SPI_SETWORKAREA, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, WINDOWPOS, WM_DISPLAYCHANGE, WM_SETTINGCHANGE,
+        WM_WINDOWPOSCHANGING, WS_EX_APPWINDOW, WS_EX_TOOLWINDOW,
     };
 
     const SUBCLASS_ID: usize = 0x5049_4544; // "PIED"
@@ -34,6 +34,9 @@ mod imp {
                 (*pos).hwndInsertAfter = HWND_BOTTOM;
                 (*pos).flags &= !SWP_NOZORDER;
             }
+        }
+        if msg == WM_DISPLAYCHANGE || (msg == WM_SETTINGCHANGE && wparam.0 == SPI_SETWORKAREA.0 as usize) {
+            crate::surfaces::poke();
         }
         DefSubclassProc(hwnd, msg, wparam, lparam)
     }

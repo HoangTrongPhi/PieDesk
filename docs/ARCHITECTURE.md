@@ -31,6 +31,9 @@ Widget có sẵn: Đồng hồ (số/kim, múi giờ), Lịch tháng, System Mon
 ┌──────────────── Rust (tauri) ─────────────────────────────────────────┐
 │ desktop.rs   gắn surface vào desktop: tool window, owner = Progman,   │
 │              HWND_BOTTOM, phủ vùng làm việc của từng màn hình          │
+│ surfaces.rs  1 surface / màn hình, đồng bộ khi cắm-rút; kéo box sang   │
+│              màn khác (drag_over / drag_end)                          │
+│ monitors.rs  monitor id ổn định (device path, QueryDisplayConfig)     │
 │ hittest.rs   luồng 60 Hz: GetCursorPos ∩ rect tương tác → bật/tắt      │
 │              click-through (set_ignore_cursor_events) chỉ khi đổi trạng│
 │ store.rs     nguồn sự thật duy nhất: settings + boxes + widgets,       │
@@ -80,3 +83,15 @@ tăng `rev`, phát event `store://ops` cho các surface khác → nhiều màn h
 5. **Widget Now Playing** (GlobalSystemMediaTransportControls), GPU (NVML/D3DKMT), lịch Google/Outlook.
 6. **Widget pack** dạng thư mục (`manifest.json` + `index.html`) với quyền khai báo, chia sẻ/nhập 1 click.
 7. Hybrid mode: box “đặc biệt” dùng cửa sổ riêng có Acrylic thật (đổi RAM lấy hiệu ứng blur hệ thống).
+
+### Thứ tự ưu tiên (chốt 2026-10-31, chi tiết trong CHANGELOG.md › Kế hoạch)
+1. ✅ **Đa màn hình** (đã làm): nhận màn chính (`MONITORINFOF_PRIMARY`, kiểm tra lại khi `WM_DISPLAYCHANGE`); monitor id lấy từ
+   device path của `QueryDisplayConfig` (ổn định qua reboot); box mới / box mồ côi về màn chính, giữ toạ độ gốc để trả về
+   khi cắm lại. Kéo box giữa màn hình bằng chuyển giao giữa các surface (`drag://move` + op `moveBox`), quy đổi DPI,
+   snap trọn vào một màn.
+2. **Gom nhóm app tự động**: chấm điểm theo tên exe, version info, đường dẫn cài, thư mục Start Menu; luật trong
+   `rules.json`; nhớ lựa chọn sửa tay của người dùng.
+3. **Theme engine**: CSS tokens + effect module nạp lười; theme đặc biệt và theo mùa.
+4. **Overlay FX / desktop pet**: cửa sổ topmost xuyên chuột, dùng lại effect module, biết vị trí box.
+
+Đã bỏ qua: xoay màn hình dọc/ngang và chế độ sửa kiểu iOS.

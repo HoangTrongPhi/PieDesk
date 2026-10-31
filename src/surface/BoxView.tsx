@@ -11,6 +11,7 @@ import {
   FilePlus2,
   FolderOpen,
   FolderSearch,
+  Monitor,
   MoreHorizontal,
   Pencil,
   Plus,
@@ -24,6 +25,7 @@ import { startFrameDrag } from "../lib/drag";
 import { locale, tr } from "../lib/i18n";
 import type { BoxModel, IconSize, Item } from "../lib/types";
 import { settingsWithDefaults, useDoc } from "../stores/doc";
+import { displayName, placeOn, useSurface } from "../stores/surface";
 import { useMenu, type MenuEntry } from "./ContextMenu";
 import { addPathsToBox, beginItemPointer, useItemDrag } from "./itemDrag";
 import { prompt } from "./Prompt";
@@ -61,11 +63,18 @@ export const BoxView = memo(function BoxView({ box, bounds, onNewBox }: Props) {
   const x = Math.max(0, Math.min(box.x, bounds.w - 120));
   const y = Math.max(0, Math.min(box.y, bounds.h - HEADER_H));
   const frame = { x, y, w: box.w, h: box.h };
+  const info = useSurface((s) => s.info);
   const dragOpts = (mode: "move" | "resize") => ({
     grid: settings.grid,
     min: { w: 160, h: 90 },
     bounds,
-    onCommit: (r: typeof frame) => patchBox(box.id, mode === "move" ? { x: r.x, y: r.y } : { w: r.w, h: r.h }),
+    // Moving a box shown here as an orphan (its monitor is unplugged) settles it on this monitor.
+    onCommit: (r: typeof frame) =>
+      patchBox(box.id, mode === "move" ? { x: r.x, y: r.y, monitor: info?.monitor ?? box.monitor } : { w: r.w, h: r.h }),
+    cross: {
+      frame: { coll: "boxes" as const, id: box.id, title: box.title },
+      onLand: (monitor: string, at: { x: number; y: number }) => patchBox(box.id, { monitor, ...at }),
+    },
   });
 
   const launch = (item: Item, admin = false) => ipc.openPath(item.path, admin || !!item.admin).catch(console.error);
@@ -117,6 +126,15 @@ export const BoxView = memo(function BoxView({ box, bounds, onNewBox }: Props) {
       { kind: "colors", label: tr("Màu nhấn", "Accent"), colors: ACCENTS, active: box.accent, onPick: (c) => patchBox(box.id, { accent: c }) },
       { kind: "sep" },
     ];
+    for (const d of info?.displays ?? []) {
+      if (d.id === info?.monitor) continue;
+      entries.push({
+        label: `${tr("Chuyển sang", "Move to")} ${displayName(d)}`,
+        icon: Monitor,
+        onClick: () => patchBox(box.id, { monitor: d.id, ...placeOn(frame, info!, d) }),
+      });
+    }
+    if ((info?.displays.length ?? 0) > 1) entries.push({ kind: "sep" });
     if (box.kind === "shortcuts") {
       entries.push(
         {
