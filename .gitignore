@@ -6,3 +6,6 @@ src-tauri/gen/
 
 # Release output of scripts/release.ps1
 release/
+
+# JetBrains IDEs
+.idea/
