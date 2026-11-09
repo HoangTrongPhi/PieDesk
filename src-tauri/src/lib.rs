@@ -230,6 +230,11 @@ fn reveal_path(path: String) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn open_url(url: String) -> Result<(), String> {
+    shell::open_url(&url)
+}
+
+#[tauri::command]
 fn list_folder(path: String) -> Result<Vec<folders::Entry>, String> {
     folders::list(&path)
 }
@@ -538,6 +543,7 @@ pub fn run() {
             hit_rects,
             hit_capture,
             open_path,
+            open_url,
             import_item,
             remove_item,
             claim_item,

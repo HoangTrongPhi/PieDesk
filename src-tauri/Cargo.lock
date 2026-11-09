@@ -2921,7 +2921,7 @@ dependencies = [
 
 [[package]]
 name = "piedesk"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "notify",
  "notify-debouncer-full",

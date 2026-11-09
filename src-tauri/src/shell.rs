@@ -34,3 +34,23 @@ pub fn reveal(path: &str) -> Result<(), String> {
         .spawn();
     cmd.map(|_| ()).map_err(|e| e.to_string())
 }
+
+/// Opens a web link or mail address in the default browser / mail app (About & contact).
+/// Only `https://` and `mailto:` are accepted, so the command can't be used to run files.
+pub fn open_url(url: &str) -> Result<(), String> {
+    if !(url.starts_with("https://") || url.starts_with("mailto:")) {
+        return Err(format!("Unsupported link: {url}"));
+    }
+    #[cfg(windows)]
+    {
+        use windows::core::{w, HSTRING, PCWSTR};
+        use windows::Win32::UI::Shell::ShellExecuteW;
+        use windows::Win32::UI::WindowsAndMessaging::SW_SHOWNORMAL;
+        let result = unsafe { ShellExecuteW(None, w!("open"), &HSTRING::from(url), PCWSTR::null(), PCWSTR::null(), SW_SHOWNORMAL) };
+        if result.0 as isize > 32 { Ok(()) } else { Err(format!("Could not open {url} ({})", result.0 as isize)) }
+    }
+    #[cfg(not(windows))]
+    {
+        Command::new("xdg-open").arg(url).spawn().map(|_| ()).map_err(|e| e.to_string())
+    }
+}

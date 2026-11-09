@@ -1,6 +1,11 @@
 # PieDesk — Changelog
 
-## Chưa phát hành — theme lễ hội
+## v0.4.1
+- **Giới thiệu & liên hệ** (nút cuối thanh bên Manager): hộp thoại About & contact giống các app Abyss (blueprint, phòng
+  wireframe tự vẽ, link portfolio / LinkedIn / ArtStation / GitHub / YouTube / Facebook / CV, nút kiểm tra cập nhật).
+  Dữ liệu tác giả ở `src/lib/author.ts`; link mở qua lệnh `open_url` (chỉ nhận `https://` và `mailto:`).
+
+## v0.4.0 — theme lễ hội
 - **Decor theo theme** (`src/decor`, 52 SVG vẽ tay, mỗi file một chunk lazy): cảnh đứng trên desktop tự tìm chỗ trống
   không đè box / widget (tránh cột icon bên trái), trượt sang chỗ mới khi box di chuyển. Đồ trang trí trên box
   (`src/fx/ornaments.ts`): cành ở góc, vật ngồi trên nóc, nhũ băng dưới đáy, đồ treo dưới box đung đưa như con lắc khi

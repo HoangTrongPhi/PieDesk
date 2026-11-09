@@ -14,6 +14,7 @@ export const ipc = {
   hitCapture: (capture: boolean) => invoke("hit_capture", { capture }),
   openPath: (path: string, admin = false) => invoke("open_path", { path, admin }),
   revealPath: (path: string) => invoke("reveal_path", { path }),
+  openUrl: (url: string) => invoke("open_url", { url }),
   importItem: (path: string) => invoke<{ path: string; origin: ItemOrigin }>("import_item", { path }),
   /** Takes an item out of its box; a shortcut that was moved in goes back where it came from. */
   removeItem: (item: Item) => invoke("remove_item", { path: item.path, source: item.source ?? null, origin: item.origin ?? null }),

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { listen } from "@tauri-apps/api/event";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
-import { AppWindow, ArrowUpCircle, Box, Cpu, EyeOff, FolderOpen, LayoutGrid, Plus, RefreshCw, Settings, Sparkles, Trash2 } from "lucide-react";
+import { AppWindow, ArrowUpCircle, Box, Cpu, EyeOff, Info, FolderOpen, LayoutGrid, Plus, RefreshCw, Settings, Sparkles, Trash2 } from "lucide-react";
 import { useAppearance } from "../lib/appearance";
 import { tr, tx, useLang, type Text } from "../lib/i18n";
 import { baseName, ipc } from "../lib/ipc";
@@ -16,6 +16,7 @@ import { Field, Segmented, Toggle } from "../widgets/fields";
 import { WIDGETS, widgetDef } from "../widgets/registry";
 import { ACCENTS } from "../surface/BoxView";
 import { newBox, newWidget } from "../surface/Surface";
+import { AboutDialog } from "./AboutDialog";
 import { AppGroups } from "./AppGroups";
 
 type Tab = "layout" | "widgets" | "settings" | "about";
@@ -47,6 +48,8 @@ export function Manager() {
   const initial = new URLSearchParams(location.search).get("tab");
   const [tab, setTab] = useState<Tab>(TABS.some((t) => t.id === initial) ? (initial as Tab) : "layout");
   const ready = useDoc((s) => s.ready);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const version = useUpdate((s) => s.current);
   useLang();
   useAppearance();
 
@@ -73,6 +76,10 @@ export function Manager() {
           </button>
         ))}
         <div className="flex-1" />
+        <button className="pd-nav" onClick={() => setAboutOpen(true)}>
+          <Info size={16} strokeWidth={1.8} />
+          {tr("Giới thiệu & liên hệ", "About & contact")}
+        </button>
         <button className="pd-nav" onClick={() => ipc.toggleSurfaces()}>
           <EyeOff size={16} strokeWidth={1.8} />
           {tr("Ẩn / hiện desktop", "Show / hide desktop")}
@@ -81,6 +88,16 @@ export function Manager() {
       <main className="min-w-0 flex-1 overflow-y-auto p-8">
         {!ready ? null : tab === "layout" ? <LayoutTab /> : tab === "widgets" ? <WidgetsTab /> : tab === "settings" ? <SettingsTab /> : <AboutTab />}
       </main>
+      <AboutDialog
+        open={aboutOpen}
+        onClose={() => setAboutOpen(false)}
+        version={version}
+        onCheckUpdates={() => {
+          setAboutOpen(false);
+          setTab("settings");
+          void useUpdate.getState().check();
+        }}
+      />
     </div>
   );
 }
