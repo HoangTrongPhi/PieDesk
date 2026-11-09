@@ -87,6 +87,8 @@ export type Settings = {
   appGroupOverrides?: Record<string, string>;
   /** Program keys already offered to group boxes, so removed ones do not come back. */
   appsSeen?: string[];
+  /** PieDesk effect settings saved while the Gaming profile pauses them (Utilities → Optimize). */
+  optimizeFx?: Partial<Pick<Settings, "fx" | "themeOverlay" | "overlayFx" | "pet" | "decor">> | null;
 };
 
 export type { ThemeId } from "../themes";

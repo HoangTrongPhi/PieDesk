@@ -1,7 +1,7 @@
 {
   "name": "piedesk",
   "private": true,
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "PieDesk — Desktop boxes & widgets for Windows",
   "type": "module",
   "scripts": {

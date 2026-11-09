@@ -90,6 +90,67 @@ export async function installMock() {
           return true;
         case "is_owned_item":
           return true;
+        // Utilities (src/manager/utilities)
+        case "cleanup_drives":
+          return [
+            { mount: "C:", name: "Samsung 990 PRO", total: 1000e9, free: 112e9, system: true },
+            { mount: "M:", name: "Data", total: 2000e9, free: 845e9, system: false },
+          ];
+        case "cleanup_scan": {
+          const c = (id: string, group: string, size: number, extra: Record<string, unknown> = {}) => ({
+            id, group, size, files: Math.round(size / 9e4), admin: false, defaultOn: true, caution: false, present: true, partial: false, unknown: false, running: [], ...extra,
+          });
+          return new Promise((r) => setTimeout(() => r([
+            c("user_temp", "system", 360e6), c("win_temp", "system", 0, { admin: true, partial: true }), c("recycle_bin", "system", 1.37e9),
+            c("thumbnails", "system", 211e6), c("crash_user", "system", 398e6), c("wu_cache", "system", 389e6, { admin: true }),
+            c("win_logs", "system", 110e6, { admin: true, partial: true }), c("dns", "system", 0), c("shader_cache", "system", 3.4e9, { caution: true, defaultOn: false }),
+            c("chrome", "browser", 2.41e9, { running: ["chrome.exe"] }), c("edge", "browser", 555e6), c("brave", "browser", 398e6),
+            c("discord", "apps", 390e6), c("teams", "apps", 695e6, { running: ["ms-teams.exe"] }), c("launchers", "apps", 944e6),
+            c("unreal_logs", "apps", 1.2e6), c("unreal_ddc", "apps", 1.15e9, { caution: true, defaultOn: false }),
+            c("npm", "dev", 1.5e9, { defaultOn: false }), c("pip", "dev", 4.28e9, { defaultOn: false }), c("cargo", "dev", 940e6, { defaultOn: false }),
+            c("prefetch", "advanced", 0, { admin: true, caution: true, defaultOn: false, partial: true }),
+            c("hibernate", "advanced", 13.7e9, { admin: true, caution: true, defaultOn: false }),
+            c("component_store", "advanced", 0, { admin: true, caution: true, defaultOn: false, unknown: true }),
+          ]), 900));
+        }
+        case "cleanup_clean":
+          return new Promise((r) => setTimeout(() => r((a.ids as string[]).map((id) => ({ id, freed: 2.1e8, files: 1200, skipped: id === "chrome" ? 14 : 0, error: null }))), 1200));
+        case "cleanup_large":
+          return [
+            { size: 48.2e9, path: "C:\\Users\\demo\\Videos\\capture_2026-10-01.mkv", modified: Date.now() - 3e9 },
+            { size: 12.4e9, path: "C:\\Users\\demo\\Downloads\\UE_5.6_Installer.zip", modified: Date.now() - 9e9 },
+            { size: 3.1e9, path: "C:\\Users\\demo\\Documents\\maya\\projects\\city\\cache\\sim.abc", modified: Date.now() - 2e9 },
+          ];
+        case "optimize_state":
+          return {
+            profile: null, planName: "Balanced", isAdmin: false, changed: [], closed: [], ultimate: null,
+            tweaks: [
+              ["power_plan", "381b4222-f694-41f0-9685-ff5bb260df2e"], ["standby_ac", 1800], ["game_mode", true], ["game_dvr", true],
+              ["hags", true, true, true], ["windowed_opt", false], ["mouse_accel", false], ["transparency", true], ["animations", true],
+              ["background_apps", true], ["notifications", true], ["mmcss_games", false, true], ["svc_sysmain", true, true],
+              ["svc_search", true, true], ["svc_diagtrack", true, true],
+            ].map(([id, value, admin = false, reboot = false]) => ({ id, value, admin, reboot })),
+          };
+        case "optimize_analyze":
+          return [
+            { id: "disk_low", level: "warn", data: { free: 112e9, total: 1000e9, mount: "C:" } },
+            { id: "startup_many", level: "warn", data: { count: 19 } },
+            { id: "power_balanced", level: "info", data: { name: "Balanced" } },
+            { id: "game_dvr_on", level: "info", data: null },
+            { id: "hiberfil", level: "info", data: { size: 13.7e9 } },
+          ];
+        case "optimize_apply":
+        case "optimize_restore":
+          return { results: [{ id: "game_dvr", ok: true, error: null }], unchanged: [], closed: ["C:\\Program Files\\Microsoft OneDrive\\OneDrive.exe"], relaunched: [], ram: null, reboot: false };
+        case "optimize_free_ram":
+          return { before: 9.1e9, after: 12.6e9, total: 32e9, standby: a.deep ? { Ok: null } : null };
+        case "startup_apps":
+          return [
+            { name: "Steam", command: "\"C:\\Program Files (x86)\\Steam\\steam.exe\" -silent", path: "C:\\Program Files (x86)\\Steam\\steam.exe", scope: "user", enabled: true, admin: false },
+            { name: "OneDrive", command: "", path: "C:\\Program Files\\Microsoft OneDrive\\OneDrive.exe", scope: "user", enabled: false, admin: false },
+            { name: "PenTablet", command: "", path: "C:\\Program Files\\XPPen\\XPPenTablet.exe", scope: "machine", enabled: true, admin: true },
+            { name: "ShareX", command: "", path: "C:\\Users\\demo\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\ShareX.lnk", scope: "folder", enabled: true, admin: false },
+          ];
         default:
           return null;
       }

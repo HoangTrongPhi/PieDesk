@@ -1,5 +1,20 @@
 # PieDesk — Changelog
 
+## v0.5.0 — tab Tiện ích
+- **Tab Tiện ích** trong Manager (`src/manager/utilities`), hai công cụ:
+  - **Dọn dẹp** (`src-tauri/src/cleanup.rs`): dung lượng từng ổ; quét song song ~35 nhóm rác (file tạm, Thùng rác,
+    cache thumbnail, crash dump, Windows Update, Delivery Optimization, log cũ, DNS, shader GPU, cache trình duyệt
+    Chrome / Edge / Brave / Vivaldi / Opera / Firefox, Discord, Teams, VS Code / Cursor, Spotify, launcher game, Unreal
+    log & DDC, Maya, Adobe, npm / pip / Cargo / NuGet / Gradle, Prefetch, hiberfil, WinSxS). Mục "cân nhắc" mặc định
+    không chọn; file đang dùng bị bỏ qua; link / junction chỉ xoá link. Tìm file lớn → chuyển vào Thùng rác.
+  - **Tối ưu PC** (`src-tauri/src/optimize.rs`): profile Gaming / Working / Normal (`profiles.ts`), 15 tinh chỉnh
+    (gói nguồn, sleep, Game Mode, Game DVR, HAGS, game cửa sổ, MMCSS, tăng tốc chuột, trong suốt, hoạt ảnh, app nền,
+    thông báo, SysMain / Search / DiagTrack — dịch vụ chỉ dừng tới lần khởi động lại). Giá trị gốc lưu ở
+    `<config>/optimize.json` lần đầu đổi → Normal trả đúng như cũ, mở lại app đã đóng, bật lại hiệu ứng PieDesk.
+    Giải phóng RAM (trim working set; "Sâu" xoá standby list), khuyến nghị, quản lý app khởi động (StartupApproved
+    như Task Manager).
+- **Helper admin** (`src-tauri/src/elevate.rs`): việc cần quyền admin gom vào một lần hỏi UAC; chạy chính
+  `piedesk.exe --piedesk-elevated <in> <out>` rồi thoát trước khi Tauri khởi động.
 ## v0.4.1
 - **Giới thiệu & liên hệ** (nút cuối thanh bên Manager): hộp thoại About & contact giống các app Abyss (blueprint, phòng
   wireframe tự vẽ, link portfolio / LinkedIn / ArtStation / GitHub / YouTube / Facebook / CV, nút kiểm tra cập nhật).

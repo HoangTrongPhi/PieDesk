@@ -7,7 +7,9 @@
 mod agents;
 mod apps;
 mod catalog;
+mod cleanup;
 mod desktop;
+mod elevate;
 mod folders;
 mod gpu;
 mod guard;
@@ -17,6 +19,7 @@ mod icons;
 mod items;
 mod media;
 mod monitors;
+mod optimize;
 mod overlays;
 mod shell;
 mod startup;
@@ -477,6 +480,10 @@ fn register_hotkey(app: &AppHandle) {
 // ---------------------------------------------------------------------------------------------
 
 pub fn run() {
+    // Started by elevate::run as the admin helper: do its tasks, never start the app.
+    if let Some(code) = elevate::serve_if_requested() {
+        std::process::exit(code);
+    }
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| show_manager(app, None)))
         .plugin(tauri_plugin_dialog::init())
@@ -567,6 +574,18 @@ pub fn run() {
             guard::power_on_battery,
             media::media_art,
             media::media_control,
+            cleanup::cleanup_scan,
+            cleanup::cleanup_clean,
+            cleanup::cleanup_drives,
+            cleanup::cleanup_large,
+            cleanup::cleanup_recycle,
+            optimize::optimize_state,
+            optimize::optimize_apply,
+            optimize::optimize_restore,
+            optimize::optimize_free_ram,
+            optimize::optimize_analyze,
+            optimize::startup_apps,
+            optimize::startup_set,
         ])
         .build(tauri::generate_context!())
         .expect("error while building PieDesk")

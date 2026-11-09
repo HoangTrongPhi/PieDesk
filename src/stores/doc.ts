@@ -103,6 +103,7 @@ export const settingsWithDefaults = (s: Settings): Required<Settings> => ({
   pet: s.pet ?? "off",
   appGroupOverrides: s.appGroupOverrides ?? {},
   appsSeen: s.appsSeen ?? [],
+  optimizeFx: s.optimizeFx ?? null,
 });
 
 export const systemLang = (): "vi" | "en" => (navigator.language.toLowerCase().startsWith("vi") ? "vi" : "en");

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { listen } from "@tauri-apps/api/event";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
-import { AppWindow, ArrowUpCircle, Box, Cpu, EyeOff, Info, FolderOpen, LayoutGrid, Plus, RefreshCw, Settings, Sparkles, Trash2 } from "lucide-react";
+import { AppWindow, ArrowUpCircle, Box, Cpu, EyeOff, Info, FolderOpen, LayoutGrid, Plus, RefreshCw, Settings, Sparkles, Trash2, Wrench } from "lucide-react";
 import { useAppearance } from "../lib/appearance";
 import { tr, tx, useLang, type Text } from "../lib/i18n";
 import { baseName, ipc } from "../lib/ipc";
@@ -18,12 +18,14 @@ import { ACCENTS } from "../surface/BoxView";
 import { newBox, newWidget } from "../surface/Surface";
 import { AboutDialog } from "./AboutDialog";
 import { AppGroups } from "./AppGroups";
+import { Utilities } from "./utilities/Utilities";
 
-type Tab = "layout" | "widgets" | "settings" | "about";
+type Tab = "layout" | "widgets" | "tools" | "settings" | "about";
 
 const TABS: { id: Tab; label: Text; icon: typeof Box }[] = [
   { id: "layout", label: ["Bố cục", "Layout"], icon: LayoutGrid },
   { id: "widgets", label: ["Thư viện widget", "Widget gallery"], icon: Sparkles },
+  { id: "tools", label: ["Tiện ích", "Utilities"], icon: Wrench },
   { id: "settings", label: ["Cài đặt", "Settings"], icon: Settings },
   { id: "about", label: ["Kiến trúc", "Architecture"], icon: Cpu },
 ];
@@ -86,7 +88,7 @@ export function Manager() {
         </button>
       </nav>
       <main className="min-w-0 flex-1 overflow-y-auto p-8">
-        {!ready ? null : tab === "layout" ? <LayoutTab /> : tab === "widgets" ? <WidgetsTab /> : tab === "settings" ? <SettingsTab /> : <AboutTab />}
+        {!ready ? null : tab === "layout" ? <LayoutTab /> : tab === "widgets" ? <WidgetsTab /> : tab === "tools" ? <Utilities /> : tab === "settings" ? <SettingsTab /> : <AboutTab />}
       </main>
       <AboutDialog
         open={aboutOpen}

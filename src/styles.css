@@ -1038,3 +1038,167 @@ html.party .pd-box::before {
   .pd-about-draw { animation: none; stroke-dashoffset: 0; }
   .pd-about-pulse { animation: none; }
 }
+
+/* ---------------------------------------------------------------- Utilities (Manager → Tiện ích) */
+.pd-tool {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--pd-border);
+  background: rgb(255 255 255 / 0.02);
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+.pd-tool:hover {
+  border-color: var(--pd-border-strong);
+}
+.pd-tool-on {
+  border-color: var(--pd-accent);
+  background: color-mix(in srgb, var(--pd-accent) 8%, transparent);
+  box-shadow: 0 0 18px -6px var(--pd-accent);
+}
+.pd-tool-icon,
+.pd-profile-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  color: var(--pd-accent);
+  background: color-mix(in srgb, var(--pd-accent) 15%, transparent);
+}
+.pd-meter {
+  height: 6px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.08);
+  overflow: hidden;
+}
+.pd-meter i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--pd-accent);
+  box-shadow: 0 0 8px var(--pd-accent);
+}
+.pd-meter i.pd-meter-hot {
+  background: #fb7185;
+  box-shadow: 0 0 8px #fb7185;
+}
+.pd-hero {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 20px 22px;
+  border-radius: 14px;
+  border: 1px solid var(--pd-border);
+  background:
+    radial-gradient(ellipse at 0% 50%, color-mix(in srgb, var(--pd-accent) 14%, transparent), transparent 60%),
+    rgb(255 255 255 / 0.02);
+}
+.pd-big {
+  font-size: 30px;
+  line-height: 1.15;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--pd-strong);
+}
+.pd-check {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  accent-color: var(--pd-accent);
+  cursor: pointer;
+}
+.pd-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 6px;
+  border-radius: 999px;
+  border: 1px solid var(--pd-border);
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 17px;
+  color: var(--pd-muted);
+}
+.pd-tag-warn {
+  border-color: rgb(252 211 77 / 0.35);
+  color: #fcd34d;
+}
+.pd-tag-good {
+  border-color: rgb(52 211 153 / 0.35);
+  color: #34d399;
+}
+.pd-profile {
+  --pf: var(--pd-accent);
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--pd-border);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--pf) 10%, transparent), transparent 55%), rgb(255 255 255 / 0.02);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.pd-profile-gaming {
+  --pf: #f43f5e;
+}
+.pd-profile-working {
+  --pf: #38bdf8;
+}
+.pd-profile-normal {
+  --pf: #a3a3a3;
+}
+.pd-profile .pd-profile-icon {
+  color: var(--pf);
+  background: color-mix(in srgb, var(--pf) 16%, transparent);
+}
+.pd-profile:hover {
+  border-color: color-mix(in srgb, var(--pf) 60%, transparent);
+}
+.pd-profile-on {
+  border-color: var(--pf);
+  box-shadow: 0 0 0 1px var(--pf), 0 0 24px -6px var(--pf);
+}
+.pd-profile-point {
+  position: relative;
+  padding-left: 14px;
+  color: var(--pd-head);
+}
+.pd-profile-point::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 0.55em;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--pf);
+}
+.pd-dialog {
+  width: 100%;
+  max-width: 34rem;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--pd-border-strong);
+  background: var(--pd-solid);
+  color: var(--pd-fg);
+  box-shadow: 0 24px 60px -12px rgb(0 0 0 / 0.6);
+}
+.pd-rec-dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 999px;
+}
+.pd-rec-good {
+  background: #34d399;
+}
+.pd-rec-info {
+  background: #38bdf8;
+}
+.pd-rec-warn {
+  background: #fbbf24;
+  box-shadow: 0 0 8px #fbbf24;
+}
