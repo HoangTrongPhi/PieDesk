@@ -1,5 +1,6 @@
 // IPC + types for the Utilities tab (src-tauri/src/cleanup.rs, optimize.rs).
 import { invoke } from "@tauri-apps/api/core";
+import { create } from "zustand";
 
 export type CleanGroup = "system" | "browser" | "apps" | "dev" | "advanced";
 
@@ -64,6 +65,8 @@ export type Program = {
   quiet: string;
   machine: boolean;
   msi: boolean;
+  /** Windows Installer cannot remove it as is (cached package gone / only its registration left). */
+  broken: boolean;
 };
 export type Leftover = { kind: "folder" | "file" | "registry"; path: string; size: number; admin: boolean };
 export type RemoveResult = { path: string; ok: boolean; error: string | null };
@@ -83,14 +86,60 @@ export const util = {
   analyze: () => invoke<Rec[]>("optimize_analyze"),
   startupApps: () => invoke<StartupEntry[]>("startup_apps"),
   programs: () => invoke<Program[]>("uninstall_list"),
-  uninstall: (key: string) => invoke<number>("uninstall_run", { key }),
+  uninstall: (key: string, file?: string) => invoke<number>("uninstall_run", { key, file: file ?? null }),
   stillInstalled: (key: string) => invoke<boolean>("uninstall_present", { key }),
-  leftovers: (program: Program) => invoke<Leftover[]>("uninstall_leftovers", { program }),
+  leftovers: (program: Program, force = false) => invoke<Leftover[]>("uninstall_leftovers", { program, force }),
   removeLeftovers: (items: Leftover[]) => invoke<RemoveResult[]>("uninstall_remove", { items }),
   storeApps: () => invoke<StoreApp[]>("store_list"),
   storeUninstall: (fullName: string) => invoke("store_uninstall", { fullName }),
   startupSet: (e: StartupEntry, enabled: boolean) => invoke("startup_set", { scope: e.scope, name: /folder$/i.test(e.scope) ? e.path.split("\\").pop() : e.name, enabled, admin: e.admin }),
 };
+
+/** Windows Installer exit codes that mean success (3010 / 1641: a restart is needed). */
+export const MSI_OK = [0, 1641, 3010];
+
+/** The admin helper (src-tauri/src/elevate.rs): granted once at install, no UAC prompt afterwards. */
+export type AdminStatus = { granted: boolean; elevated: boolean; revoked: boolean };
+
+type AdminState = {
+  status: AdminStatus | null;
+  busy: boolean;
+  error: string | null;
+  refresh: () => Promise<void>;
+  grant: () => Promise<void>;
+  revoke: () => Promise<void>;
+};
+
+export const useAdmin = create<AdminState>((set) => ({
+  status: null,
+  busy: false,
+  error: null,
+  refresh: async () => {
+    const status = await invoke<AdminStatus>("admin_status").catch(() => null);
+    set({ status });
+  },
+  grant: async () => {
+    set({ busy: true, error: null });
+    try {
+      set({ status: await invoke<AdminStatus>("admin_grant") });
+    } catch (e) {
+      set({ error: String(e) });
+    }
+    set({ busy: false });
+  },
+  revoke: async () => {
+    set({ busy: true, error: null });
+    try {
+      set({ status: await invoke<AdminStatus>("admin_revoke") });
+    } catch (e) {
+      set({ error: String(e) });
+    }
+    set({ busy: false });
+  },
+}));
+
+/** Admin work runs without a UAC prompt (helper granted, or PieDesk runs as admin). */
+export const useAdminQuiet = () => useAdmin((s) => !!s.status && (s.status.granted || s.status.elevated));
 
 export function bytes(n: number, digits = 1): string {
   if (n < 1024) return `${n} B`;

@@ -30,6 +30,9 @@ pub struct Program {
     /// Installed for every user: removing it needs admin rights.
     pub machine: bool,
     pub msi: bool,
+    /// Windows Installer cannot uninstall it as is: its cached package is gone, or only its
+    /// registration is left (no entry in Installed apps).
+    pub broken: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -264,13 +267,74 @@ pub fn list() -> Vec<Program> {
                 quiet: reg::s(&k, "QuietUninstallString"),
                 machine: hive == "HKLM",
                 msi: reg::n(&k, "WindowsInstaller") == 1 || uninstall.to_lowercase().contains("msiexec"),
+                broken: false,
                 name: name.trim().to_string(),
                 uninstall,
                 location,
             });
         }
     }
+    for p in out.iter_mut().filter(|p| p.msi) {
+        if let Some(code) = msi_code(p) {
+            p.broken = msi_package_missing(&code);
+        }
+    }
+    out.extend(orphans(&seen));
     out.sort_by_key(|p| p.name.to_lowercase());
+    out
+}
+
+/// Where Windows Installer keeps a per-machine product's details.
+#[cfg(windows)]
+const USERDATA: &str = r"Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Products";
+
+/// The product's cached package (`C:\Windows\Installer\*.msi`) is gone: uninstalling it asks for
+/// the original installer.
+#[cfg(windows)]
+fn msi_package_missing(code: &str) -> bool {
+    let Some(packed) = packed_guid(code) else { return false };
+    let Some(k) = reg::open("HKLM", "64", &format!(r"{USERDATA}\{packed}\InstallProperties")) else { return false };
+    let local = reg::s(&k, "LocalPackage");
+    !local.trim().is_empty() && !Path::new(local.trim()).exists()
+}
+
+/// Per-machine Windows Installer products still registered but missing from Installed apps
+/// (their entry was removed by a failed uninstall). Listed so they can be removed by force.
+#[cfg(windows)]
+fn orphans(seen: &std::collections::HashSet<(&str, String, String)>) -> Vec<Program> {
+    let listed: std::collections::HashSet<String> = seen.iter().map(|(_, sub, _)| sub.clone()).collect();
+    let Some(root) = reg::open("HKLM", "64", USERDATA) else { return Vec::new() };
+    let mut out = Vec::new();
+    for packed in root.enum_keys().flatten() {
+        let Some(code) = unpacked_guid(&packed) else { continue };
+        if listed.contains(&code.to_lowercase()) {
+            continue;
+        }
+        // Still registered as installed (a product being removed loses this key first).
+        if reg::open("HKLM", "64", &format!(r"Software\Classes\Installer\Products\{packed}")).is_none() {
+            continue;
+        }
+        let Some(k) = reg::open("HKLM", "64", &format!(r"{USERDATA}\{packed}\InstallProperties")) else { continue };
+        let name = reg::s(&k, "DisplayName");
+        if name.trim().is_empty() || reg::n(&k, "SystemComponent") == 1 {
+            continue;
+        }
+        out.push(Program {
+            key: format!("MSI|64|{code}"),
+            name: name.trim().to_string(),
+            publisher: reg::s(&k, "Publisher").trim().to_string(),
+            version: reg::s(&k, "DisplayVersion").trim().to_string(),
+            installed: parse_date(&reg::s(&k, "InstallDate")),
+            size: reg::n(&k, "EstimatedSize") as u64 * 1024,
+            location: reg::s(&k, "InstallLocation").trim().trim_matches('"').trim_end_matches('\\').to_string(),
+            icon: String::new(),
+            uninstall: format!("MsiExec.exe /X{code}"),
+            quiet: String::new(),
+            machine: true,
+            msi: true,
+            broken: true,
+        });
+    }
     out
 }
 
@@ -279,29 +343,76 @@ pub fn list() -> Vec<Program> {
 pub fn present(key: &str) -> bool {
     let mut it = key.splitn(3, '|');
     let (Some(hive), Some(view), Some(sub)) = (it.next(), it.next(), it.next()) else { return false };
+    if hive == "MSI" {
+        // Only a Windows Installer registration: present while the product is registered.
+        return packed_guid(sub).is_some_and(|p| reg::open("HKLM", "64", &format!(r"Software\Classes\Installer\Products\{p}")).is_some());
+    }
     reg::open(hive, view, &format!(r"{}\{sub}", reg::UNINSTALL)).is_some()
 }
 
-/// Starts the program's own uninstaller and waits for it to exit. Many uninstallers copy
-/// themselves to %TEMP% and return at once, so the caller also watches [`present`].
+/// What to start: an installer the user picked (`.msi` → `msiexec /x`, `.exe` as is), else the
+/// program's own uninstaller (`msiexec /x {code}` for Windows Installer products).
+fn command(p: &Program, file: Option<&str>) -> Result<(String, String), String> {
+    if let Some(f) = file.map(str::trim).filter(|f| !f.is_empty()) {
+        let lower = f.to_lowercase();
+        if !Path::new(f).is_file() {
+            return Err(format!("not found: {f}"));
+        }
+        return if lower.ends_with(".msi") {
+            Ok(("msiexec.exe".into(), format!("/x \"{f}\"")))
+        } else if lower.ends_with(".exe") {
+            Ok((f.to_string(), String::new()))
+        } else {
+            Err("only .msi or .exe".into())
+        };
+    }
+    let (exe, args) = match msi_code(p) {
+        Some(code) if p.msi => ("msiexec.exe".to_string(), format!("/x {code}")),
+        _ => split_command(&p.uninstall),
+    };
+    if exe.is_empty() { Err("no uninstaller".into()) } else { Ok((exe, args)) }
+}
+
+/// Starts the program's own uninstaller (or `file`) and waits for it to exit. Many uninstallers
+/// copy themselves to %TEMP% and return at once, so the caller also watches [`present`].
+/// A program installed for all users goes through the admin helper when it is granted, so its
+/// uninstaller does not ask UAC again.
+pub fn run(p: &Program, file: Option<&str>) -> Result<u32, String> {
+    if p.machine {
+        let task = crate::elevate::Task::Uninstall { key: p.key.clone(), file: file.map(String::from) };
+        if let Some(res) = crate::elevate::run_quiet(vec![task]) {
+            return match res?.pop() {
+                Some(crate::elevate::Outcome::Code(r)) => r,
+                _ => Err("no answer".into()),
+            };
+        }
+    }
+    let (exe, args) = command(p, file)?;
+    launch(&exe, &args)
+}
+
+/// The admin helper's side of [`run`]: only entries under HKLM (only an admin can write those).
+pub fn run_machine(key: &str, file: Option<&str>) -> Result<u32, String> {
+    // Both live under HKLM, which only an admin can write.
+    if !key.starts_with("HKLM|") && !key.starts_with("MSI|") {
+        return Err("not a machine-wide program".into());
+    }
+    let p = find(key)?;
+    let (exe, args) = command(&p, file)?;
+    launch(&exe, &args)
+}
+
 #[cfg(windows)]
-pub fn run(p: &Program) -> Result<u32, String> {
+fn launch(exe: &str, args: &str) -> Result<u32, String> {
     use windows::core::{w, HSTRING, PCWSTR};
     use windows::Win32::Foundation::CloseHandle;
     use windows::Win32::System::Threading::{GetExitCodeProcess, WaitForSingleObject, INFINITE};
     use windows::Win32::UI::Shell::{ShellExecuteExW, SEE_MASK_NOASYNC, SEE_MASK_NOCLOSEPROCESS, SHELLEXECUTEINFOW};
     use windows::Win32::UI::WindowsAndMessaging::SW_SHOWNORMAL;
 
-    let (exe, args) = match msi_code(p) {
-        Some(code) if p.msi => ("msiexec.exe".to_string(), format!("/x {code}")),
-        _ => split_command(&p.uninstall),
-    };
-    if exe.is_empty() {
-        return Err("no uninstaller".into());
-    }
-    let file = HSTRING::from(exe.as_str());
-    let params = HSTRING::from(args.as_str());
-    let dir = Path::new(&exe).parent().filter(|d| d.is_dir()).map(|d| HSTRING::from(d.as_os_str()));
+    let file = HSTRING::from(exe);
+    let params = HSTRING::from(args);
+    let dir = Path::new(exe).parent().filter(|d| d.is_dir()).map(|d| HSTRING::from(d.as_os_str()));
     let mut info = SHELLEXECUTEINFOW {
         cbSize: std::mem::size_of::<SHELLEXECUTEINFOW>() as u32,
         fMask: SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NOASYNC,
@@ -327,9 +438,35 @@ pub fn run(p: &Program) -> Result<u32, String> {
     }
 }
 
+#[cfg(not(windows))]
+fn launch(_exe: &str, _args: &str) -> Result<u32, String> {
+    Err("unsupported".into())
+}
+
+/// The inverse of [`packed_guid`]: `87654321DCBA10FE…` → `{12345678-ABCD-EF01-…}`.
+fn unpacked_guid(packed: &str) -> Option<String> {
+    let u = packed_guid(&format!("{{{packed}}}"))?;
+    Some(format!("{{{}-{}-{}-{}-{}}}", &u[0..8], &u[8..12], &u[12..16], &u[16..20], &u[20..32]))
+}
+
+/// `{12345678-ABCD-EF01-2345-6789ABCDEF01}` → `87654321DCBA10FE32547698BADCFE10`: how Windows
+/// Installer names a product under `Installer\Products`.
+fn packed_guid(code: &str) -> Option<String> {
+    let hex: String = code.chars().filter(|c| c.is_ascii_hexdigit()).collect();
+    if hex.len() != 32 || !code.starts_with('{') {
+        return None;
+    }
+    let rev = |s: &str| s.chars().rev().collect::<String>();
+    let mut out = rev(&hex[0..8]) + &rev(&hex[8..12]) + &rev(&hex[12..16]);
+    for i in (16..32).step_by(2) {
+        out += &rev(&hex[i..i + 2]);
+    }
+    Some(out.to_uppercase())
+}
+
 /// Folders, files and registry keys still named after the program.
 #[cfg(windows)]
-pub fn leftovers(p: &Program, others: &[String]) -> Vec<Leftover> {
+pub fn leftovers(p: &Program, others: &[String], force: bool) -> Vec<Leftover> {
     use std::collections::HashSet;
     // Folders that hold another installed program are never offered (shared publisher folders).
     let others: Vec<String> = others
@@ -454,8 +591,23 @@ pub fn leftovers(p: &Program, others: &[String]) -> Vec<Leftover> {
     // The Uninstall entry itself, if the uninstaller forgot it.
     if present(&p.key) {
         let mut it = p.key.splitn(3, '|');
-        if let (Some(h), Some(v), Some(s)) = (it.next(), it.next(), it.next()) {
+        if let (Some(h @ ("HKLM" | "HKCU")), Some(v), Some(s)) = (it.next(), it.next(), it.next()) {
             key(h, v, format!(r"{}\{s}", reg::UNINSTALL), &mut out);
+        }
+    }
+    // Forced removal of a Windows Installer product whose uninstall cannot run (its cached
+    // package or source is gone): its registration, so Windows stops listing it.
+    if force {
+        if let Some(packed) = msi_code(p).and_then(|c| packed_guid(&c)) {
+            for (hive, path) in [
+                ("HKLM", format!(r"Software\Classes\Installer\Products\{packed}")),
+                ("HKLM", format!(r"Software\Classes\Installer\Features\{packed}")),
+                ("HKLM", format!(r"Software\Microsoft\Windows\CurrentVersion\Installer\UserData\S-1-5-18\Products\{packed}")),
+                ("HKCU", format!(r"Software\Microsoft\Installer\Products\{packed}")),
+                ("HKCU", format!(r"Software\Microsoft\Installer\Features\{packed}")),
+            ] {
+                key(hive, "64", path, &mut out);
+            }
         }
     }
     // A key path ending in a deeper match is covered by its parent: drop children of listed keys.
@@ -573,9 +725,7 @@ pub fn list() -> Vec<Program> { Vec::new() }
 #[cfg(not(windows))]
 pub fn present(_key: &str) -> bool { false }
 #[cfg(not(windows))]
-pub fn run(_p: &Program) -> Result<u32, String> { Err("unsupported".into()) }
-#[cfg(not(windows))]
-pub fn leftovers(_p: &Program, _others: &[String]) -> Vec<Leftover> { Vec::new() }
+pub fn leftovers(_p: &Program, _others: &[String], _force: bool) -> Vec<Leftover> { Vec::new() }
 #[cfg(not(windows))]
 pub fn store_apps() -> Result<Vec<StoreApp>, String> { Ok(Vec::new()) }
 #[cfg(not(windows))]
@@ -594,9 +744,9 @@ pub async fn uninstall_list() -> Vec<Program> {
 }
 
 #[tauri::command]
-pub async fn uninstall_run(key: String) -> Result<u32, String> {
+pub async fn uninstall_run(key: String, file: Option<String>) -> Result<u32, String> {
     let p = find(&key)?;
-    tauri::async_runtime::spawn_blocking(move || run(&p)).await.map_err(|e| e.to_string())?
+    tauri::async_runtime::spawn_blocking(move || run(&p, file.as_deref())).await.map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
@@ -606,7 +756,7 @@ pub async fn uninstall_present(key: String) -> bool {
 
 /// Leftover scan. Takes the program as listed before uninstalling: its entry may be gone now.
 #[tauri::command]
-pub async fn uninstall_leftovers(program: serde_json::Value) -> Result<Vec<Leftover>, String> {
+pub async fn uninstall_leftovers(program: serde_json::Value, force: Option<bool>) -> Result<Vec<Leftover>, String> {
     let g = |k: &str| program.get(k).and_then(|v| v.as_str()).unwrap_or("").to_string();
     let p = Program {
         key: g("key"),
@@ -620,14 +770,15 @@ pub async fn uninstall_leftovers(program: serde_json::Value) -> Result<Vec<Lefto
         uninstall: String::new(),
         quiet: String::new(),
         machine: program.get("machine").and_then(|v| v.as_bool()).unwrap_or(false),
-        msi: false,
+        msi: program.get("msi").and_then(|v| v.as_bool()).unwrap_or(false),
+        broken: false,
     };
     if p.name.trim().is_empty() {
         return Err("no name".into());
     }
     Ok(tauri::async_runtime::spawn_blocking(move || {
         let others: Vec<String> = list().into_iter().filter(|o| o.key != p.key).map(|o| o.location).collect();
-        leftovers(&p, &others)
+        leftovers(&p, &others, force.unwrap_or(false))
     })
     .await
     .map_err(|e| e.to_string())?)
@@ -666,6 +817,7 @@ mod tests {
             quiet: String::new(),
             machine: false,
             msi: false,
+            broken: false,
         }
     }
 
@@ -676,11 +828,34 @@ mod tests {
         println!("{} programs", all.len());
         for p in all.iter().take(400) {
             let others: Vec<String> = all.iter().filter(|o| o.key != p.key).map(|o| o.location.clone()).collect();
-            let l: Vec<_> = leftovers(p, &others).into_iter().filter(|l| !l.path.contains(r"CurrentVersion\Uninstall")).collect();
+            let l: Vec<_> = leftovers(p, &others, false).into_iter().filter(|l| !l.path.contains(r"CurrentVersion\Uninstall")).collect();
             if !l.is_empty() {
                 println!("{} [{}] -> {:?}", p.name, p.location, l.iter().map(|x| &x.path).collect::<Vec<_>>());
             }
         }
+    }
+
+    /// `cargo test live_force -- --ignored --nocapture`: what a forced removal of an MSI product
+    /// would offer (read-only). PIEDESK_PROGRAM picks the program by name.
+    #[test]
+    #[ignore]
+    fn live_force() {
+        let want = std::env::var("PIEDESK_PROGRAM").unwrap_or_else(|_| "DaVinci".into()).to_lowercase();
+        let all = list();
+        for p in all.iter().filter(|p| p.msi && p.name.to_lowercase().contains(&want)) {
+            let others: Vec<String> = all.iter().filter(|o| o.key != p.key).map(|o| o.location.clone()).collect();
+            println!("{} [{}] {}", p.name, p.key, p.location);
+            for l in leftovers(p, &others, true) {
+                println!("  {} {}{}", l.kind, l.path, if l.admin { " (admin)" } else { "" });
+            }
+        }
+    }
+
+    #[test]
+    fn packs_product_codes() {
+        assert_eq!(packed_guid("{90120000-0030-0000-0000-0000000FF1CE}").as_deref(), Some("00002109030000000000000000F01FEC"));
+        assert_eq!(packed_guid("not-a-guid"), None);
+        assert_eq!(unpacked_guid("00002109030000000000000000F01FEC").as_deref(), Some("{90120000-0030-0000-0000-0000000FF1CE}"));
     }
 
     #[test]

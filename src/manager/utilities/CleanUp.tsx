@@ -4,7 +4,7 @@ import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { AlertTriangle, CheckCircle2, FileSearch, FolderOpen, HardDrive, Loader2, RefreshCw, ShieldCheck, Sparkles, Trash2 } from "lucide-react";
 import { locale, tr, tx } from "../../lib/i18n";
 import { ipc } from "../../lib/ipc";
-import { bytes, util, type BigFile, type CleanCategory, type CleanResult, type Drive } from "../../lib/utilities";
+import { bytes, useAdminQuiet, util, type BigFile, type CleanCategory, type CleanResult, type Drive } from "../../lib/utilities";
 import { Segmented } from "../../widgets/fields";
 import { CLEAN, GROUPS } from "./labels";
 
@@ -75,7 +75,8 @@ function Junk({ onCleaned }: { onCleaned: () => void }) {
   const chosen = cats.filter((c) => picked.has(c.id));
   const total = chosen.reduce((s, c) => s + c.size, 0);
   const found = cats.filter((c) => c.present).reduce((s, c) => s + c.size, 0);
-  const needAdmin = chosen.some((c) => c.admin);
+  const quiet = useAdminQuiet();
+  const needAdmin = chosen.some((c) => c.admin) && !quiet;
   const busy = cats.filter((c) => picked.has(c.id) && c.running.length).flatMap((c) => c.running);
 
   const clean = async () => {

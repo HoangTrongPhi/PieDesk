@@ -145,8 +145,22 @@ fn hit_capture(window: WebviewWindow, state: tauri::State<AppState>, capture: bo
 }
 
 #[tauri::command]
-fn open_path(path: String, admin: Option<bool>) -> Result<(), String> {
-    shell::open(&path, admin.unwrap_or(false))
+async fn open_path(path: String, admin: Option<bool>) -> Result<(), String> {
+    let admin = admin.unwrap_or(false);
+    // "Run as administrator": through the admin helper when it is granted (no UAC prompt).
+    if admin {
+        let p = path.clone();
+        let quiet = tauri::async_runtime::spawn_blocking(move || elevate::run_quiet(vec![elevate::Task::Launch { path: p }]))
+            .await
+            .map_err(|e| e.to_string())?;
+        if let Some(res) = quiet {
+            return match res?.pop() {
+                Some(elevate::Outcome::Done(r)) => r,
+                _ => Err("no answer".into()),
+            };
+        }
+    }
+    shell::open(&path, admin)
 }
 
 /// Takes a dropped / picked path into a box (moves shortcuts in, links anything else).
@@ -608,6 +622,9 @@ pub fn run() {
             optimize::startup_apps,
             optimize::startup_set,
             uninstall::uninstall_list,
+            elevate::admin_status,
+            elevate::admin_grant,
+            elevate::admin_revoke,
             uninstall::uninstall_run,
             uninstall::uninstall_present,
             uninstall::uninstall_leftovers,

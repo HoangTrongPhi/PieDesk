@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
+import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import {
-  AlertTriangle, CheckCircle2, Database, File, Folder, FolderOpen, Loader2, Package, RefreshCw, Search, ShieldCheck, ShoppingBag, Trash2, X,
+  AlertTriangle, CheckCircle2, Database, File, FileSearch, Folder, FolderOpen, Hammer, Loader2, Package, RefreshCw, RotateCcw, Search, ShieldCheck, ShoppingBag, Trash2, X,
 } from "lucide-react";
 import { locale, tr } from "../../lib/i18n";
 import { iconUrl, ipc } from "../../lib/ipc";
-import { bytes, util, type Leftover, type Program, type RemoveResult, type StoreApp } from "../../lib/utilities";
+import { bytes, MSI_OK, useAdminQuiet, util, type Leftover, type Program, type RemoveResult, type StoreApp } from "../../lib/utilities";
 import { Segmented } from "../../widgets/fields";
 
 type Sort = "name" | "size" | "date";
@@ -128,6 +129,11 @@ function Programs() {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5 truncate text-sm font-medium">
                   <span className="truncate">{p.name}</span>
+                  {p.broken && (
+                    <span className="pd-tag shrink-0 !text-amber-300" title={tr("Windows Installer không gỡ được như bình thường (mất gói cài đặt) — PieDesk gỡ cưỡng bức được.", "Windows Installer cannot remove it normally (its package is gone) — PieDesk can force-remove it.")}>
+                      <AlertTriangle size={11} /> {tr("hỏng", "broken")}
+                    </span>
+                  )}
                   {p.machine && <span className="pd-tag shrink-0" title={tr("Cài cho mọi người dùng — cần quyền admin", "Installed for all users — needs admin rights")}><ShieldCheck size={11} /></span>}
                 </div>
                 <div className="pd-muted truncate text-xs">{[p.publisher, p.version].filter(Boolean).join(" · ") || "—"}</div>
@@ -166,18 +172,27 @@ type Step =
   | { kind: "confirm" }
   | { kind: "running" }
   | { kind: "waiting" } // uninstaller returned but the program is still listed
+  | { kind: "msi"; code: number } // Windows Installer failed (code 0: known broken before trying)
   | { kind: "scanning" }
-  | { kind: "leftovers"; items: Leftover[] }
+  | { kind: "leftovers"; items: Leftover[]; forced: boolean }
   | { kind: "removing" }
   | { kind: "done"; removed: RemoveResult[]; freed: number; error?: string };
 
 function Flow({ queue, onClose }: { queue: Program[]; onClose: () => void }) {
   const [index, setIndex] = useState(0);
   const [step, setStep] = useState<Step>({ kind: "confirm" });
+  const pickInstaller = async (prog: Program) => {
+    const file = await openDialog({
+      title: tr(`Chọn bộ cài ${prog.name} (cùng phiên bản)`, `Pick the ${prog.name} installer (same version)`),
+      filters: [{ name: tr("Bộ cài", "Installer"), extensions: ["msi", "exe"] }],
+    }).catch(() => null);
+    if (typeof file === "string") void start(prog, file);
+  };
   const [deep, setDeep] = useState(true);
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const [summary, setSummary] = useState<{ name: string; ok: boolean; freed: number }[]>([]);
   const cancelled = useRef(false);
+  const quiet = useAdminQuiet();
   const p = queue[index];
 
   useEffect(() => {
@@ -194,27 +209,37 @@ function Flow({ queue, onClose }: { queue: Program[]; onClose: () => void }) {
     setIndex(i + 1);
     if (i + 1 < queue.length) {
       setStep({ kind: "confirm" });
-      void start(queue[i + 1]);
+      // A known-broken program waits on its explanation instead of failing first.
+      if (!queue[i + 1].broken) void start(queue[i + 1]);
     }
   };
 
-  const scan = async (prog: Program) => {
-    if (!deep) return next({ ok: true, freed: 0 });
+  /** `force`: also the program's install folder and its Windows Installer registration. */
+  const scan = async (prog: Program, force = false) => {
+    if (!deep && !force) return next({ ok: true, freed: 0 });
     setStep({ kind: "scanning" });
-    const items = await util.leftovers(prog).catch(() => [] as Leftover[]);
+    const items = await util.leftovers(prog, force).catch(() => [] as Leftover[]);
     if (cancelled.current) return;
-    if (!items.length) return next({ ok: true, freed: 0 });
+    if (!items.length) return next({ ok: !force, freed: 0 });
     setPicked(new Set(items.map((i) => i.path)));
-    setStep({ kind: "leftovers", items });
+    setStep({ kind: "leftovers", items, forced: force });
   };
 
-  const start = async (prog: Program) => {
+  /** `file`: an installer the user picked when Windows Installer lost the original. */
+  const start = async (prog: Program, file?: string) => {
     setStep({ kind: "running" });
+    let code = 0;
     try {
-      await util.uninstall(prog.key);
+      code = await util.uninstall(prog.key, file);
     } catch (e) {
       if (cancelled.current) return;
       setStep({ kind: "done", removed: [], freed: 0, error: String(e) === "cancelled" ? tr("Đã huỷ quyền admin.", "Admin rights were declined.") : String(e) });
+      return;
+    }
+    if (cancelled.current) return;
+    // Windows Installer said no and the program is still there: explain, offer the ways out.
+    if (prog.msi && !MSI_OK.includes(code) && (await util.stillInstalled(prog.key).catch(() => true))) {
+      setStep({ kind: "msi", code });
       return;
     }
     // Many uninstallers hand over to a copy in %TEMP% and return at once: wait for the entry to go.
@@ -277,7 +302,7 @@ function Flow({ queue, onClose }: { queue: Program[]; onClose: () => void }) {
           <div className="truncate text-lg font-semibold">{p.name}</div>
           <div className="pd-muted truncate text-sm">{[p.publisher, p.version, p.size ? bytes(p.size) : ""].filter(Boolean).join(" · ")}</div>
           <div className="mt-2 text-sm">
-            {step.kind === "confirm" && (
+            {step.kind === "confirm" && !p.broken && (
               <>
                 {queue.length > 1 && (
                   <div className="pd-muted mb-2 text-xs">{tr("Sẽ gỡ lần lượt: ", "Will uninstall in turn: ")}{queue.map((q) => q.name).join(", ")}</div>
@@ -289,6 +314,8 @@ function Flow({ queue, onClose }: { queue: Program[]; onClose: () => void }) {
                 <div className="pd-muted mt-1 text-xs">{tr("PieDesk chạy trình gỡ cài đặt của chính chương trình — làm theo các bước trên cửa sổ của nó.", "PieDesk runs the program's own uninstaller — follow the steps in its window.")}</div>
               </>
             )}
+            {step.kind === "confirm" && p.broken && <MsiHelp code={0} program={p} />}
+            {step.kind === "msi" && <MsiHelp code={step.code} program={p} />}
             {step.kind === "running" && <span className="pd-muted">{tr("Đang chạy trình gỡ cài đặt… hoàn tất các bước trên cửa sổ của nó.", "Uninstaller running… finish the steps in its window.")}</span>}
             {step.kind === "waiting" && (
               <span className="flex items-center gap-1.5 text-amber-300"><AlertTriangle size={14} />
@@ -296,7 +323,11 @@ function Flow({ queue, onClose }: { queue: Program[]; onClose: () => void }) {
             )}
             {step.kind === "scanning" && <span className="pd-muted">{tr("Đang tìm thư mục và khoá registry còn sót…", "Looking for leftover folders and registry keys…")}</span>}
             {step.kind === "leftovers" && (
-              <span>{tr(`Tìm thấy ${step.items.length} mục còn sót`, `Found ${step.items.length} leftovers`)} · {bytes(step.items.reduce((s, i) => s + i.size, 0))}</span>
+              <span>
+                {step.forced
+                  ? tr(`Gỡ cưỡng bức: ${step.items.length} mục`, `Force remove: ${step.items.length} items`)
+                  : tr(`Tìm thấy ${step.items.length} mục còn sót`, `Found ${step.items.length} leftovers`)} · {bytes(step.items.reduce((s, i) => s + i.size, 0))}
+              </span>
             )}
             {step.kind === "removing" && <span className="pd-muted">{tr("Đang dọn…", "Removing…")}</span>}
             {step.kind === "done" && (
@@ -307,10 +338,22 @@ function Flow({ queue, onClose }: { queue: Program[]; onClose: () => void }) {
             )}
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
-            {step.kind === "confirm" && (
+            {step.kind === "confirm" && !p.broken && (
               <>
                 <button className="pd-btn pd-btn-primary" onClick={() => start(p)}><Trash2 size={14} /> {tr("Gỡ cài đặt", "Uninstall")}</button>
                 <button className="pd-btn" onClick={onClose}><X size={14} /> {tr("Huỷ", "Cancel")}</button>
+              </>
+            )}
+            {(step.kind === "msi" || (step.kind === "confirm" && p.broken)) && (
+              <>
+                <button className="pd-btn pd-btn-primary" onClick={() => pickInstaller(p)}><FileSearch size={14} /> {tr("Chọn bộ cài (.msi / .exe)…", "Pick the installer (.msi / .exe)…")}</button>
+                <button className="pd-btn" onClick={() => scan(p, true)}><Hammer size={14} /> {tr("Gỡ cưỡng bức", "Force remove")}</button>
+                <button className="pd-btn" onClick={() => start(p)}><RotateCcw size={14} /> {step.kind === "msi" ? tr("Thử lại", "Try again") : tr("Vẫn thử gỡ bình thường", "Try the normal uninstall")}</button>
+                {step.kind === "confirm" ? (
+                  <button className="pd-btn" onClick={onClose}><X size={14} /> {tr("Huỷ", "Cancel")}</button>
+                ) : (
+                  <button className="pd-btn" onClick={() => next({ ok: false, freed: 0 })}>{tr("Bỏ qua", "Skip")}</button>
+                )}
               </>
             )}
             {step.kind === "waiting" && (
@@ -333,7 +376,13 @@ function Flow({ queue, onClose }: { queue: Program[]; onClose: () => void }) {
               </button>
             )}
           </div>
-          {step.kind === "leftovers" && step.items.some((i) => i.admin) && (
+          {step.kind === "leftovers" && step.forced && (
+            <div className="mt-2 text-xs text-amber-300">
+              {tr("Xoá thư mục cài, bản đăng ký Windows Installer và mục trong danh sách chương trình. Thư mục vào Thùng rác, registry được sao lưu .reg — trả lại được.",
+                "Removes the install folder, the Windows Installer registration and the Installed apps entry. Folders go to the Recycle Bin, registry is backed up (.reg) — can be undone.")}
+            </div>
+          )}
+          {step.kind === "leftovers" && step.items.some((i) => i.admin) && !quiet && (
             <div className="pd-muted mt-2 flex items-center gap-1.5 text-xs"><ShieldCheck size={13} />
               {tr("Có mục cần quyền admin — Windows sẽ hỏi một lần.", "Some items need admin rights — Windows will ask once.")}</div>
           )}
@@ -376,6 +425,35 @@ function Flow({ queue, onClose }: { queue: Program[]; onClose: () => void }) {
         </div>
       )}
     </>
+  );
+}
+
+/** Why Windows Installer could not remove the program, and what to do (buttons are in the flow). */
+function MsiHelp({ code, program }: { code: number; program: Program }) {
+  const busy = code === 1618;
+  const unknown = code === 1605;
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className="flex items-center gap-1.5 text-amber-300"><AlertTriangle size={14} className="shrink-0" />
+        {busy
+          ? tr("Một bộ cài khác đang chạy — đợi nó xong rồi bấm Thử lại.", "Another installation is running — wait for it, then Try again.")
+          : unknown
+            ? tr("Windows Installer không còn biết sản phẩm này, chỉ còn mục trong danh sách.", "Windows Installer no longer knows this product; only its list entry is left.")
+            : code === 1602
+              ? tr("Trình gỡ đã bị huỷ.", "The uninstall was cancelled.")
+              : code === 0
+                ? tr("Bản cài này bị hỏng: Windows Installer đã mất gói cài đặt của nó.", "This installation is broken: Windows Installer lost its package.")
+                : tr(`Windows Installer không gỡ được (mã ${code}).`, `Windows Installer could not uninstall it (code ${code}).`)}
+      </span>
+      {!busy && (
+        <span className="pd-muted text-xs leading-relaxed">
+          {tr(
+            `Windows Installer cần file .msi gốc của ${program.name} để gỡ, nhưng file đó đã bị xoá (bộ cài giải nén nó vào thư mục Temp rồi dọn đi) — vì vậy Windows hỏi "Use source". Cách xử lý: tải bộ cài cùng phiên bản ${program.version || ""} rồi bấm Chọn bộ cài; hoặc Gỡ cưỡng bức để PieDesk xoá thư mục cài và bản đăng ký Windows Installer (có sao lưu).`,
+            `Windows Installer needs ${program.name}'s original .msi to uninstall it, but that file is gone (the installer unpacked it to Temp and cleaned up) — hence the "Use source" prompt. Fix: download the same version ${program.version || ""} and Pick the installer; or Force remove to let PieDesk delete the install folder and the Windows Installer registration (backed up).`,
+          )}
+        </span>
+      )}
+    </div>
   );
 }
 

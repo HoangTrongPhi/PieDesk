@@ -47,6 +47,7 @@
       "nsis": {
         "installMode": "currentUser",
         "installerIcon": "icons/icon.ico",
+        "installerHooks": "windows/hooks.nsh",
         "startMenuFolder": "PieDesk",
         "languages": ["English", "Vietnamese"],
         "displayLanguageSelector": true

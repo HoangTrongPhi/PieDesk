@@ -20,7 +20,9 @@ Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). History: [docs/CHANG
 - Widgets: `src/widgets/*`, registered in `src/widgets/registry.ts`. The media frame is `player.tsx` (type `photo`).
 - Agents widget + Claude plan-usage limits: `src-tauri/src/agents.rs`, `src/widgets/agents.tsx`.
 - Utilities tab (Clean up, Uninstaller, Optimize): `src/manager/utilities/*`, `src-tauri/src/{cleanup,uninstall,optimize}.rs`;
-  admin work goes through `src-tauri/src/elevate.rs` (one UAC prompt).
+  admin work goes through `src-tauri/src/elevate.rs`: the admin helper task `PieDesk\AdminHelper`, granted once by the
+  installer (`src-tauri/windows/hooks.nsh`), else one UAC prompt. `cargo test live_helper -- --ignored` tests it
+  unprivileged; from inside the Claude app it needs the sandbox off (MSIX virtualises %LOCALAPPDATA%).
 
 ## Conventions
 - UI text is bilingual: `tr("Tiếng Việt", "English")`.

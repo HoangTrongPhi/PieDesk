@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import { tr, tx } from "../../lib/i18n";
 import { iconUrl } from "../../lib/ipc";
-import { bytes, util, type ApplyReport, type Overview, type RamReport, type Rec, type StartupEntry, type TweakId, type TweakValue } from "../../lib/utilities";
+import { bytes, useAdminQuiet, util, type ApplyReport, type Overview, type RamReport, type Rec, type StartupEntry, type TweakId, type TweakValue } from "../../lib/utilities";
 import { settingsWithDefaults, useDoc } from "../../stores/doc";
 import { PROFILES, QUIET, QUIET_KEYS, type Profile, type ProfileId } from "./profiles";
 import { TWEAK, TWEAK_GROUPS } from "./labels";
@@ -229,6 +229,7 @@ function ConfirmDialog({ p, ov, value, onCancel, onApply }: {
           return cur !== v;
         })
         .map(([id, v]) => ({ id, from: value(id), to: v }));
+  const quiet = useAdminQuiet();
   const admin = changes.some((c) => ov.tweaks.find((t) => t.id === c.id)?.admin) || p.freeRam;
   const reboot = changes.some((c) => ov.tweaks.find((t) => t.id === c.id)?.reboot);
   return (
@@ -257,7 +258,7 @@ function ConfirmDialog({ p, ov, value, onCancel, onApply }: {
           <p className="pd-muted mt-3 text-xs">{tr("Mở lại: ", "Starts again: ")}{ov.closed.map((c) => c.split("\\").pop()).join(", ")}</p>
         )}
         <div className="mt-3 flex flex-col gap-1 text-xs">
-          {admin && !ov.isAdmin && <span className="pd-muted flex items-center gap-1.5"><ShieldCheck size={13} />{tr("Windows sẽ hỏi quyền admin một lần.", "Windows will ask for admin rights once.")}</span>}
+          {admin && !ov.isAdmin && !quiet && <span className="pd-muted flex items-center gap-1.5"><ShieldCheck size={13} />{tr("Windows sẽ hỏi quyền admin một lần.", "Windows will ask for admin rights once.")}</span>}
           {reboot && <span className="flex items-center gap-1.5 text-amber-300"><Power size={13} />{tr("HAGS có hiệu lực sau khi khởi động lại.", "HAGS takes effect after a restart.")}</span>}
           {p.id !== "normal" && <span className="pd-muted flex items-center gap-1.5"><Info size={13} />{tr("Giá trị gốc được lưu lại — bấm Normal để trả về.", "Your originals are saved — Normal puts them back.")}</span>}
         </div>

@@ -1394,3 +1394,36 @@ html.party .pd-box::before {
 .pd-card-drag:active {
   cursor: grabbing;
 }
+
+/* Utilities → admin rights pill. */
+.pd-admin {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  padding: 0.3rem 0.35rem 0.3rem 0.7rem;
+  font-size: 12px;
+  color: rgb(252 211 77);
+  background: rgb(252 211 77 / 0.1);
+  border: 1px solid rgb(252 211 77 / 0.25);
+}
+.pd-admin-on {
+  color: rgb(110 231 183);
+  background: rgb(110 231 183 / 0.1);
+  border-color: rgb(110 231 183 / 0.25);
+}
+.pd-admin-on:not(:has(.pd-admin-btn)) {
+  padding-right: 0.7rem;
+}
+.pd-admin-btn {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  font-size: 11px;
+  color: inherit;
+  background: rgb(255 255 255 / 0.08);
+}
+.pd-admin-btn:hover:not(:disabled) {
+  background: rgb(255 255 255 / 0.16);
+}

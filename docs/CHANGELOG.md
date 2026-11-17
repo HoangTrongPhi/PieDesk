@@ -1,5 +1,22 @@
 # PieDesk — Changelog
 
+## v0.6.1 — Quyền admin cấp một lần, gỡ MSI hỏng
+- **Quyền admin chỉ hỏi một lần, lúc cài** (`src-tauri/src/elevate.rs`, `src-tauri/windows/hooks.nsh`): bộ cài chạy
+  `piedesk.exe --piedesk-setup-admin` → một hộp thoại UAC → đăng ký tác vụ Task Scheduler `PieDesk\AdminHelper`
+  (RunLevel cao nhất, chỉ chạy khi được gọi). Từ đó Dọn dẹp, Gỡ cài đặt (cả trình gỡ của chương trình cài cho mọi
+  người dùng), Tối ưu PC và "Chạy với quyền admin" gửi việc qua tác vụ này (`schtasks /run`, file việc trong
+  `%LOCALAPPDATA%\PieDesk\elevated`) — không hỏi UAC nữa. Chỉ nhận đúng các loại việc định sẵn; trình gỡ chỉ chạy
+  cho mục trong HKLM. Bản cập nhật không hỏi lại; gỡ PieDesk thì tác vụ tự xoá. Tiện ích có thẻ **Quyền admin**:
+  Thu hồi (xoá tác vụ) / Cấp một lần. Chưa cấp thì dùng UAC như trước, và lần UAC đó cấp luôn (trừ khi đã thu hồi).
+- **Gỡ chương trình MSI bị hỏng**: khi `msiexec` báo lỗi (1612 / 1603 / 1602…) mà chương trình vẫn còn, PieDesk giải
+  thích lý do (Windows Installer cần file .msi gốc đã bị bộ cài xoá khỏi Temp — hộp thoại "Use source") và đưa ra:
+  **Chọn bộ cài** (.msi → `msiexec /x "file"`, .exe chạy thẳng), **Gỡ cưỡng bức** (thư mục cài + bản đăng ký Windows
+  Installer `Installer\Products|Features\<packed>`, `UserData\S-1-5-18\Products\<packed>` + mục Uninstall — thư mục vào
+  Thùng rác, registry sao lưu `.reg`), Thử lại, Bỏ qua.
+- Danh sách chương trình nhận diện **bản cài hỏng**: MSI mất gói cache (`C:\Windows\Installer\*.msi`), và sản phẩm chỉ
+  còn bản đăng ký Windows Installer mà mất mục trong Installed apps (vd. DaVinci Resolve sau một lần gỡ thất bại) — gắn
+  nhãn "hỏng", mở thẳng phần hướng dẫn.
+
 ## v0.6.0 — Gỡ cài đặt, Khung media, Snap Layouts
 - **Tiện ích → Gỡ cài đặt** (`src-tauri/src/uninstall.rs`, `src/manager/utilities/Uninstall.tsx`), kiểu IObit
   Uninstaller: mọi chương trình từ 3 khoá Uninstall (HKLM 64/32-bit, HKCU) với icon, nhà phát hành, phiên bản, dung lượng,

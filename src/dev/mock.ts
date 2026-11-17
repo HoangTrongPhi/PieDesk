@@ -4,6 +4,10 @@
 import { mockConvertFileSrc, mockIPC, mockWindows } from "@tauri-apps/api/mocks";
 import type { Doc, Op } from "../lib/types";
 
+/** Mock state for the admin helper and the forced removal of the broken MSI program. */
+let mockAdmin = true;
+let mockForced = false;
+
 export async function installMock() {
   const view = new URLSearchParams(location.search).get("view");
   mockWindows(view === "surface" ? "surface-0" : "manager");
@@ -152,12 +156,14 @@ export async function installMock() {
             { name: "ShareX", command: "", path: "C:\\Users\\demo\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\ShareX.lnk", scope: "folder", enabled: true, admin: false },
           ];
         case "uninstall_list": {
-          const pr = (name: string, publisher: string, version: string, size: number, installed: string, machine = true) => ({
-            key: `HKLM|64|${name}`, name, publisher, version, size, installed, location: `C:\\Program Files\\${name}`, icon: "", uninstall: "x", quiet: "", machine, msi: false,
+          const pr = (name: string, publisher: string, version: string, size: number, installed: string, machine = true, msi = false, broken = false) => ({
+            key: msi ? `MSI|64|{65CAE4DD-CFEC-4616-9CB0-5DDED2DF8E87}` : `HKLM|64|${name}`, name, publisher, version, size, installed,
+            location: `C:\\Program Files\\${name}`, icon: "", uninstall: "x", quiet: "", machine, msi, broken,
           });
           return new Promise((r) => setTimeout(() => r([
             pr("7-Zip 24.08 (x64)", "Igor Pavlov", "24.08", 5.9e6, "2026-03-02"),
             pr("Blender", "Blender Foundation", "5.2.0", 1.1e9, "2026-10-11"),
+            pr("DaVinci Resolve", "Blackmagic Design", "20.2.20010", 3.2e9, "2026-09-02", true, true, true),
             pr("Discord", "Discord Inc.", "1.0.9180", 380e6, "2026-08-21", false),
             pr("Epic Games Launcher", "Epic Games, Inc.", "18.2.1", 410e6, "2025-12-30"),
             pr("Notepad++ (64-bit x64)", "Notepad++ Team", "8.7.4", 15e6, "2026-06-14"),
@@ -165,16 +171,34 @@ export async function installMock() {
           ]), 500));
         }
         case "uninstall_run":
-          return new Promise((r) => setTimeout(() => r(0), 1500));
+          // The broken MSI fails like DaVinci Resolve did: source package missing.
+          return new Promise((r) => setTimeout(() => r(String(a.key).startsWith("MSI|") && !a.file ? 1612 : 0), 1500));
         case "uninstall_present":
-          return false;
+          return String(a.key).startsWith("MSI|") && !mockForced;
+        case "admin_status":
+          return { granted: mockAdmin, elevated: false, revoked: !mockAdmin };
+        case "admin_grant":
+          mockAdmin = true;
+          return new Promise((r) => setTimeout(() => r({ granted: true, elevated: false, revoked: false }), 800));
+        case "admin_revoke":
+          mockAdmin = false;
+          return { granted: false, elevated: false, revoked: true };
         case "uninstall_leftovers":
+          if (a.force) {
+            return new Promise((r) => setTimeout(() => r([
+              { kind: "folder", path: "C:\\Program Files\\Blackmagic Design\\DaVinci Resolve", size: 3.1e9, admin: true },
+              { kind: "registry", path: "HKLM\\Software\\Classes\\Installer\\Products\\DD4EAC56CEFC6164C90BD5ED2DFDE878", size: 0, admin: true },
+              { kind: "registry", path: "HKLM\\Software\\Classes\\Installer\\Features\\DD4EAC56CEFC6164C90BD5ED2DFDE878", size: 0, admin: true },
+              { kind: "registry", path: "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Installer\\UserData\\S-1-5-18\\Products\\DD4EAC56CEFC6164C90BD5ED2DFDE878", size: 0, admin: true },
+            ]), 900));
+          }
           return new Promise((r) => setTimeout(() => r([
             { kind: "folder", path: "C:\\Users\\demo\\AppData\\Roaming\\discord", size: 212e6, admin: false },
             { kind: "folder", path: "C:\\Users\\demo\\AppData\\Local\\Discord", size: 48e6, admin: false },
             { kind: "registry", path: "HKCU\\Software\\Discord", size: 0, admin: false },
           ]), 900));
         case "uninstall_remove":
+          if ((a.items as { path: string }[]).some((i) => i.path.includes("Installer"))) mockForced = true;
           return (a.items as { path: string }[]).map((i) => ({ path: i.path, ok: true, error: null }));
         case "store_list":
           return [
