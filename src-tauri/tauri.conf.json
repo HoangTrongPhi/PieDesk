@@ -18,7 +18,8 @@
         "script-src": "'self'",
         "style-src": "'self' 'unsafe-inline'",
         "img-src": "'self' asset: http://asset.localhost icon: http://icon.localhost data: blob:",
-        "frame-src": "asset: http://asset.localhost",
+        "frame-src": "asset: http://asset.localhost https://www.youtube.com https://www.youtube-nocookie.com",
+        "media-src": "'self' asset: http://asset.localhost blob:",
         "connect-src": "ipc: http://ipc.localhost https://api.open-meteo.com https://geocoding-api.open-meteo.com"
       },
       "assetProtocol": {

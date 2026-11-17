@@ -47,13 +47,19 @@ function Drives({ drives }: { drives: Drive[] }) {
   );
 }
 
-type Phase = "scanning" | "ready" | "cleaning" | "done";
+type Phase = "idle" | "scanning" | "ready" | "cleaning" | "done";
+
+/** Last scan, kept while the manager is open so switching tabs does not start a new scan. */
+let lastScan: { cats: CleanCategory[]; picked: Set<string> } | null = null;
 
 function Junk({ onCleaned }: { onCleaned: () => void }) {
-  const [cats, setCats] = useState<CleanCategory[]>([]);
-  const [picked, setPicked] = useState<Set<string>>(new Set());
-  const [phase, setPhase] = useState<Phase>("scanning");
+  const [cats, setCats] = useState<CleanCategory[]>(lastScan?.cats ?? []);
+  const [picked, setPicked] = useState<Set<string>>(lastScan?.picked ?? new Set());
+  const [phase, setPhase] = useState<Phase>(lastScan ? "ready" : "idle");
   const [results, setResults] = useState<CleanResult[]>([]);
+  useEffect(() => {
+    if (phase === "ready") lastScan = { cats, picked };
+  }, [phase, cats, picked]);
 
   const scan = async () => {
     setPhase("scanning");
@@ -65,7 +71,6 @@ function Junk({ onCleaned }: { onCleaned: () => void }) {
     });
     setPhase("ready");
   };
-  useEffect(() => void scan(), []);
 
   const chosen = cats.filter((c) => picked.has(c.id));
   const total = chosen.reduce((s, c) => s + c.size, 0);
@@ -77,6 +82,7 @@ function Junk({ onCleaned }: { onCleaned: () => void }) {
     setPhase("cleaning");
     const res = await util.clean([...picked]).catch((e) => [{ id: "*", freed: 0, files: 0, skipped: 0, error: String(e) }]);
     setResults(res);
+    lastScan = null;
     setPhase("done");
     onCleaned();
   };
@@ -92,9 +98,14 @@ function Junk({ onCleaned }: { onCleaned: () => void }) {
   return (
     <>
       <div className="pd-hero">
-        <Ring value={phase === "scanning" ? 0 : total} max={Math.max(found, 1)} spinning={phase === "scanning" || phase === "cleaning"} />
+        <Ring value={phase === "scanning" || phase === "idle" ? 0 : total} max={Math.max(found, 1)} spinning={phase === "scanning" || phase === "cleaning"} />
         <div className="min-w-0 flex-1">
-          {phase === "scanning" ? (
+          {phase === "idle" ? (
+            <>
+              <div className="text-lg font-semibold">{tr("Sẵn sàng quét", "Ready to scan")}</div>
+              <div className="pd-muted text-sm">{tr("Bấm Quét để đo cache, file tạm, log của Windows và các ứng dụng.", "Press Scan to measure caches, temp files and logs of Windows and your apps.")}</div>
+            </>
+          ) : phase === "scanning" ? (
             <>
               <div className="text-lg font-semibold">{tr("Đang quét…", "Scanning…")}</div>
               <div className="pd-muted text-sm">{tr("Đo cache, file tạm, log của Windows và các ứng dụng.", "Measuring caches, temp files and logs of Windows and your apps.")}</div>
@@ -116,7 +127,9 @@ function Junk({ onCleaned }: { onCleaned: () => void }) {
             </>
           )}
           <div className="mt-3 flex flex-wrap gap-2">
-            {phase === "done" ? (
+            {phase === "idle" ? (
+              <button className="pd-btn pd-btn-primary" onClick={scan}><FileSearch size={15} /> {tr("Quét", "Scan")}</button>
+            ) : phase === "done" ? (
               <button className="pd-btn pd-btn-primary" onClick={scan}><RefreshCw size={14} /> {tr("Quét lại", "Scan again")}</button>
             ) : (
               <>
@@ -142,7 +155,7 @@ function Junk({ onCleaned }: { onCleaned: () => void }) {
         </div>
       </div>
 
-      {phase !== "scanning" && phase !== "done" &&
+      {(phase === "ready" || phase === "cleaning") &&
         GROUPS.map((g) => {
           const items = cats.filter((c) => c.group === g.id && (c.present || c.group === "advanced"));
           if (!items.length) return null;

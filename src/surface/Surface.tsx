@@ -15,8 +15,10 @@ import { tr } from "../lib/i18n";
 import { widgetDef } from "../widgets/registry";
 import { ACCENTS, BoxView } from "./BoxView";
 import { ContextMenuHost } from "./ContextMenu";
-import { addPathsToBox, adoptLegacyItems, useItemDrag } from "./itemDrag";
+import { addPathsToBox, adoptLegacyItems, useItemDrag, WIDGET_DROP, type WidgetDrop } from "./itemDrag";
 import { PromptHost } from "./Prompt";
+import { SnapBar } from "./SnapBar";
+import { snapAt, useSnap } from "../lib/snap";
 import { WidgetFrame } from "./WidgetFrame";
 
 export function newBox(monitor: string, at: { x: number; y: number }, patch: Partial<BoxModel> = {}): BoxModel {
@@ -72,7 +74,7 @@ async function seed(info: SurfaceInfo) {
   commit(ops);
 }
 
-type Ghost = { id: string; title: string; x: number; y: number; w: number; h: number };
+type Ghost = { id: string; title: string; x: number; y: number; w: number; h: number; cx: number; cy: number; sw: number; sh: number };
 
 export function Surface() {
   const info = useSurface((s) => s.info);
@@ -81,6 +83,7 @@ export function Surface() {
   const [bounds, setBounds] = useState({ w: window.innerWidth, h: window.innerHeight });
   const { ready, boxes, widgets, settings } = useDoc();
   const ghost = useItemDrag((s) => s.ghost);
+  const snapping = useSnap();
   useHitReporter(root);
   const theme = useAppearance();
 
@@ -121,23 +124,43 @@ export function Surface() {
     return () => void un.then((f) => f());
   }, [info]);
 
-  // Files dragged from Explorer onto a box.
+  // Files dragged from Explorer onto a box or a widget; links from a browser onto a widget.
+  // PieDesk's own drop target (src-tauri/src/dropzone.rs) sends `drop://event`; wry's file-only
+  // target is kept as a fallback in case ours could not be installed.
   useEffect(() => {
-    const un = getCurrentWebview().onDragDropEvent(({ payload }) => {
-      if (payload.type === "over" || payload.type === "drop") {
-        const dpr = window.devicePixelRatio;
-        const el = document.elementFromPoint(payload.position.x / dpr, payload.position.y / dpr);
-        const boxId = el?.closest<HTMLElement>("[data-box-id]")?.dataset.boxId ?? null;
-        if (payload.type === "over") useItemDrag.setState({ overBox: boxId });
-        else {
-          useItemDrag.setState({ overBox: null });
-          if (boxId) void addPathsToBox(boxId, payload.paths);
-        }
-      } else {
-        useItemDrag.setState({ overBox: null });
+    const handle = (kind: string, x: number, y: number, paths: string[], url: string | null) => {
+      if (kind !== "over" && kind !== "enter" && kind !== "drop") {
+        useItemDrag.setState({ overBox: null, overWidget: null });
+        return;
       }
+      const dpr = window.devicePixelRatio;
+      const el = document.elementFromPoint(x / dpr, y / dpr);
+      const boxId = paths.length ? (el?.closest<HTMLElement>("[data-box-id]")?.dataset.boxId ?? null) : null;
+      const widgetEl = el?.closest<HTMLElement>("[data-widget-drop]");
+      const widgetId = widgetEl?.dataset.widgetId ?? null;
+      if (kind !== "drop") {
+        useItemDrag.setState({ overBox: boxId, overWidget: widgetId });
+        return;
+      }
+      useItemDrag.setState({ overBox: null, overWidget: null });
+      if (boxId) void addPathsToBox(boxId, paths);
+      else if (widgetId) window.dispatchEvent(new CustomEvent<WidgetDrop>(WIDGET_DROP, { detail: { id: widgetId, paths, url } }));
+    };
+    let ours = 0; // time of the last event from our target, so the fallback does not double up
+    const a = listen<{ kind: string; paths: string[]; url: string | null; x: number; y: number }>("drop://event", ({ payload: p }) => {
+      ours = Date.now();
+      handle(p.kind, p.x, p.y, p.paths, p.url);
     });
-    return () => void un.then((f) => f());
+    const b = getCurrentWebview().onDragDropEvent(({ payload }) => {
+      if (Date.now() - ours < 2000) return;
+      if (payload.type === "over" || payload.type === "drop") handle(payload.type, payload.position.x, payload.position.y, payload.type === "drop" ? payload.paths : ["?"], null);
+      else if (payload.type === "enter") handle("enter", payload.position.x, payload.position.y, payload.paths, null);
+      else handle("leave", 0, 0, [], null);
+    });
+    return () => {
+      void a.then((f) => f());
+      void b.then((f) => f());
+    };
   }, []);
 
   // The overlay window (above every app) and the wallpaper follow the theme in use; the home
@@ -172,12 +195,14 @@ export function Surface() {
       {Object.values(boxes)
         .filter((b) => mine(b.monitor))
         .map((b) => <BoxView key={b.id} box={b} bounds={bounds} onNewBox={onNewBox} />)}
-      {dropGhost && (
+      {dropGhost && !snapAt(bounds.w, bounds.h, dropGhost.cx, dropGhost.cy) && (
         <div className="pd-drop-ghost pointer-events-none fixed z-[1150]"
           style={{ left: dropGhost.x, top: dropGhost.y, width: dropGhost.w, height: dropGhost.h }}>
           <span className="truncate">{dropGhost.title}</span>
         </div>
       )}
+      {dropGhost && <SnapBar sw={bounds.w} sh={bounds.h} cx={dropGhost.cx} cy={dropGhost.cy} />}
+      {snapping.open && !dropGhost && <SnapBar sw={bounds.w} sh={bounds.h} cx={snapping.cx} cy={snapping.cy} />}
       {ghost && (
         <div className="pd-ghost pointer-events-none fixed z-[1200]" style={{ left: ghost.x - 24, top: ghost.y - 24 }}>
           <img src={iconUrl(ghost.item.path, 48)} width={48} height={48} alt="" />

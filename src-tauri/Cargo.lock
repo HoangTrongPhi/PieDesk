@@ -2942,6 +2942,7 @@ dependencies = [
  "tauri-plugin-updater",
  "thiserror 2.0.21",
  "windows",
+ "windows-core",
  "winreg 0.55.0",
  "xxhash-rust",
 ]

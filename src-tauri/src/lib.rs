@@ -9,6 +9,7 @@ mod apps;
 mod catalog;
 mod cleanup;
 mod desktop;
+mod dropzone;
 mod elevate;
 mod folders;
 mod gpu;
@@ -25,6 +26,7 @@ mod shell;
 mod startup;
 mod store;
 mod surfaces;
+mod uninstall;
 mod wallpaper;
 
 use std::collections::HashMap;
@@ -414,6 +416,25 @@ pub fn notify_finished(app: &AppHandle, sessions: &[agents::Session], finished: 
     }
 }
 
+/// Windows toast when a Claude usage limit that was hit has reset (same `agentNotify` setting).
+pub fn notify_usage_reset(app: &AppHandle, usage: &agents::Usage) {
+    if usage.reset.is_empty() || !app.state::<AppState>().store.read(|d| d.setting_bool("agentNotify", true)) {
+        return;
+    }
+    let vi = lang(app) == "vi";
+    let plan = if usage.plan.is_empty() { "Claude".to_string() } else { format!("Claude {}", usage.plan) };
+    for l in &usage.reset {
+        let window = agents::limit_name(&l.kind, vi);
+        let title = if vi { format!("↻ {plan}: giới hạn usage đã reset") } else { format!("↻ {plan}: usage limit has reset") };
+        let body = if vi {
+            format!("Giới hạn {window} đã về 0% — tiếp tục làm việc được rồi.")
+        } else {
+            format!("Your {window} limit is back to 0% — you can carry on.")
+        };
+        let _ = app.notification().builder().title(title).body(body).show();
+    }
+}
+
 /// "Start with Windows" is on by default: the first release run turns it on once and remembers
 /// that it did, so switching it off in Settings sticks. Installs that already start from the
 /// `Run` key (0.1.3) move to the faster logon task once.
@@ -586,6 +607,13 @@ pub fn run() {
             optimize::optimize_analyze,
             optimize::startup_apps,
             optimize::startup_set,
+            uninstall::uninstall_list,
+            uninstall::uninstall_run,
+            uninstall::uninstall_present,
+            uninstall::uninstall_leftovers,
+            uninstall::uninstall_remove,
+            uninstall::store_list,
+            uninstall::store_uninstall,
         ])
         .build(tauri::generate_context!())
         .expect("error while building PieDesk")

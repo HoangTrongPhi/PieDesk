@@ -151,6 +151,38 @@ export async function installMock() {
             { name: "PenTablet", command: "", path: "C:\\Program Files\\XPPen\\XPPenTablet.exe", scope: "machine", enabled: true, admin: true },
             { name: "ShareX", command: "", path: "C:\\Users\\demo\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\ShareX.lnk", scope: "folder", enabled: true, admin: false },
           ];
+        case "uninstall_list": {
+          const pr = (name: string, publisher: string, version: string, size: number, installed: string, machine = true) => ({
+            key: `HKLM|64|${name}`, name, publisher, version, size, installed, location: `C:\\Program Files\\${name}`, icon: "", uninstall: "x", quiet: "", machine, msi: false,
+          });
+          return new Promise((r) => setTimeout(() => r([
+            pr("7-Zip 24.08 (x64)", "Igor Pavlov", "24.08", 5.9e6, "2026-03-02"),
+            pr("Blender", "Blender Foundation", "5.2.0", 1.1e9, "2026-10-11"),
+            pr("Discord", "Discord Inc.", "1.0.9180", 380e6, "2026-08-21", false),
+            pr("Epic Games Launcher", "Epic Games, Inc.", "18.2.1", 410e6, "2025-12-30"),
+            pr("Notepad++ (64-bit x64)", "Notepad++ Team", "8.7.4", 15e6, "2026-06-14"),
+            pr("Steam", "Valve Corporation", "2.10.91.91", 0, "2024-09-01"),
+          ]), 500));
+        }
+        case "uninstall_run":
+          return new Promise((r) => setTimeout(() => r(0), 1500));
+        case "uninstall_present":
+          return false;
+        case "uninstall_leftovers":
+          return new Promise((r) => setTimeout(() => r([
+            { kind: "folder", path: "C:\\Users\\demo\\AppData\\Roaming\\discord", size: 212e6, admin: false },
+            { kind: "folder", path: "C:\\Users\\demo\\AppData\\Local\\Discord", size: 48e6, admin: false },
+            { kind: "registry", path: "HKCU\\Software\\Discord", size: 0, admin: false },
+          ]), 900));
+        case "uninstall_remove":
+          return (a.items as { path: string }[]).map((i) => ({ path: i.path, ok: true, error: null }));
+        case "store_list":
+          return [
+            { name: "Microsoft.BingWeather", fullName: "Microsoft.BingWeather_4.53_x64__8wekyb3d8bbwe", publisher: "Microsoft Corporation", version: "4.53.0", location: "" },
+            { name: "SpotifyAB.SpotifyMusic", fullName: "SpotifyAB.SpotifyMusic_1.2_x64__zpdnekdrzrea0", publisher: "Spotify AB", version: "1.2.48", location: "" },
+          ];
+        case "store_uninstall":
+          return null;
         default:
           return null;
       }
@@ -189,7 +221,10 @@ export async function installMock() {
         { id: "antigravity:b", source: "antigravity", title: "Run Current Project V2", project: "Project_P", state: "waiting", updated: t0 - 200_000 },
         { id: "claude:c", source: "claude", title: "Abyss folder cleanup", project: "Gogo_Gadgets", state: "done", updated: t0 - 900_000 },
       ];
-      emit("hub://agents", { sessions, finished: done && Date.now() - t0 < 10_000 ? ["claude:a"] : [] });
+      const resetAt = t0 + 12_000;
+      const limit = { kind: "five_hour", resetsAt: resetAt, hitAt: t0 - 4 * 3_600_000 };
+      const usage = { plan: "Pro", limits: Date.now() < resetAt ? [limit] : [], reset: Date.now() >= resetAt && Date.now() - resetAt < 2000 ? [limit] : [] };
+      emit("hub://agents", { sessions, finished: done && Date.now() - t0 < 10_000 ? ["claude:a"] : [], usage });
     }, 2000);
   }
 }

@@ -1,5 +1,35 @@
 # PieDesk — Changelog
 
+## v0.6.0 — Gỡ cài đặt, Khung media, Snap Layouts
+- **Tiện ích → Gỡ cài đặt** (`src-tauri/src/uninstall.rs`, `src/manager/utilities/Uninstall.tsx`), kiểu IObit
+  Uninstaller: mọi chương trình từ 3 khoá Uninstall (HKLM 64/32-bit, HKCU) với icon, nhà phát hành, phiên bản, dung lượng,
+  ngày cài; tìm kiếm, sắp xếp; gỡ một hoặc **hàng loạt** bằng trình gỡ của chính chương trình (`msiexec /x` cho MSI),
+  chờ tới khi mục biến mất khỏi danh sách; rồi **quét phần còn sót**: thư mục (Program Files, ProgramData, AppData,
+  Start Menu, Documents) và khoá registry (`Software\<tên>`, `Software\<hãng>\<tên>`, mục Uninstall bị bỏ quên) khớp
+  đúng tên. An toàn: không bao giờ đề xuất thư mục Windows / Microsoft / tên chung chung, thư mục hãng đang chứa
+  chương trình khác, hay thư mục cài của chương trình khác. Thư mục vào Thùng rác; registry được `reg export` ra
+  `%APPDATA%\PieDesk\uninstall-backup` trước khi xoá; mục cần admin gom một lần UAC. Tab **Ứng dụng Microsoft Store**
+  (Get-AppxPackage / Remove-AppxPackage, chỉ app Windows cho gỡ).
+- **Dọn dẹp** không tự quét khi mở / chuyển tab nữa — chỉ quét khi bấm **Quét**; kết quả giữ khi chuyển tab.
+- **Mở vị trí file** sửa lỗi: đi theo shortcut tới file đích (box giữ bản sao `.lnk` trong app data), đường dẫn có dấu
+  cách được quote đúng cho `explorer /select,"…"`, đường dẫn đã mất thì mở thư mục gần nhất còn tồn tại.
+- **Agent sessions → Plan usage limits**: đọc dòng `usage_limit_reached` (`quotaLimits.resetsAt`, `rateLimitType`) trong
+  transcript Claude Code, gói (Pro / Max / Team) từ `~/.claude.json`. Thẻ đỏ "100% · reset lúc … (còn …)"; khi tới giờ
+  reset: thẻ xanh "Plan usage limits · Pro đã reset", chuông + âm báo + thông báo Windows. Nhớ qua lần khởi động lại
+  (`%APPDATA%\PieDesk\agent-limits.json`). Tắt được trong cài đặt widget.
+- **Khung ảnh → Khung media** (`src/widgets/player.tsx`, giữ type `photo` nên widget cũ vẫn chạy): ảnh, trình chiếu thư mục,
+  video (mp4 / webm / mov / mkv…), nhạc (mp3 / flac / wav / m4a… với nút phát, thanh tua, equalizer), và **YouTube**
+  (video, Shorts, live, playlist, `t=`) trong cửa sổ mini. Thả file từ Explorer, thả link từ trình duyệt, Ctrl+V, hoặc ô
+  dán link. CSP thêm `frame-src` YouTube và `media-src` asset.
+- **Drop target riêng cho surface** (`src-tauri/src/dropzone.rs`): drop target của wry chỉ nhận file (`CF_HDROP`) nên
+  link kéo từ trình duyệt bị từ chối; PieDesk thay bằng target nhận cả file lẫn link (`UniformResourceLocatorW`,
+  `text/x-moz-url`, text) → sự kiện `drop://event`. Handler cũ của Tauri giữ làm dự phòng.
+- **Thêm box / widget kiểu Windows 11**: Thư viện widget bỏ nút "+ Thêm lên desktop" — kéo thẻ (kể cả thẻ Box) ra
+  desktop để đặt. **Snap Layouts** (`src/lib/snap.ts`, `src/surface/SnapBar.tsx`): kéo lên mép trên màn hình hiện thanh 8
+  bố cục (1/2, 2/3+1/3, 1/3, 1/4-1/2-1/4, 1/2+2 ô, 2×2, 3×2, 4×3); thả vào một vùng → box / widget lấy đúng vị trí và
+  kích thước vùng đó, có khung xem trước. Dùng được cho box / widget đang có và khi kéo sang màn hình khác
+  (`drag_over` / `drag_end` trả thêm toạ độ con trỏ và cỡ surface).
+
 ## v0.5.0 — tab Tiện ích
 - **Tab Tiện ích** trong Manager (`src/manager/utilities`), hai công cụ:
   - **Dọn dẹp** (`src-tauri/src/cleanup.rs`): dung lượng từng ổ; quét song song ~35 nhóm rác (file tạm, Thùng rác,

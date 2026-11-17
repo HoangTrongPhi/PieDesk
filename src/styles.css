@@ -1202,3 +1202,195 @@ html.party .pd-box::before {
   background: #fbbf24;
   box-shadow: 0 0 8px #fbbf24;
 }
+/* Agents widget: Claude plan usage limit strip. */
+.pd-usage {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  border-radius: 10px;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+}
+.pd-usage-full {
+  background: color-mix(in srgb, #f43f5e 14%, transparent);
+  border-color: color-mix(in srgb, #f43f5e 35%, transparent);
+  color: #fda4af;
+}
+.pd-usage-reset {
+  background: color-mix(in srgb, #10b981 14%, transparent);
+  border-color: color-mix(in srgb, #10b981 40%, transparent);
+  color: #6ee7b7;
+  animation: pd-usage-glow 1.6s ease-in-out 3;
+}
+.pd-usage-bar {
+  position: relative;
+  height: 4px;
+  border-radius: 99px;
+  background: rgb(255 255 255 / 0.08);
+  overflow: hidden;
+}
+.pd-usage-bar i,
+.pd-usage-bar b {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+}
+.pd-usage-bar i {
+  background: #f43f5e;
+  box-shadow: 0 0 8px #f43f5e;
+}
+/* Time towards the reset, drawn over the full bar. */
+.pd-usage-bar b {
+  background: rgb(255 255 255 / 0.35);
+}
+@keyframes pd-usage-glow {
+  50% {
+    box-shadow: 0 0 14px color-mix(in srgb, #10b981 60%, transparent);
+  }
+}
+
+/* A widget that takes the file / link being dragged over it. */
+.pd-widget-drop {
+  outline: 2px dashed var(--pd-accent);
+  outline-offset: 3px;
+  box-shadow: 0 0 24px color-mix(in srgb, var(--pd-accent) 45%, transparent);
+}
+
+/* Media frame widget (src/widgets/player.tsx). */
+.pd-player-clear {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 99px;
+  background: rgb(0 0 0 / 0.55);
+  color: rgb(255 255 255 / 0.8);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.pd-widget:hover .pd-player-clear {
+  opacity: 1;
+}
+.pd-player-hint {
+  position: absolute;
+  inset: auto 8px 8px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: rgb(0 0 0 / 0.7);
+  font-size: 11px;
+  text-align: center;
+  color: #fde68a;
+}
+.pd-player-play {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 99px;
+  background: var(--pd-accent);
+  color: #0b1020;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--pd-accent) 55%, transparent);
+  transition: transform 0.12s;
+}
+.pd-player-play:hover {
+  transform: scale(1.06);
+}
+.pd-player-seek {
+  accent-color: var(--pd-accent);
+  height: 4px;
+}
+.pd-eq {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 10px;
+  margin-left: 4px;
+}
+.pd-eq i {
+  width: 2px;
+  height: 3px;
+  border-radius: 1px;
+  background: var(--pd-accent);
+}
+.pd-eq-on i {
+  animation: pd-eq 0.9s ease-in-out infinite;
+}
+.pd-eq-on i:nth-child(2) { animation-delay: -0.3s; }
+.pd-eq-on i:nth-child(3) { animation-delay: -0.6s; }
+.pd-eq-on i:nth-child(4) { animation-delay: -0.15s; }
+@keyframes pd-eq {
+  50% { height: 10px; }
+}
+
+/* Snap-layout flyout (src/surface/SnapBar.tsx), after Windows 11's. */
+.pd-snap-bar {
+  border-radius: 14px;
+  background: color-mix(in srgb, #1b1f2e 88%, transparent);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.45);
+  backdrop-filter: blur(18px);
+  animation: pd-snap-in 0.16s ease-out;
+}
+.pd-snap-cell {
+  position: absolute;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 0.1);
+  border: 1px solid rgb(255 255 255 / 0.16);
+  transition: background 0.1s, border-color 0.1s;
+}
+.pd-snap-cell-on {
+  background: var(--pd-accent);
+  border-color: var(--pd-accent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--pd-accent) 60%, transparent);
+}
+.pd-snap-label {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 3px 10px;
+  border-radius: 99px;
+  background: rgb(0 0 0 / 0.55);
+  font: 500 11px var(--pd-font);
+  color: rgb(255 255 255 / 0.8);
+}
+.pd-snap-preview {
+  border-radius: var(--pd-radius);
+  border: 2px solid color-mix(in srgb, var(--pd-accent) 80%, transparent);
+  background: color-mix(in srgb, var(--pd-accent) 16%, rgb(255 255 255 / 0.06));
+  backdrop-filter: blur(6px);
+  transition: left 0.12s ease, top 0.12s ease, width 0.12s ease, height 0.12s ease;
+}
+@keyframes pd-snap-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+}
+/* A card being dragged out of the gallery. */
+.pd-place-chip {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--pd-accent);
+  background: color-mix(in srgb, var(--pd-accent) 18%, #10131c);
+  font: 600 12.5px var(--pd-font);
+  color: var(--pd-strong, #fff);
+  box-shadow: 0 8px 28px rgb(0 0 0 / 0.45);
+}
+.pd-card-drag {
+  cursor: grab;
+}
+.pd-card-drag:active {
+  cursor: grabbing;
+}

@@ -9,3 +9,7 @@ release/
 
 # JetBrains IDEs
 .idea/
+
+# Claude Code: exported session transcripts stay local
+.claude/sessions/
+.claude/settings.local.json

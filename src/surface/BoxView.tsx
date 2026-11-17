@@ -70,10 +70,10 @@ export const BoxView = memo(function BoxView({ box, bounds, onNewBox }: Props) {
     bounds,
     // Moving a box shown here as an orphan (its monitor is unplugged) settles it on this monitor.
     onCommit: (r: typeof frame) =>
-      patchBox(box.id, mode === "move" ? { x: r.x, y: r.y, monitor: info?.monitor ?? box.monitor } : { w: r.w, h: r.h }),
+      patchBox(box.id, mode === "move" ? { x: r.x, y: r.y, w: r.w, h: r.h, collapsed: r.h !== box.h ? false : box.collapsed, monitor: info?.monitor ?? box.monitor } : { w: r.w, h: r.h }),
     cross: {
       frame: { coll: "boxes" as const, id: box.id, title: box.title },
-      onLand: (monitor: string, at: { x: number; y: number }) => patchBox(box.id, { monitor, ...at }),
+      onLand: (monitor: string, at: { x: number; y: number; w?: number; h?: number }) => patchBox(box.id, { monitor, ...at }),
     },
   });
 
@@ -191,7 +191,7 @@ export const BoxView = memo(function BoxView({ box, bounds, onNewBox }: Props) {
     const entries: MenuEntry[] = [
       { label: tr("Mở", "Open"), icon: ExternalLink, onClick: () => launch(item) },
       { label: tr("Chạy với quyền admin", "Run as administrator"), icon: ShieldCheck, onClick: () => launch(item, true) },
-      { label: tr("Mở vị trí file", "Open file location"), icon: FolderOpen, onClick: () => ipc.revealPath(item.source ?? item.path) },
+      { label: tr("Mở vị trí file", "Open file location"), icon: FolderOpen, onClick: () => ipc.revealPath(item.path) },
     ];
     if (box.kind === "shortcuts") {
       const update = (patch: Partial<Item>) =>

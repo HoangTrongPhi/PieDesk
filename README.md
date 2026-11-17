@@ -37,13 +37,24 @@ Khoá ký: `~/.tauri/piedesk.key` (giữ kỹ — mất khoá thì các bản đ
   (lấy từ Start Menu, bỏ uninstaller / tài liệu / công cụ Windows) mà chưa có trong box ra desktop, để kéo vào box.
 - **Khởi động cùng Windows** (mặc định bật): đăng ký task “khi đăng nhập” trong Task Scheduler để PieDesk lên ngay
   cùng Explorer, thay vì đợi sau các app trong khoá Run.
+- **Thêm box / widget**: Thư viện widget → **kéo thẻ ra desktop** rồi thả (không còn nút "Thêm lên desktop").
+  Kéo lên mép trên màn hình → **bố cục kiểu Windows 11 Snap Layouts** hiện ra; thả vào một vùng để box / widget
+  vào đúng vùng đó (đổi cả kích thước). Kéo box / widget đang có lên mép trên cũng snap được, kể cả sang màn hình khác.
 - **Widget**: rê chuột lên widget → thanh ⋯ phía trên để kéo, ⚙ để cài đặt; chuột phải để đổi nền / nhân bản / xoá.
+- **Khung media** (thay Khung ảnh): thả ảnh / mp3 / mp4 từ Explorer hoặc **link YouTube** từ trình duyệt vào widget
+  (hoặc bấm vào rồi Ctrl+V) → ảnh / trình chiếu, video, trình phát nhạc, hoặc YouTube trong cửa sổ mini.
 - **Giao diện**: Cài đặt → Ngôn ngữ (Tiếng Việt / English), 4 theme (Neon Room mặc định, Midnight, Aurora, Ember),
   **Party mode** (LED RGB chạy quanh viền mọi box & widget; mặc định tắt, bật nhanh ở khay hệ thống).
 - **Thời tiết**: trạm neon với icon động, biểu đồ 12 giờ (nhiệt độ + khả năng mưa), dự báo 5 ngày khi widget đủ cao.
+- **Tiện ích**: Dọn dẹp (chỉ quét khi bấm **Quét**), **Gỡ cài đặt** (kiểu IObit Uninstaller: danh sách chương trình
+  + ứng dụng Store, gỡ hàng loạt bằng trình gỡ của chính chương trình, rồi quét thư mục / registry còn sót — thư mục vào
+  Thùng rác, registry sao lưu `.reg` ở `%APPDATA%\PieDesk\uninstall-backup` trước khi xoá), Tối ưu PC.
 - **Agent sessions**: theo dõi Claude Code (`~/.claude/projects/*.jsonl`) và Antigravity
   (`~/.gemini/antigravity/conversation_summaries.db`) — đang chạy / đang chờ / xong. Khi một session xong:
   chuông rung + âm báo trong widget và thông báo Windows (tắt được trong Cài đặt). Bấm chuông để đánh dấu đã xem.
+  **Plan usage limits**: khi Claude chạm 100% giới hạn (5 giờ / tuần), widget hiện thẻ đỏ đếm ngược tới lúc reset;
+  tới giờ reset thì báo "Plan usage limits · Pro đã reset" (chuông + âm + thông báo Windows). Đọc từ transcript
+  (`quotaLimits`) và gói từ `~/.claude.json`, không gọi mạng.
 
 ## Viết widget của riêng bạn
 

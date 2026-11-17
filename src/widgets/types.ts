@@ -6,6 +6,8 @@ export type WidgetProps<C> = {
   config: C;
   setConfig: (patch: Partial<C>) => void;
   size: { w: number; h: number };
+  /** The widget instance (on the desktop; absent in previews). */
+  id?: string;
 };
 
 export type WidgetDef<C extends Record<string, unknown> = Record<string, unknown>> = {
@@ -17,6 +19,8 @@ export type WidgetDef<C extends Record<string, unknown> = Record<string, unknown
   minSize: { w: number; h: number };
   defaultConfig: C;
   Component: FC<WidgetProps<C>>;
+  /** Files / links can be dropped on it (see WIDGET_DROP in src/surface/itemDrag.ts). */
+  acceptsDrop?: boolean;
   /** Rendered in the widget's settings dialog. */
   Settings?: FC<WidgetProps<C>>;
 };

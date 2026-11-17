@@ -51,6 +51,24 @@ export type ApplyReport = {
 export type Rec = { id: string; level: "good" | "info" | "warn"; data: Record<string, unknown> | null };
 export type StartupEntry = { name: string; command: string; path: string; scope: string; enabled: boolean; admin: boolean };
 
+export type Program = {
+  key: string;
+  name: string;
+  publisher: string;
+  version: string;
+  installed: string;
+  size: number;
+  location: string;
+  icon: string;
+  uninstall: string;
+  quiet: string;
+  machine: boolean;
+  msi: boolean;
+};
+export type Leftover = { kind: "folder" | "file" | "registry"; path: string; size: number; admin: boolean };
+export type RemoveResult = { path: string; ok: boolean; error: string | null };
+export type StoreApp = { name: string; fullName: string; publisher: string; version: string; location: string };
+
 export const util = {
   scan: () => invoke<CleanCategory[]>("cleanup_scan"),
   clean: (ids: string[]) => invoke<CleanResult[]>("cleanup_clean", { ids }),
@@ -64,6 +82,13 @@ export const util = {
   freeRam: (deep: boolean) => invoke<RamReport>("optimize_free_ram", { deep }),
   analyze: () => invoke<Rec[]>("optimize_analyze"),
   startupApps: () => invoke<StartupEntry[]>("startup_apps"),
+  programs: () => invoke<Program[]>("uninstall_list"),
+  uninstall: (key: string) => invoke<number>("uninstall_run", { key }),
+  stillInstalled: (key: string) => invoke<boolean>("uninstall_present", { key }),
+  leftovers: (program: Program) => invoke<Leftover[]>("uninstall_leftovers", { program }),
+  removeLeftovers: (items: Leftover[]) => invoke<RemoveResult[]>("uninstall_remove", { items }),
+  storeApps: () => invoke<StoreApp[]>("store_list"),
+  storeUninstall: (fullName: string) => invoke("store_uninstall", { fullName }),
   startupSet: (e: StartupEntry, enabled: boolean) => invoke("startup_set", { scope: e.scope, name: /folder$/i.test(e.scope) ? e.path.split("\\").pop() : e.name, enabled, admin: e.admin }),
 };
 

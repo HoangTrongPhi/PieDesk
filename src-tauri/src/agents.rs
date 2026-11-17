@@ -5,6 +5,11 @@
 //! the lines written since. Antigravity keeps one summary row per conversation in
 //! `~/.gemini/antigravity/conversation_summaries.db` (SQLite, opened read-only).
 //! Scans run on the hub thread, only while a widget subscribes to the `agents` topic.
+//!
+//! Plan usage: when Claude hits a usage limit, the transcript gets a synthetic assistant line with
+//! `apiError: "usage_limit_reached"` and `quotaLimits { rateLimitType, resetsAt }`. Those limits
+//! are remembered (also across restarts, in `%APPDATA%\PieDesk\agent-limits.json`) and reported
+//! once more when their reset time passes, so the widget can say "usage has reset".
 
 use std::collections::HashMap;
 use std::fs::{self, File};
@@ -12,7 +17,7 @@ use std::io::{Read, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 /// A working session with no new event for this long is shown as "waiting" (permission prompt,
@@ -53,13 +58,48 @@ struct ClaudeFile {
     prompt: Option<String>,
     cwd: Option<String>,
     working: bool,
+    /// Usage limits hit in this file since the last scan.
+    limits: Vec<Limit>,
 }
+
+/// A Claude usage limit that was hit: `kind` is `five_hour`, `seven_day`, `seven_day_opus`...
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Limit {
+    pub kind: String,
+    /// Unix ms.
+    pub resets_at: u64,
+    pub hit_at: u64,
+}
+
+#[derive(Debug, Clone, Default, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Usage {
+    /// "Pro", "Max", "Team"... from `~/.claude.json` (empty when unknown).
+    pub plan: String,
+    /// Limits in force right now.
+    pub limits: Vec<Limit>,
+    /// Limits whose reset time just passed (reported once).
+    pub reset: Vec<Limit>,
+}
+
+#[derive(Default, Serialize, Deserialize)]
+struct LimitStore {
+    active: Vec<Limit>,
+    /// (kind, resetsAt) already reported, so a re-read transcript does not report them again.
+    announced: Vec<(String, u64)>,
+}
+
+/// A reset that passed while PieDesk was not running is still reported if it is this recent.
+const RESET_GRACE_MS: u64 = 3 * 3_600_000;
 
 #[derive(Default)]
 pub struct Agents {
     claude: HashMap<PathBuf, ClaudeFile>,
     last: HashMap<String, State>,
     primed: bool,
+    limits: Option<LimitStore>,
+    plan: Option<(String, u64)>,
 }
 
 impl Agents {
@@ -87,6 +127,55 @@ impl Agents {
         self.last = sessions.iter().map(|s| (s.id.clone(), s.state)).collect();
         self.primed = true;
         (sessions, finished)
+    }
+
+    /// Plan usage: limits in force and the ones that just reset. Call after [`Agents::scan`].
+    pub fn usage(&mut self) -> Usage {
+        let now = now_ms();
+        let store = self.limits.get_or_insert_with(load_limits);
+        let mut changed = false;
+        let mut reset = Vec::new();
+        // Collect what the transcripts reported since the last call.
+        for f in self.claude.values_mut() {
+            for l in f.limits.drain(..) {
+                if store.announced.iter().any(|(k, r)| *k == l.kind && *r == l.resets_at) {
+                    continue;
+                }
+                match store.active.iter_mut().find(|a| a.kind == l.kind) {
+                    Some(a) if a.resets_at >= l.resets_at => {}
+                    Some(a) => {
+                        *a = l;
+                        changed = true;
+                    }
+                    None => {
+                        store.active.push(l);
+                        changed = true;
+                    }
+                }
+            }
+        }
+        store.active.retain(|l| {
+            if now < l.resets_at {
+                return true;
+            }
+            if now - l.resets_at < RESET_GRACE_MS {
+                reset.push(l.clone());
+            }
+            store.announced.push((l.kind.clone(), l.resets_at));
+            changed = true;
+            false
+        });
+        if changed {
+            store.announced.retain(|(_, r)| now.saturating_sub(*r) < 8 * 24 * 3_600_000);
+            save_limits(store);
+        }
+        // The plan rarely changes: read it every 10 minutes.
+        if self.plan.as_ref().is_none_or(|(_, t)| now.saturating_sub(*t) > 600_000) {
+            self.plan = Some((home().map(|h| read_plan(&h)).unwrap_or_default(), now));
+        }
+        let mut limits = store.active.clone();
+        limits.sort_by_key(|l| l.resets_at);
+        Usage { plan: self.plan.as_ref().map(|p| p.0.clone()).unwrap_or_default(), limits, reset }
     }
 
     fn scan_claude(&mut self, root: &Path, now: u64, out: &mut Vec<Session>) {
@@ -175,6 +264,9 @@ fn read_new_lines(path: &Path, len: u64, entry: &mut ClaudeFile) {
 
 fn apply_claude_line(f: &mut ClaudeFile, v: &Value) {
     let text = |key: &str| v.get(key).and_then(Value::as_str).map(str::to_owned);
+    if let Some(l) = limit_of(v) {
+        f.limits.push(l);
+    }
     if let Some(cwd) = text("cwd") {
         f.cwd = Some(cwd);
     }
@@ -208,6 +300,93 @@ fn apply_claude_line(f: &mut ClaudeFile, v: &Value) {
             }
         }
         _ => {}
+    }
+}
+
+/// A "usage limit reached" line -> the limit and when it resets.
+fn limit_of(v: &Value) -> Option<Limit> {
+    let q = v.get("quotaLimits").filter(|q| q.is_object()).or_else(|| v.pointer("/apiErrorParams/rate_limit_info"))?;
+    let rejected = q.get("status").and_then(Value::as_str) == Some("rejected")
+        || v.get("apiError").and_then(Value::as_str) == Some("usage_limit_reached");
+    if !rejected {
+        return None;
+    }
+    let resets = q.get("resetsAt").and_then(Value::as_u64)?;
+    // Seconds, but accept milliseconds too.
+    let resets_at = if resets < 100_000_000_000 { resets * 1000 } else { resets };
+    let kind = q.get("rateLimitType").and_then(Value::as_str).unwrap_or("five_hour").to_owned();
+    let hit_at = v.get("timestamp").and_then(Value::as_str).and_then(parse_iso).unwrap_or_else(now_ms);
+    Some(Limit { kind, resets_at, hit_at })
+}
+
+/// `2026-10-31T16:16:01.009Z` -> unix ms.
+fn parse_iso(s: &str) -> Option<u64> {
+    parse_time(&s.replacen('T', " ", 1).replace('Z', "+00:00"))
+}
+
+/// The Claude subscription, from `~/.claude.json` (`oauthAccount.organizationType: "claude_pro"`).
+fn read_plan(home: &Path) -> String {
+    let path = std::env::var_os("CLAUDE_CONFIG_DIR")
+        .map(|d| PathBuf::from(d).join(".claude.json"))
+        .unwrap_or_else(|| home.join(".claude.json"));
+    let Ok(text) = fs::read_to_string(path) else { return String::new() };
+    let Ok(v) = serde_json::from_str::<Value>(&text) else { return String::new() };
+    let acct = &v["oauthAccount"];
+    let raw = acct["subscriptionType"].as_str().filter(|s| !s.is_empty()).or_else(|| acct["organizationType"].as_str()).unwrap_or("");
+    plan_label(raw)
+}
+
+fn plan_label(raw: &str) -> String {
+    let t = raw.trim_start_matches("claude_").to_lowercase();
+    match t.as_str() {
+        "" => String::new(),
+        "pro" => "Pro".into(),
+        "max" => "Max".into(),
+        "team" => "Team".into(),
+        "enterprise" => "Enterprise".into(),
+        "free" => "Free".into(),
+        other => {
+            let mut c = other.chars();
+            c.next().map(|f| f.to_uppercase().collect::<String>() + c.as_str()).unwrap_or_default()
+        }
+    }
+}
+
+/// "5 gio" / "5-hour", "tuan" / "weekly"...
+pub fn limit_name(kind: &str, vi: bool) -> &'static str {
+    let weekly = kind.starts_with("seven_day");
+    let opus = kind.contains("opus");
+    match (weekly, opus, kind == "five_hour", vi) {
+        (_, _, true, true) => "5 giờ",
+        (_, _, true, false) => "5-hour",
+        (true, true, _, true) => "tuần (Opus)",
+        (true, true, _, false) => "weekly Opus",
+        (true, false, _, true) => "tuần",
+        (true, false, _, false) => "weekly",
+        (_, _, _, true) => "phiên",
+        _ => "session",
+    }
+}
+
+fn limits_path() -> Option<PathBuf> {
+    if cfg!(test) {
+        return None; // tests must not touch the real store
+    }
+    std::env::var_os("APPDATA").map(|d| PathBuf::from(d).join("PieDesk").join("agent-limits.json"))
+}
+
+fn load_limits() -> LimitStore {
+    limits_path().and_then(|p| fs::read(p).ok()).and_then(|b| serde_json::from_slice(&b).ok()).unwrap_or_default()
+}
+
+fn save_limits(store: &LimitStore) {
+    if let Some(p) = limits_path() {
+        if let Some(dir) = p.parent() {
+            let _ = fs::create_dir_all(dir);
+        }
+        if let Ok(b) = serde_json::to_vec(store) {
+            let _ = fs::write(p, b);
+        }
     }
 }
 
@@ -321,6 +500,38 @@ fn parse_time(s: &str) -> Option<u64> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn reads_usage_limits() {
+        let line = serde_json::from_str::<Value>(
+            r#"{"type":"assistant","timestamp":"2026-10-31T16:16:01.009Z","apiError":"usage_limit_reached","quotaLimits":{"status":"rejected","resetsAt":1793470200,"rateLimitType":"five_hour"},"message":{"stop_reason":"stop_sequence"}}"#,
+        )
+        .unwrap();
+        let l = limit_of(&line).unwrap();
+        assert_eq!(l.kind, "five_hour");
+        assert_eq!(l.resets_at, 1_793_470_200_000);
+        assert_eq!(l.hit_at, parse_time("2026-10-31 16:16:01+00:00").unwrap());
+        let ok = serde_json::from_str::<Value>(r#"{"type":"assistant","quotaLimits":{"status":"allowed","resetsAt":1}}"#).unwrap();
+        assert!(limit_of(&ok).is_none());
+        assert_eq!(plan_label("claude_pro"), "Pro");
+        assert_eq!(plan_label("claude_max"), "Max");
+        assert_eq!(limit_name("seven_day_opus", false), "weekly Opus");
+    }
+
+    #[test]
+    fn reports_a_reset_once() {
+        let mut a = Agents { limits: Some(LimitStore::default()), plan: Some(("Pro".into(), u64::MAX / 2)), ..Default::default() };
+        let now = now_ms();
+        let mut f = ClaudeFile::default();
+        f.limits.push(Limit { kind: "five_hour".into(), resets_at: now + 60_000, hit_at: now });
+        a.claude.insert(PathBuf::from("x"), f);
+        let u = a.usage();
+        assert_eq!((u.limits.len(), u.reset.len()), (1, 0));
+        a.limits.as_mut().unwrap().active[0].resets_at = now - 1000;
+        let u = a.usage();
+        assert_eq!((u.limits.len(), u.reset.len()), (0, 1));
+        assert_eq!(a.usage().reset.len(), 0);
+    }
 
     #[test]
     fn parses_go_sqlite_time() {

@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { create } from "zustand";
 import clsx from "clsx";
 import { listen } from "@tauri-apps/api/event";
-import { Bell, BellRing, Bot, Check, Hourglass, Loader2 } from "lucide-react";
+import { Bell, BellRing, Bot, Check, Gauge, Hourglass, Loader2, RotateCcw, X } from "lucide-react";
 import { tr } from "../lib/i18n";
 import { ipc } from "../lib/ipc";
 import { Field, Segmented, Toggle } from "./fields";
@@ -15,7 +15,9 @@ import { defineWidget } from "./types";
 
 type Source = "claude" | "antigravity";
 type Session = { id: string; source: Source; title: string; project: string; state: "working" | "waiting" | "done"; updated: number };
-type Config = { claude: boolean; antigravity: boolean; showDone: "recent" | "all" | "none"; sound: boolean };
+type Limit = { kind: string; resetsAt: number; hitAt: number };
+type Usage = { plan: string; limits: Limit[]; reset: Limit[] };
+type Config = { claude: boolean; antigravity: boolean; showDone: "recent" | "all" | "none"; sound: boolean; usage?: boolean };
 
 const SOURCES: Record<Source, { name: string; short: string; color: string }> = {
   claude: { name: "Claude Code", short: "C", color: "#d97757" },
@@ -23,8 +25,14 @@ const SOURCES: Record<Source, { name: string; short: string; color: string }> = 
 };
 const RECENT_MS = 60 * 60 * 1000;
 
-/** Shared by every Agents widget: latest sessions, and the finished ones nobody acknowledged yet. */
-const useAgents = create<{ sessions: Session[]; unread: Record<string, number> }>(() => ({ sessions: [], unread: {} }));
+/** Shared by every Agents widget: latest sessions, the finished ones nobody acknowledged yet,
+ *  Claude plan usage limits in force, and limits that reset since (until acknowledged). */
+const useAgents = create<{ sessions: Session[]; unread: Record<string, number>; usage: Usage; resets: Limit[] }>(() => ({
+  sessions: [],
+  unread: {},
+  usage: { plan: "", limits: [], reset: [] },
+  resets: [],
+}));
 
 let listening = false;
 let soundOn = true;
@@ -36,14 +44,17 @@ function useAgentFeed(sound: boolean) {
   useEffect(() => {
     if (!listening) {
       listening = true;
-      listen<{ sessions: Session[]; finished: string[] }>("hub://agents", ({ payload }) => {
+      listen<{ sessions: Session[]; finished: string[]; usage?: Usage }>("hub://agents", ({ payload }) => {
         const now = Date.now();
+        const usage = payload.usage ?? { plan: "", limits: [], reset: [] };
         useAgents.setState((s) => {
           const unread = { ...s.unread };
           payload.finished.forEach((id) => (unread[id] = now));
-          return { sessions: payload.sessions, unread };
+          // A reset replaces an older notice of the same limit.
+          const resets = [...s.resets.filter((r) => !usage.reset.some((n) => n.kind === r.kind)), ...usage.reset];
+          return { sessions: payload.sessions, unread, usage, resets };
         });
-        if (payload.finished.length && soundOn) chime();
+        if ((payload.finished.length || usage.reset.length) && soundOn) chime();
       });
     }
     ipc.hubSubscribe("agents").catch(() => {});
@@ -74,6 +85,71 @@ function chime() {
   }
 }
 
+const LIMIT_NAMES: Record<string, [string, string]> = {
+  five_hour: ["giới hạn 5 giờ", "5-hour limit"],
+  seven_day: ["giới hạn tuần", "weekly limit"],
+  seven_day_opus: ["giới hạn tuần (Opus)", "weekly Opus limit"],
+  seven_day_sonnet: ["giới hạn tuần (Sonnet)", "weekly Sonnet limit"],
+};
+const limitName = (kind: string) => {
+  const n = LIMIT_NAMES[kind] ?? (kind.startsWith("seven_day") ? LIMIT_NAMES.seven_day : ["giới hạn phiên", "session limit"]);
+  return tr(n[0], n[1]);
+};
+const clock = (ms: number) => new Date(ms).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+const left = (ms: number) => {
+  const m = Math.max(0, Math.ceil(ms / 60_000));
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  return h < 48 ? `${h}h ${m % 60}m` : `${Math.floor(h / 24)}d ${h % 24}h`;
+};
+
+/** "Plan usage limits · Pro": limits at 100% with a countdown, then a "has reset" notice. */
+function UsageStrip({ now }: { now: number }) {
+  const { usage, resets } = useAgents();
+  const plan = usage.plan || "Claude";
+  const active = usage.limits.filter((l) => l.resetsAt > now);
+  if (!active.length && !resets.length) return null;
+  const dismiss = (kind: string) => useAgents.setState((s) => ({ resets: s.resets.filter((r) => r.kind !== kind) }));
+  return (
+    <div className="flex flex-col gap-1">
+      {active.map((l) => {
+        const span = Math.max(1, l.resetsAt - l.hitAt);
+        const done = Math.min(1, Math.max(0, (now - l.hitAt) / span));
+        return (
+          <div key={l.kind} className="pd-usage pd-usage-full" title={tr(`Chạm 100% lúc ${clock(l.hitAt)}`, `Hit 100% at ${clock(l.hitAt)}`)}>
+            <div className="flex items-center gap-1.5">
+              <Gauge size={13} className="shrink-0" />
+              <span className="min-w-0 flex-1 truncate text-[11.5px] font-semibold">
+                {tr("Plan usage limits", "Plan usage limits")} · {plan}
+              </span>
+              <span className="shrink-0 text-[11px] font-semibold tabular-nums">100%</span>
+            </div>
+            <div className="pd-usage-bar"><i style={{ width: "100%" }} /><b style={{ width: `${done * 100}%` }} /></div>
+            <div className="pd-muted truncate text-[10.5px]">
+              {tr(`Hết ${limitName(l.kind)} · reset lúc ${clock(l.resetsAt)} (còn ${left(l.resetsAt - now)})`,
+                `${limitName(l.kind)} used up · resets ${clock(l.resetsAt)} (in ${left(l.resetsAt - now)})`)}
+            </div>
+          </div>
+        );
+      })}
+      {resets.map((r) => (
+        <button key={r.kind} className="pd-usage pd-usage-reset text-left" onClick={() => dismiss(r.kind)} title={tr("Đã xem — ẩn", "Seen — hide")}>
+          <div className="flex items-center gap-1.5">
+            <RotateCcw size={13} className="shrink-0" />
+            <span className="min-w-0 flex-1 truncate text-[11.5px] font-semibold">
+              {tr("Plan usage limits", "Plan usage limits")} · {plan} {tr("đã reset", "has reset")}
+            </span>
+            <X size={12} className="shrink-0 opacity-60" />
+          </div>
+          <div className="pd-muted truncate text-[10.5px]">
+            {tr(`${limitName(r.kind)} về 0% lúc ${clock(r.resetsAt)} — dùng tiếp được rồi`, `${limitName(r.kind)} back to 0% at ${clock(r.resetsAt)} — carry on`)}
+          </div>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 const ago = (ms: number) => {
   const s = Math.max(0, Math.round(ms / 1000));
   if (s < 60) return `${s}s`;
@@ -91,22 +167,23 @@ export default defineWidget<Config>({
   icon: Bot,
   defaultSize: { w: 320, h: 230 },
   minSize: { w: 220, h: 100 },
-  defaultConfig: { claude: true, antigravity: true, showDone: "recent", sound: true },
+  defaultConfig: { claude: true, antigravity: true, showDone: "recent", sound: true, usage: true },
 
   Component: ({ config }) => {
     useAgentFeed(config.sound);
-    const { sessions, unread } = useAgents();
+    const { sessions, unread, resets } = useAgents();
     const now = useNow();
     const visible = sessions.filter(
       (s) =>
         config[s.source] &&
         (s.state !== "done" || config.showDone === "all" || (config.showDone === "recent" && now - s.updated < RECENT_MS) || unread[s.id]),
     );
-    const ringing = visible.filter((s) => unread[s.id]).length;
+    const showUsage = config.claude && config.usage !== false;
+    const ringing = visible.filter((s) => unread[s.id]).length + (showUsage ? resets.length : 0);
     const working = visible.filter((s) => s.state !== "done").length;
     const ack = (id?: string) =>
       useAgents.setState((s) => {
-        if (!id) return { unread: {} };
+        if (!id) return { unread: {}, resets: [] };
         const { [id]: _, ...rest } = s.unread;
         return { unread: rest };
       });
@@ -124,6 +201,7 @@ export default defineWidget<Config>({
             {ringing > 0 && <span className="pd-bell-badge">{ringing}</span>}
           </button>
         </div>
+        {showUsage && <UsageStrip now={now} />}
         <div className="pd-box-body -mx-1 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-1">
           {visible.map((s) => {
             const src = SOURCES[s.source];
@@ -164,6 +242,7 @@ export default defineWidget<Config>({
           ]} />
       </Field>
       <Toggle label={tr("Âm báo khi xong", "Chime when done")} checked={config.sound} onChange={(sound) => setConfig({ sound })} />
+      <Toggle label={tr("Báo giới hạn usage Claude (100% → reset)", "Claude usage limits (100% → reset)")} checked={config.usage !== false} onChange={(usage) => setConfig({ usage })} />
       <p className="pd-muted text-[11.5px] leading-relaxed">
         {tr(
           "Thông báo Windows bật/tắt trong Cài đặt PieDesk. Dữ liệu đọc tại chỗ từ ~/.claude/projects và ~/.gemini/antigravity — không gửi đi đâu.",

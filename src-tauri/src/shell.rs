@@ -25,14 +25,48 @@ pub fn open(path: &str, _admin: bool) -> Result<(), String> {
     Command::new("xdg-open").arg(path).spawn().map(|_| ()).map_err(|e| e.to_string())
 }
 
+/// "Open file location": shows the file selected in Explorer, like Windows does for a shortcut.
+/// A `.lnk` is followed to its target (a box keeps its own copy of the shortcut in app data, which
+/// is not what anyone wants to see). A path that no longer exists opens its nearest existing folder.
 pub fn reveal(path: &str) -> Result<(), String> {
+    let target = reveal_target(path);
     #[cfg(windows)]
-    let cmd = Command::new("explorer").arg(format!("/select,{path}")).spawn();
+    {
+        use std::os::windows::process::CommandExt;
+        let mut cmd = Command::new("explorer");
+        // explorer.exe parses its own command line: the path must be quoted *after* the comma,
+        // which the default argument quoting gets wrong for paths with spaces.
+        if target.is_dir() && target.parent().is_none() || !target.exists() {
+            cmd.raw_arg(format!("\"{}\"", target.display()));
+        } else {
+            cmd.raw_arg(format!("/select,\"{}\"", target.display()));
+        }
+        cmd.spawn().map(|_| ()).map_err(|e| e.to_string())
+    }
     #[cfg(not(windows))]
-    let cmd = Command::new("xdg-open")
-        .arg(std::path::Path::new(path).parent().unwrap_or(std::path::Path::new("/")))
-        .spawn();
-    cmd.map(|_| ()).map_err(|e| e.to_string())
+    {
+        Command::new("xdg-open")
+            .arg(target.parent().unwrap_or(std::path::Path::new("/")))
+            .spawn()
+            .map(|_| ())
+            .map_err(|e| e.to_string())
+    }
+}
+
+fn reveal_target(path: &str) -> std::path::PathBuf {
+    use std::path::{Path, PathBuf};
+    let p = Path::new(path);
+    let is_lnk = p.extension().is_some_and(|e| e.eq_ignore_ascii_case("lnk"));
+    if is_lnk {
+        if let Some(t) = crate::items::link_target(p).map(PathBuf::from).filter(|t| t.exists()) {
+            return t;
+        }
+    }
+    if p.exists() {
+        return p.to_path_buf();
+    }
+    // Gone: open the closest folder that still exists.
+    p.ancestors().skip(1).find(|a| a.is_dir()).map(Path::to_path_buf).unwrap_or_else(|| PathBuf::from("C:\\"))
 }
 
 /// Opens a web link or mail address in the default browser / mail app (About & contact).

@@ -10,6 +10,7 @@ import { settingsWithDefaults, useDoc } from "../stores/doc";
 import { displayName, placeOn, useSurface } from "../stores/surface";
 import { widgetDef } from "../widgets/registry";
 import { useMenu, type MenuEntry } from "./ContextMenu";
+import { useItemDrag } from "./itemDrag";
 
 type Props = { widget: WidgetModel; bounds: { w: number; h: number } };
 
@@ -21,6 +22,7 @@ export const WidgetFrame = memo(function WidgetFrame({ widget, bounds }: Props) 
   const ref = useRef<HTMLDivElement>(null);
   const [editing, setEditing] = useState(false);
   const info = useSurface((s) => s.info);
+  const dropOver = useItemDrag((s) => s.overWidget === widget.id);
 
   if (!def) return null;
   const x = Math.max(0, Math.min(widget.x, bounds.w - 60));
@@ -34,8 +36,9 @@ export const WidgetFrame = memo(function WidgetFrame({ widget, bounds }: Props) 
       grid: settings.grid,
       min: def.minSize,
       bounds,
+      // A move can come back resized: dropped on a snap-layout zone.
       onCommit: (r) =>
-        patchWidget(widget.id, mode === "move" ? { x: r.x, y: r.y, monitor: info?.monitor ?? widget.monitor } : { w: r.w, h: r.h }),
+        patchWidget(widget.id, mode === "move" ? { x: r.x, y: r.y, w: r.w, h: r.h, monitor: info?.monitor ?? widget.monitor } : { w: r.w, h: r.h }),
       cross: {
         frame: { coll: "widgets", id: widget.id, title: tx(def.name) },
         onLand: (monitor, at) => patchWidget(widget.id, { monitor, ...at }),
@@ -76,12 +79,13 @@ export const WidgetFrame = memo(function WidgetFrame({ widget, bounds }: Props) 
         ref={ref}
         data-hit
         data-widget-id={widget.id}
-        className={clsx("pd-widget group absolute", (widget.opacity ?? 0.6) === 0 && "pd-widget-bare")}
+        data-widget-drop={def.acceptsDrop ? "" : undefined}
+        className={clsx("pd-widget group absolute", (widget.opacity ?? 0.6) === 0 && "pd-widget-bare", dropOver && "pd-widget-drop")}
         style={{ left: x, top: y, width: widget.w, height: widget.h, "--box-alpha": widget.opacity ?? 0.6 } as React.CSSProperties}
         onContextMenu={menu}
       >
         <div className="h-full w-full overflow-hidden p-2.5">
-          <def.Component config={config} setConfig={setConfig} size={{ w: widget.w, h: widget.h }} />
+          <def.Component config={config} setConfig={setConfig} size={{ w: widget.w, h: widget.h }} id={widget.id} />
         </div>
         {!settings.locked && (
           <>

@@ -1,69 +1,12 @@
 import { useEffect, useState } from "react";
-import { Code2, Image as ImageIcon, Timer } from "lucide-react";
+import { Code2, Timer } from "lucide-react";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { listen } from "@tauri-apps/api/event";
 import { fileUrl, ipc } from "../lib/ipc";
-import { Field, Segmented } from "./fields";
+import { Field } from "./fields";
 import { useNow } from "./hooks";
 import { defineWidget } from "./types";
 import { tr } from "../lib/i18n";
-
-const IMAGE_EXT = new Set(["png", "jpg", "jpeg", "webp", "gif", "bmp", "avif"]);
-
-type PhotoConfig = { source: "file" | "folder"; path: string; interval: number; fit: "cover" | "contain" };
-
-export const photo = defineWidget<PhotoConfig>({
-  type: "photo",
-  name: ["Khung ảnh", "Photo frame"],
-  description: ["Một ảnh, hoặc trình chiếu ảnh trong một thư mục.", "One picture, or a slideshow of a folder."],
-  icon: ImageIcon,
-  defaultSize: { w: 280, h: 200 },
-  minSize: { w: 100, h: 80 },
-  defaultConfig: { source: "file", path: "", interval: 15, fit: "cover" },
-
-  Component: ({ config }) => {
-    const [list, setList] = useState<string[]>([]);
-    const [i, setI] = useState(0);
-    useEffect(() => {
-      if (config.source !== "folder" || !config.path) return;
-      ipc.listFolder(config.path).then((es) => setList(es.filter((e) => IMAGE_EXT.has(e.ext)).map((e) => e.path))).catch(() => setList([]));
-    }, [config.source, config.path]);
-    useEffect(() => {
-      if (config.source !== "folder" || list.length < 2) return;
-      const t = setInterval(() => setI((n) => n + 1), Math.max(3, config.interval) * 1000);
-      return () => clearInterval(t);
-    }, [config.source, config.interval, list.length]);
-
-    const src = config.source === "file" ? config.path : list[i % Math.max(1, list.length)];
-    if (!src) return <div className="grid h-full place-items-center text-xs text-white/50">{tr("Mở cài đặt ⚙ để chọn ảnh", "Open settings ⚙ to pick a picture")}</div>;
-    return <img key={src} src={fileUrl(src)} className="pd-fade h-full w-full rounded-lg" style={{ objectFit: config.fit }} draggable={false} alt="" />;
-  },
-
-  Settings: ({ config, setConfig }) => (
-    <>
-      <Segmented value={config.source} onChange={(source) => setConfig({ source, path: "" })}
-        options={[{ value: "file", label: tr("Một ảnh", "One picture") }, { value: "folder", label: tr("Thư mục (trình chiếu)", "Folder (slideshow)") }]} />
-      <Field label={config.source === "file" ? tr("Ảnh", "Picture") : tr("Thư mục", "Folder")}>
-        <div className="flex gap-2">
-          <input className="pd-input flex-1" value={config.path} readOnly />
-          <button type="button" className="pd-btn" onClick={async () => {
-            const p = config.source === "file"
-              ? await openDialog({ filters: [{ name: tr("Ảnh", "Pictures"), extensions: [...IMAGE_EXT] }] })
-              : await openDialog({ directory: true });
-            if (typeof p === "string") setConfig({ path: p });
-          }}>{tr("Chọn…", "Browse…")}</button>
-        </div>
-      </Field>
-      {config.source === "folder" && (
-        <Field label={tr(`Đổi ảnh sau ${config.interval} giây`, `Next picture after ${config.interval} s`)}>
-          <input type="range" min={3} max={120} value={config.interval} onChange={(e) => setConfig({ interval: Number(e.target.value) })} />
-        </Field>
-      )}
-      <Segmented value={config.fit} onChange={(fit) => setConfig({ fit })}
-        options={[{ value: "cover", label: tr("Lấp đầy", "Fill") }, { value: "contain", label: tr("Vừa khung", "Fit") }]} />
-    </>
-  ),
-});
 
 type CountdownConfig = { label: string; target: string };
 

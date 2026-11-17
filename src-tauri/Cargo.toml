@@ -40,6 +40,8 @@ rusqlite = { version = "0.41", features = ["bundled"] }
 winreg = "0.55"
 
 [target.'cfg(windows)'.dependencies]
+# `#[implement]` for the surface drop target (src/dropzone.rs); same version tauri's `windows` uses.
+windows-core = "0.62"
 # Same major as tauri's own `windows`, so the crate is compiled once.
 windows = { version = "0.62", features = [
   "Win32_Devices_Display",
@@ -53,6 +55,10 @@ windows = { version = "0.62", features = [
   "Win32_Security",
   "Win32_Storage_FileSystem",
   "Win32_System_Com",
+  "Win32_System_DataExchange",
+  "Win32_System_Memory",
+  "Win32_System_Ole",
+  "Win32_System_SystemServices",
   "Win32_System_LibraryLoader",
   "Win32_System_Performance",
   "Win32_System_ProcessStatus",

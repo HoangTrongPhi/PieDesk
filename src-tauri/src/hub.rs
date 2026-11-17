@@ -73,8 +73,10 @@ impl Hub {
                     let fresh = hub.fresh.swap(false, Ordering::Relaxed);
                     if hub.active("agents") && tick % 2 == 0 {
                         let (sessions, finished) = agents.scan();
+                        let usage = agents.usage();
                         crate::notify_finished(&app, &sessions, &finished);
-                        let _ = app.emit("hub://agents", json!({ "sessions": sessions, "finished": finished }));
+                        crate::notify_usage_reset(&app, &usage);
+                        let _ = app.emit("hub://agents", json!({ "sessions": sessions, "finished": finished, "usage": usage }));
                     }
                     if hub.paused.load(Ordering::Relaxed) {
                         continue;

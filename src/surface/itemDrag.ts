@@ -9,7 +9,11 @@ import { useDoc } from "../stores/doc";
 
 type Ghost = { item: Item; x: number; y: number; fromBox: string };
 
-export const useItemDrag = create<{ ghost: Ghost | null; overBox: string | null }>(() => ({ ghost: null, overBox: null }));
+export const useItemDrag = create<{ ghost: Ghost | null; overBox: string | null; overWidget?: string | null }>(() => ({ ghost: null, overBox: null, overWidget: null }));
+
+/** Something dropped on a widget (files from Explorer, or a link from a browser). */
+export type WidgetDrop = { id: string; paths: string[]; url: string | null };
+export const WIDGET_DROP = "pd:widget-drop";
 
 const THRESHOLD = 5;
 

@@ -162,6 +162,7 @@ fn create(app: &AppHandle, label: &str, m: &Monitor) -> tauri::Result<()> {
         .always_on_bottom(true)
         .build()?;
     place(app, &win, m)?;
+    crate::dropzone::attach(&win);
     desktop::pin(&win);
     let _ = win.set_ignore_cursor_events(true);
     let state = app.state::<AppState>();
@@ -297,6 +298,11 @@ pub struct Ghost {
     y: f64,
     w: f64,
     h: f64,
+    /// Cursor and surface size (CSS px): the surface draws the snap-layout flyout from them.
+    cx: f64,
+    cy: f64,
+    sw: f64,
+    sh: f64,
 }
 
 #[derive(Debug, Serialize)]
@@ -304,6 +310,11 @@ pub struct Landing {
     monitor: String,
     x: f64,
     y: f64,
+    /// Cursor and surface size, CSS px (for snap-layout zones, src/lib/snap.ts).
+    cx: f64,
+    cy: f64,
+    sw: f64,
+    sh: f64,
 }
 
 /// Surface currently drawing a ghost.
@@ -317,7 +328,8 @@ fn landing(state: &AppState, from: &str, f: &DragFrame) -> Option<(String, Landi
     let (w, h) = (s.size.0 / s.scale, s.size.1 / s.scale);
     let x = ((cursor.0 - s.origin.0) / s.scale - f.grab_x).clamp(0.0, (w - f.w).max(0.0));
     let y = ((cursor.1 - s.origin.1) / s.scale - f.grab_y).clamp(0.0, (h - 32.0).max(0.0));
-    Some((label, Landing { monitor, x: x.round(), y: y.round() }))
+    let (cx, cy) = ((cursor.0 - s.origin.0) / s.scale, (cursor.1 - s.origin.1) / s.scale);
+    Some((label, Landing { monitor, x: x.round(), y: y.round(), cx: cx.round(), cy: cy.round(), sw: w.round(), sh: h.round() }))
 }
 
 fn show_ghost(app: &AppHandle, target: Option<(&str, Ghost)>) {
@@ -339,7 +351,19 @@ fn show_ghost(app: &AppHandle, target: Option<(&str, Ghost)>) {
 pub fn drag_over(app: AppHandle, window: WebviewWindow, state: tauri::State<AppState>, frame: DragFrame) -> Option<String> {
     let hit = landing(&state, window.label(), &frame);
     let ghost = hit.as_ref().map(|(label, l)| {
-        let g = Ghost { coll: frame.coll.clone(), id: frame.id.clone(), title: frame.title.clone(), x: l.x, y: l.y, w: frame.w, h: frame.h };
+        let g = Ghost {
+            coll: frame.coll.clone(),
+            id: frame.id.clone(),
+            title: frame.title.clone(),
+            x: l.x,
+            y: l.y,
+            w: frame.w,
+            h: frame.h,
+            cx: l.cx,
+            cy: l.cy,
+            sw: l.sw,
+            sh: l.sh,
+        };
         (label.as_str(), g)
     });
     show_ghost(&app, ghost);

@@ -1,12 +1,15 @@
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import type { Catalog, Display, Doc, DragFrame, FolderEntry, Item, ItemOrigin, Op, SurfaceInfo } from "./types";
 
+/** Where a dragged frame lands on a surface; cursor and surface size in CSS px (src/lib/snap.ts). */
+export type Landing = { monitor: string; x: number; y: number; cx: number; cy: number; sw: number; sh: number };
+
 export const ipc = {
   surfaceInfo: () => invoke<SurfaceInfo | null>("surface_info"),
   listDisplays: () => invoke<Display[]>("list_displays"),
   /** Pointer left the surface mid-drag: ghost on the surface under it, returns its monitor. */
   dragOver: (frame: DragFrame) => invoke<string | null>("drag_over", { frame }),
-  dragEnd: (frame: DragFrame) => invoke<{ monitor: string; x: number; y: number } | null>("drag_end", { frame }),
+  dragEnd: (frame: DragFrame) => invoke<Landing | null>("drag_end", { frame }),
   storeGet: () => invoke<Doc>("store_get"),
   storeApply: (ops: Op[]) => invoke<number>("store_apply", { ops }),
   storeFlush: () => invoke("store_flush"),

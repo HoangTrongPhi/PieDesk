@@ -10,7 +10,7 @@ use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::{cleanup, optimize};
+use crate::{cleanup, optimize, uninstall};
 
 const FLAG: &str = "--piedesk-elevated";
 
@@ -21,6 +21,7 @@ pub enum Task {
     Tweaks { changes: Vec<(String, Value)> },
     PurgeStandby,
     Startup { scope: String, name: String, enabled: bool },
+    Leftovers { items: Vec<uninstall::Leftover>, backup: String },
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -28,6 +29,7 @@ pub enum Outcome {
     Clean(Vec<cleanup::CleanResult>),
     Tweaks(Vec<optimize::ChangeResult>),
     Done(Result<(), String>),
+    Leftovers(Vec<uninstall::RemoveResult>),
 }
 
 fn perform(tasks: Vec<Task>) -> Vec<Outcome> {
@@ -38,6 +40,7 @@ fn perform(tasks: Vec<Task>) -> Vec<Outcome> {
             Task::Tweaks { changes } => Outcome::Tweaks(optimize::write_all(&changes)),
             Task::PurgeStandby => Outcome::Done(optimize::purge_standby()),
             Task::Startup { scope, name, enabled } => Outcome::Done(optimize::startup_write(&scope, &name, enabled)),
+            Task::Leftovers { items, backup } => Outcome::Leftovers(uninstall::remove_here(&items, std::path::Path::new(&backup))),
         })
         .collect()
 }

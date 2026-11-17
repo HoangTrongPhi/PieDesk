@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { listen } from "@tauri-apps/api/event";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
-import { AppWindow, ArrowUpCircle, Box, Cpu, EyeOff, Info, FolderOpen, LayoutGrid, Plus, RefreshCw, Settings, Sparkles, Trash2, Wrench } from "lucide-react";
+import { AppWindow, ArrowUpCircle, Box, Cpu, EyeOff, Info, FolderOpen, LayoutGrid, Move, Plus, RefreshCw, Settings, Sparkles, Trash2, Wrench } from "lucide-react";
 import { useAppearance } from "../lib/appearance";
 import { tr, tx, useLang, type Text } from "../lib/i18n";
 import { baseName, ipc } from "../lib/ipc";
 import { useUpdate } from "../lib/update";
+import { startPlaceDrag } from "../lib/drag";
 import type { Display } from "../lib/types";
 import { THEMES, seasonalTheme, type ThemeKind } from "../themes";
 import { OVERLAY_FX, type OverlayFx } from "../fx";
@@ -219,43 +220,88 @@ function GatherButton() {
   );
 }
 
+type Chip = { x: number; y: number; outside: boolean; title: string; icon: typeof Box };
+
+/**
+ * Widget gallery: drag a card out of this window onto a desktop, Windows 11 style — over a
+ * desktop a ghost follows the cursor, and the snap-layout flyout at the top places it in a zone.
+ */
 function WidgetsTab() {
-  const { widgets, upsertWidget } = useDoc();
-  const [added, setAdded] = useState<string | null>(null);
+  const { widgets, boxes, upsertWidget, upsertBox } = useDoc();
+  const [chip, setChip] = useState<Chip | null>(null);
+  const [placed, setPlaced] = useState<string | null>(null);
+  const done = (key: string) => {
+    setPlaced(key);
+    setTimeout(() => setPlaced((k) => (k === key ? null : k)), 1500);
+  };
+  const drag = (e: React.PointerEvent, key: string, title: string, icon: typeof Box, size: { w: number; h: number }, min: { w: number; h: number },
+    create: (monitor: string, r: { x: number; y: number; w: number; h: number }) => void) =>
+    startPlaceDrag(e, { kind: key === "box" ? "boxes" : "widgets", title, w: size.w, h: size.h, min }, {
+      onMove: (p) => setChip(p && { ...p, title, icon }),
+      onDrop: (monitor, r) => {
+        create(monitor, r);
+        done(key);
+      },
+    });
+  const boxCount = Object.keys(boxes).length;
+
   return (
     <>
       <Heading
         title={tr("Thư viện widget", "Widget gallery")}
         sub={tr(
-          "Bấm để thêm lên desktop màn hình chính, rồi kéo thanh ⋯ phía trên widget để di chuyển.",
-          "Click to add to the primary desktop, then drag the ⋯ bar above a widget to move it.",
+          "Kéo một thẻ ra desktop rồi thả. Kéo lên mép trên màn hình để hiện bố cục kiểu Windows 11 — thả vào một vùng để xếp widget vào đó.",
+          "Drag a card onto the desktop and drop it. Drag to the top of the screen for Windows 11 style snap layouts — drop on a zone to fit the widget there.",
         )}
       />
       <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3">
+        <div className="pd-card pd-card-drag select-none text-left" title={tr("Kéo ra desktop", "Drag onto the desktop")}
+          onPointerDown={(e) => drag(e, "box", tr("Box mới", "New box"), Box, { w: 420, h: 260 }, { w: 160, h: 90 },
+            (monitor, r) => upsertBox({ ...newBox(monitor, r), w: r.w, h: r.h }))}>
+          <div className="mb-3 flex items-center justify-between">
+            <span className="grid size-9 place-items-center rounded-lg bg-[var(--pd-accent)]/15 text-[var(--pd-accent)]"><Box size={18} /></span>
+            {boxCount > 0 && <span className="pd-muted text-[11px]">{tr("đang dùng", "in use")} {boxCount}</span>}
+          </div>
+          <div className="text-sm font-semibold">{tr("Box shortcut", "Shortcut box")}</div>
+          <div className="pd-muted mt-1 text-xs leading-relaxed">{tr("Hộp chứa shortcut, kéo file từ Explorer vào để thêm.", "A box of shortcuts; drag files from Explorer into it.")}</div>
+          <DragHint on={placed === "box"} />
+        </div>
         {WIDGETS.map((def) => {
           const n = Object.values(widgets).filter((w) => w.type === def.type).length;
           return (
-            <button key={def.type} className="pd-card text-left"
-              onClick={() => {
-                const w = newWidget(def.type, PRIMARY, { x: 120 + n * 24, y: 120 + n * 24 });
-                if (w) upsertWidget(w);
-                setAdded(def.type);
-                setTimeout(() => setAdded(null), 1200);
-              }}>
+            <div key={def.type} className="pd-card pd-card-drag select-none text-left" title={tr("Kéo ra desktop", "Drag onto the desktop")}
+              onPointerDown={(e) => drag(e, def.type, tx(def.name), def.icon, def.defaultSize, def.minSize, (monitor, r) => {
+                const w = newWidget(def.type, monitor, r);
+                if (w) upsertWidget({ ...w, w: r.w, h: r.h });
+              })}>
               <div className="mb-3 flex items-center justify-between">
                 <span className="grid size-9 place-items-center rounded-lg bg-[var(--pd-accent)]/15 text-[var(--pd-accent)]"><def.icon size={18} /></span>
                 {n > 0 && <span className="pd-muted text-[11px]">{tr("đang dùng", "in use")} {n}</span>}
               </div>
               <div className="text-sm font-semibold">{tx(def.name)}</div>
               <div className="pd-muted mt-1 text-xs leading-relaxed">{tx(def.description)}</div>
-              <div className="mt-3 text-xs font-medium text-[var(--pd-accent)]">
-                {added === def.type ? tr("✓ Đã thêm", "✓ Added") : tr("+ Thêm lên desktop", "+ Add to desktop")}
-              </div>
-            </button>
+              <DragHint on={placed === def.type} />
+            </div>
           );
         })}
       </div>
+      {chip && (
+        <div className="pd-place-chip" style={{ left: chip.x + 14, top: chip.y + 10, opacity: chip.outside ? 0 : 1 }}>
+          <chip.icon size={15} /> {chip.title}
+          <span className="pd-muted text-[11px] font-normal">{tr("→ thả ra desktop", "→ drop on the desktop")}</span>
+        </div>
+      )}
     </>
+  );
+}
+
+function DragHint({ on }: { on: boolean }) {
+  return (
+    <div className="pd-muted mt-3 flex items-center gap-1.5 text-[11px]">
+      {on ? <span className="font-medium text-emerald-300">{tr("✓ Đã đặt lên desktop", "✓ Placed on the desktop")}</span> : (
+        <><Move size={12} /> {tr("Kéo thả ra desktop", "Drag onto the desktop")}</>
+      )}
+    </div>
   );
 }
 
