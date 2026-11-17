@@ -1,4 +1,6 @@
-import { Clock3 } from "lucide-react";
+import { useMemo, useState } from "react";
+import clsx from "clsx";
+import { Check, Clock3, Search } from "lucide-react";
 import { Field, Segmented, Toggle } from "./fields";
 import { useNow } from "./hooks";
 import { defineWidget } from "./types";
@@ -6,9 +8,23 @@ import { locale, tr } from "../lib/i18n";
 
 type Config = { mode: "digital" | "analog"; tz: string; seconds: boolean; showDate: boolean; label: string };
 
+/**
+ * The zone if the browser knows it, else "" (the system time). A half-typed or unknown name used
+ * to throw a RangeError while rendering, which took the whole desktop surface down.
+ */
+export function safeZone(tz: string): string {
+  if (!tz) return "";
+  try {
+    new Intl.DateTimeFormat("en-GB", { timeZone: tz });
+    return tz;
+  } catch {
+    return "";
+  }
+}
+
 const zoned = (t: number, tz: string) => {
   const parts = new Intl.DateTimeFormat("en-GB", {
-    timeZone: tz || undefined,
+    timeZone: safeZone(tz) || undefined,
     hour: "numeric",
     minute: "numeric",
     second: "numeric",
@@ -31,7 +47,7 @@ export default defineWidget<Config>({
     const now = useNow();
     const { h, m, s } = zoned(now, config.tz);
     const date = new Intl.DateTimeFormat(locale(), {
-      timeZone: config.tz || undefined,
+      timeZone: safeZone(config.tz) || undefined,
       weekday: "long",
       day: "numeric",
       month: "long",
@@ -79,12 +95,9 @@ export default defineWidget<Config>({
         <Segmented value={config.mode} onChange={(mode) => setConfig({ mode })}
           options={[{ value: "digital", label: tr("Số", "Digital") }, { value: "analog", label: tr("Kim", "Analog") }]} />
       </Field>
-      <Field label={tr("Múi giờ (IANA)", "Time zone (IANA)")} hint={tr("Để trống = giờ máy. Ví dụ: Asia/Tokyo, Europe/London", "Empty = system time. e.g. Asia/Tokyo, Europe/London")}>
-        <input className="pd-input" value={config.tz} onChange={(e) => setConfig({ tz: e.target.value.trim() })} list="pd-tz" />
+      <Field label={tr("Múi giờ", "Time zone")}>
+        <ZonePicker value={safeZone(config.tz)} onPick={(tz) => setConfig({ tz })} />
       </Field>
-      <datalist id="pd-tz">
-        {Intl.supportedValuesOf("timeZone").map((z) => <option key={z} value={z} />)}
-      </datalist>
       <Field label={tr("Nhãn", "Label")}>
         <input className="pd-input" value={config.label} onChange={(e) => setConfig({ label: e.target.value })} />
       </Field>
@@ -93,3 +106,71 @@ export default defineWidget<Config>({
     </>
   ),
 });
+
+const ZONES: string[] = (() => {
+  try {
+    return Intl.supportedValuesOf("timeZone");
+  } catch {
+    return [];
+  }
+})();
+
+/** "America/Argentina/Buenos_Aires" → { city: "Buenos Aires", region: "America / Argentina" }. */
+const split = (z: string) => {
+  const parts = z.split("/");
+  return { city: parts[parts.length - 1].replace(/_/g, " "), region: parts.slice(0, -1).join(" / ") };
+};
+
+const offsetOf = (z: string, now: number) => {
+  try {
+    return new Intl.DateTimeFormat("en-US", { timeZone: z, timeZoneName: "shortOffset" }).formatToParts(now).find((p) => p.type === "timeZoneName")?.value ?? "";
+  } catch {
+    return "";
+  }
+};
+
+/**
+ * Pick a zone from a searchable list (city, region or "GMT+7"), instead of typing an IANA name
+ * into a datalist: only real zones can be chosen, so the clock never gets a broken one.
+ */
+function ZonePicker({ value, onPick }: { value: string; onPick: (tz: string) => void }) {
+  const [query, setQuery] = useState("");
+  const now = useMemo(() => Date.now(), []);
+  const shown = useMemo(() => {
+    const q = query.trim().toLowerCase().replace(/\s+/g, " ");
+    const list = ZONES.map((z) => ({ z, ...split(z), off: offsetOf(z, now) })).filter(
+      (x) => !q || x.z.toLowerCase().replace(/_/g, " ").includes(q) || x.off.toLowerCase().includes(q) || x.city.toLowerCase().includes(q),
+    );
+    return list.slice(0, 120);
+  }, [query, now]);
+  const row = (key: string, label: string, sub: string, off: string, active: boolean, tz: string) => (
+    <button key={key} type="button" onClick={() => onPick(tz)}
+      className={clsx("flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-white/8", active && "bg-[var(--pd-accent)]/15")}>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate">{label}</span>
+        {sub && <span className="pd-muted block truncate text-[11px]">{sub}</span>}
+      </span>
+      <span className="pd-muted shrink-0 text-[11px] tabular-nums">{off}</span>
+      {active && <Check size={13} className="shrink-0 text-[var(--pd-accent)]" />}
+    </button>
+  );
+  const current = value ? split(value) : null;
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="pd-muted text-xs">
+        {tr("Đang dùng: ", "In use: ")}
+        <span className="text-[var(--pd-fg)]">{current ? `${current.city} (${offsetOf(value, now)})` : tr("giờ của máy", "this PC's time")}</span>
+      </div>
+      <label className="relative flex items-center">
+        <Search size={13} className="pd-muted pointer-events-none absolute left-2.5" />
+        <input className="pd-input w-full !pl-7" placeholder={tr("Tìm thành phố, vùng hoặc GMT+7…", "Search a city, region or GMT+7…")}
+          value={query} onChange={(e) => setQuery(e.target.value)} />
+      </label>
+      <div className="flex max-h-52 flex-col overflow-y-auto rounded-lg border border-white/8 p-1">
+        {!query && row("", tr("Giờ của máy (mặc định)", "This PC's time (default)"), "", "", !value, "")}
+        {shown.map((x) => row(x.z, x.city, x.region, x.off, x.z === value, x.z))}
+        {shown.length === 0 && <div className="pd-muted p-2 text-xs">{tr("Không tìm thấy múi giờ.", "No matching time zone.")}</div>}
+      </div>
+    </div>
+  );
+}

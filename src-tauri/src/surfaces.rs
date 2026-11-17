@@ -131,6 +131,8 @@ pub fn sync(app: &AppHandle) -> tauri::Result<()> {
     *state.surfaces.lock().unwrap() = infos;
     let _ = app.emit("surface://info", ());
     crate::overlays::sync(app);
+    // Floating widgets follow their monitors too (and open at startup).
+    crate::pins::sync_later(app);
     Ok(())
 }
 

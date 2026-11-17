@@ -109,6 +109,28 @@ html[data-view="surface"] body {
   user-select: none;
 }
 
+/* A floating widget's window (pins.rs): only the widget, with rounded see-through corners. */
+html[data-view="pin"],
+html[data-view="pin"] body {
+  background: transparent;
+  overflow: hidden;
+  user-select: none;
+}
+.pd-pin {
+  contain: none;
+  box-shadow: none;
+}
+.pd-pin-settings {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  border-radius: inherit;
+  background: var(--pd-solid);
+  text-shadow: none;
+}
+
 html[data-view="manager"] body {
   background: var(--pd-bg);
 }

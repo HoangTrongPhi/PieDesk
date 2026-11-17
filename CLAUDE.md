@@ -17,7 +17,9 @@ Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). History: [docs/CHANG
 - Surfaces (one transparent window per monitor): `src/surface/*`, `src-tauri/src/surfaces.rs`.
   Drops from Explorer / browsers: `src-tauri/src/dropzone.rs` → `drop://event` → `Surface.tsx` → box or widget.
 - Snap layouts (Win 11 style) for boxes/widgets: `src/lib/snap.ts`, `src/surface/SnapBar.tsx`, `src/lib/drag.ts`.
-- Widgets: `src/widgets/*`, registered in `src/widgets/registry.ts`. The media frame is `player.tsx` (type `photo`).
+- Widgets: `src/widgets/*`, registered in `src/widgets/registry.ts`. The media frame is `player.tsx` (type `photo`);
+  with `config.onTop` (default on) it floats in its own always-on-top window: `src-tauri/src/pins.rs` + `src/surface/Pin.tsx`
+  (`?view=pin&id=photo&widgets=photo` in the browser preview).
 - Agents widget + Claude plan-usage limits: `src-tauri/src/agents.rs`, `src/widgets/agents.tsx`.
 - Utilities tab (Clean up, Uninstaller, Optimize): `src/manager/utilities/*`, `src-tauri/src/{cleanup,uninstall,optimize}.rs`;
   admin work goes through `src-tauri/src/elevate.rs`: the admin helper task `PieDesk\AdminHelper`, granted once by the

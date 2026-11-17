@@ -1,5 +1,17 @@
 # PieDesk — Changelog
 
+## v0.6.2 — Khung media luôn trên cùng, sửa Đồng hồ
+- **Khung media → Luôn ở trên cùng** (mặc định bật, tắt được trong cài đặt widget): khung media nằm trong cửa sổ nổi
+  riêng, không viền, trên mọi ứng dụng như PureRef (`src-tauri/src/pins.rs`, `src/surface/Pin.tsx`). Kéo thanh ⋯ để di
+  chuyển (cả sang màn hình khác), kéo góc dưới phải để đổi cỡ; vị trí lưu lại vào widget, nên bấm **Bỏ ghim** là widget
+  về đúng chỗ đó trên desktop. Vẫn nhận kéo thả file / link YouTube và Ctrl+V. Ẩn cùng desktop (phím tắt / khay), nhưng
+  không bị chế độ toàn màn hình ẩn đi.
+- **Đồng hồ**: chọn múi giờ làm sập cả desktop — gõ dở tên múi giờ (vd. "Asia/T") khiến `Intl.DateTimeFormat` ném
+  `RangeError` khi vẽ. Giờ múi giờ được kiểm tra trước khi dùng (sai → giờ máy), và ô gõ IANA thay bằng danh sách chọn có
+  tìm kiếm theo thành phố, vùng hoặc "GMT+7", kèm giờ lệch UTC.
+- Mỗi widget có vùng bắt lỗi riêng (`WidgetBoundary`): một widget lỗi chỉ hiện ghi chú trong chính nó, không làm mất các
+  box / widget khác.
+
 ## v0.6.1 — Quyền admin cấp một lần, gỡ MSI hỏng
 - **Quyền admin chỉ hỏi một lần, lúc cài** (`src-tauri/src/elevate.rs`, `src-tauri/windows/hooks.nsh`): bộ cài chạy
   `piedesk.exe --piedesk-setup-admin` → một hộp thoại UAC → đăng ký tác vụ Task Scheduler `PieDesk\AdminHelper`

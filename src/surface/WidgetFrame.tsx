@@ -11,6 +11,7 @@ import { displayName, placeOn, useSurface } from "../stores/surface";
 import { widgetDef } from "../widgets/registry";
 import { useMenu, type MenuEntry } from "./ContextMenu";
 import { useItemDrag } from "./itemDrag";
+import { WidgetBoundary } from "./WidgetBoundary";
 
 type Props = { widget: WidgetModel; bounds: { w: number; h: number } };
 
@@ -85,7 +86,9 @@ export const WidgetFrame = memo(function WidgetFrame({ widget, bounds }: Props) 
         onContextMenu={menu}
       >
         <div className="h-full w-full overflow-hidden p-2.5">
-          <def.Component config={config} setConfig={setConfig} size={{ w: widget.w, h: widget.h }} id={widget.id} />
+          <WidgetBoundary name={tx(def.name)}>
+            <def.Component config={config} setConfig={setConfig} size={{ w: widget.w, h: widget.h }} id={widget.id} />
+          </WidgetBoundary>
         </div>
         {!settings.locked && (
           <>

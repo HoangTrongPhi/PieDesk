@@ -1,12 +1,14 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Desktop surfaces and the manager window: core IPC, file pickers, autostart, self-update.",
-  "windows": ["surface-*", "manager"],
+  "description": "Desktop surfaces, floating widgets (pin-*) and the manager window: core IPC, file pickers, autostart, self-update.",
+  "windows": ["surface-*", "manager", "pin-*"],
   "permissions": [
     "core:default",
     "core:window:allow-close",
     "core:window:allow-set-focus",
+    "core:window:allow-start-dragging",
+    "core:window:allow-start-resize-dragging",
     "dialog:default",
     "autostart:default",
     "updater:default",

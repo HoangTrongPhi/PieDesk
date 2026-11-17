@@ -5,6 +5,7 @@ import "./themes/themes.css";
 import { Surface } from "./surface/Surface";
 import { Manager } from "./manager/Manager";
 import { Overlay } from "./surface/Overlay";
+import { Pin } from "./surface/Pin";
 
 async function boot() {
   // Plain browser (vite dev without Tauri): fake backend so the UI can be previewed.
@@ -13,7 +14,7 @@ async function boot() {
   const view = new URLSearchParams(location.search).get("view") ?? "manager";
   document.documentElement.dataset.view = view;
   createRoot(document.getElementById("root")!).render(
-    <StrictMode>{view === "surface" ? <Surface /> : view === "overlay" ? <Overlay /> : <Manager />}</StrictMode>,
+    <StrictMode>{view === "surface" ? <Surface /> : view === "overlay" ? <Overlay /> : view === "pin" ? <Pin /> : <Manager />}</StrictMode>,
   );
 }
 

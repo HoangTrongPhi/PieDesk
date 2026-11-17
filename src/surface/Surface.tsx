@@ -20,6 +20,7 @@ import { PromptHost } from "./Prompt";
 import { SnapBar } from "./SnapBar";
 import { snapAt, useSnap } from "../lib/snap";
 import { WidgetFrame } from "./WidgetFrame";
+import { floats } from "../widgets/player";
 
 export function newBox(monitor: string, at: { x: number; y: number }, patch: Partial<BoxModel> = {}): BoxModel {
   const count = Object.keys(useDoc.getState().boxes).length;
@@ -190,7 +191,8 @@ export function Surface() {
       <FxLayer ids={fx} enabled />
       {decor && theme.scene && <DecorLayer groups={theme.scene} home={info.primary} bounds={bounds} layoutKey={layoutKey} />}
       {Object.values(widgets)
-        .filter((w) => mine(w.monitor))
+        // Media frames "always on top" live in their own window (src-tauri/src/pins.rs).
+        .filter((w) => mine(w.monitor) && !floats(w))
         .map((w) => <WidgetFrame key={w.id} widget={w} bounds={bounds} />)}
       {Object.values(boxes)
         .filter((b) => mine(b.monitor))

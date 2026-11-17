@@ -26,7 +26,12 @@ type PlayerConfig = {
   fit: "cover" | "contain";
   muted: boolean;
   loop: boolean;
+  /** Its own borderless window above every app, like PureRef (src-tauri/src/pins.rs). Default on. */
+  onTop: boolean;
 };
+
+/** A media frame shown in its own always-on-top window instead of on the desktop. */
+export const floats = (w: { type: string; config?: Record<string, unknown> }) => w.type === "photo" && w.config?.onTop !== false;
 
 const ext = (p: string) => p.split(/[\\/]/).pop()?.split(".").pop()?.toLowerCase() ?? "";
 const fileKind = (p: string): Kind => (IMAGE_EXT.has(ext(p)) ? "image" : VIDEO_EXT.has(ext(p)) ? "video" : AUDIO_EXT.has(ext(p)) ? "audio" : "");
@@ -88,7 +93,7 @@ export const player = defineWidget<PlayerConfig>({
   defaultSize: { w: 320, h: 200 },
   minSize: { w: 120, h: 90 },
   acceptsDrop: true,
-  defaultConfig: { source: "file", path: "", url: "", interval: 15, fit: "cover", muted: false, loop: true },
+  defaultConfig: { source: "file", path: "", url: "", interval: 15, fit: "cover", muted: false, loop: true, onTop: true },
 
   Component: ({ config, setConfig, id }) => {
     const [hint, setHint] = useState<string | null>(null);
@@ -156,6 +161,14 @@ export const player = defineWidget<PlayerConfig>({
 
   Settings: ({ config, setConfig }) => (
     <>
+      <Toggle label={tr("Luôn ở trên cùng (cửa sổ nổi như PureRef)", "Always on top (floating window, like PureRef)")}
+        checked={config.onTop !== false} onChange={(onTop) => setConfig({ onTop })} />
+      <p className="pd-muted -mt-3 text-[11.5px] leading-relaxed">
+        {config.onTop !== false
+          ? tr("Nổi trên mọi ứng dụng. Kéo thanh ⋯ để di chuyển, góc dưới phải để đổi cỡ, nút ghim để đưa về desktop.",
+            "Floats above every app. Drag the ⋯ bar to move, the bottom-right corner to resize, the pin button to put it back on the desktop.")
+          : tr("Nằm trên desktop cùng các box và widget khác.", "Sits on the desktop with your other boxes and widgets.")}
+      </p>
       <Segmented value={config.source} onChange={(source) => setConfig({ source })}
         options={[
           { value: "file", label: tr("File", "File") },

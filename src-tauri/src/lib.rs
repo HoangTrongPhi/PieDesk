@@ -11,6 +11,7 @@ mod cleanup;
 mod desktop;
 mod dropzone;
 mod elevate;
+mod pins;
 mod folders;
 mod gpu;
 mod guard;
@@ -102,6 +103,9 @@ fn store_apply(app: AppHandle, window: WebviewWindow, state: tauri::State<AppSta
     }
     if touched("homeMonitor") {
         surfaces::poke();
+    }
+    if pins::affected(&app, &ops) {
+        pins::sync_later(&app);
     }
     if touched("overlayFx") || touched("pet") {
         overlays::sync_later(&app);
@@ -308,6 +312,9 @@ fn toggle_visibility(app: &AppHandle) {
     let hidden = !state.user_hidden.load(Ordering::Relaxed);
     state.user_hidden.store(hidden, Ordering::Relaxed);
     set_surfaces_visible(app, !hidden);
+    // Floating widgets hide with the desktop, but not for the fullscreen guard: being above
+    // everything is their point.
+    pins::set_visible(app, !hidden);
     for w in surface_windows(app) {
         state.hit.update(w.label(), |s| s.hidden = hidden);
         state.hit.invalidate(w.label());
@@ -623,6 +630,7 @@ pub fn run() {
             optimize::startup_set,
             uninstall::uninstall_list,
             elevate::admin_status,
+            pins::pin_commit,
             elevate::admin_grant,
             elevate::admin_revoke,
             uninstall::uninstall_run,
